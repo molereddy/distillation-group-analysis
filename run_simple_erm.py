@@ -62,12 +62,6 @@ def main():
     args = parser.parse_args()
     check_args(args)
 
-    # BERT-specific configs copied over from run_glue.py
-    if args.model == 'bert':
-        args.max_grad_norm = 1.0
-        args.adam_epsilon = 1e-8
-        args.warmup_steps = 0
-
     if os.path.exists(args.log_dir) and args.resume:
         resume=True
         mode='a'
@@ -140,21 +134,6 @@ def main():
         model = torchvision.models.wide_resnet50_2(weights='DEFAULT').to(device=args.device)
         d = model.fc.in_features
         model.fc = nn.Linear(d, n_classes)
-    elif args.model == 'bert':
-        assert args.dataset == 'MultiNLI'
-
-        from pytorch_transformers import BertConfig, BertForSequenceClassification
-        config_class = BertConfig
-        model_class = BertForSequenceClassification
-
-        config = config_class.from_pretrained(
-            'bert-base-uncased',
-            num_labels=3,
-            finetuning_task='mnli')
-        model = model_class.from_pretrained(
-            'bert-base-uncased',
-            from_tf=False,
-            config=config).to(device=args.device)
     else:
         raise ValueError('Model not recognized.')
     

@@ -94,11 +94,7 @@ def train(model, criterion, dataset,
         scheduler = None
 
     best_val_acc = 0
-    model_path_prefix = ""
-    if teacher is not None and args.teacher is not None:
-        model_path_prefix += args.teacher + "_"
-    if args.model is not None:
-        model_path_prefix += args.model + "_"
+
     for epoch in range(epoch_offset, epoch_offset+args.n_epochs):
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
@@ -146,16 +142,16 @@ def train(model, criterion, dataset,
             scheduler.step(val_loss) #scheduler step to update lr at the end of epoch
 
         if epoch % args.save_step == 0:
-            torch.save(model, os.path.join(args.log_dir, model_path_prefix+'%d_model.pth' % epoch))
+            torch.save(model, os.path.join(args.log_dir, '%d_model.pth' % epoch))
 
         if args.save_last:
-            torch.save(model, os.path.join(args.log_dir, model_path_prefix+'last_model.pth'))
+            torch.save(model, os.path.join(args.log_dir, 'last_model.pth'))
 
         if args.save_best:
             curr_val_acc = val_loss_computer.avg_acc
             logger.write(f'Current validation accuracy: {curr_val_acc}\n')
             if curr_val_acc > best_val_acc:
                 best_val_acc = curr_val_acc
-                torch.save(model, os.path.join(args.log_dir, model_path_prefix+'best_model.pth'))
+                torch.save(model, os.path.join(args.log_dir, 'best_model.pth'))
                 logger.write(f'Best model saved at epoch {epoch}\n')
         logger.write('\n')

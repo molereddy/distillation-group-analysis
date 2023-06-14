@@ -35,7 +35,6 @@ def main():
     parser.add_argument('--val_fraction', type=float, default=0.1)
     # Objective
     parser.add_argument('--generalization_adjustment', default="0.0")
-    parser.add_argument('--automatic_adjustment', default=False, action='store_true')
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
 
     # Model
@@ -60,7 +59,13 @@ def main():
 
     args = parser.parse_args()
     check_args(args)
-
+    
+    if teacher is not None and args.teacher is not None:
+        model_path_prefix += args.teacher + "_"
+    model_path_prefix += args.model + "_{}".format(args.seed)
+    if model_path_prefix == "": model_path_prefix = "base"
+    args.log_dir = os.path.join(args.log_dir, model_path_prefix)
+    
     if os.path.exists(args.log_dir) and args.resume:
         resume=True
         mode='a'

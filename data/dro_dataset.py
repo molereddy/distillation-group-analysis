@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
+from tqdm import tqdm
 
 class DRODataset(Dataset):
     def __init__(self, dataset, process_item_fn, n_groups, n_classes, group_str_fn):
@@ -12,7 +13,6 @@ class DRODataset(Dataset):
         self.group_str = group_str_fn
         group_array = []
         y_array = []
-
         for x,y,g in self:
             group_array.append(g)
             y_array.append(y)

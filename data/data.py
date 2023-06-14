@@ -5,7 +5,7 @@ from torch.utils.data import Subset
 from data.label_shift_utils import prepare_label_shift_data
 from data.confounder_utils import prepare_confounder_data
 
-root_dir = '/u/scr/nlp/dro/'
+root_dir = '/home/anmolreddy/projects/datasets/'
 
 dataset_attributes = {
     'CelebA': {

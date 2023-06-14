@@ -30,7 +30,7 @@ confounder_settings = {
 ########################
 ### DATA PREPARATION ###
 ########################
-def prepare_confounder_data(args, train, return_full_dataset=False):
+def prepare_confounder_data(args, train, return_full_dataset=False): # input false as well
     full_dataset = confounder_settings[args.dataset]['constructor'](
         root_dir=args.root_dir,
         target_name=args.target_name,

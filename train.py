@@ -15,7 +15,7 @@ from loss import LossComputer
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
 def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger, args,
-              is_training, show_progress=False, log_every=50, scheduler=None):
+              is_training, show_progress=False, log_every=10, scheduler=None):
     """
     scheduler is only used inside this function if model is bert.
     """
@@ -78,6 +78,72 @@ def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger
             loss_computer.log_stats(logger, is_training)
             if is_training:
                 loss_computer.reset_stats()
+
+def run_distillation_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger, args,
+              is_training, show_progress=False, log_every=10, scheduler=None):
+    """
+    scheduler is only used inside this function if model is bert.
+    """
+
+    if is_training:
+        model.train()
+        if args.model == 'bert':
+            model.zero_grad()
+    else:
+        model.eval()
+
+    if show_progress:
+        prog_bar_loader = tqdm(loader)
+    else:
+        prog_bar_loader = loader
+
+    with torch.set_grad_enabled(is_training):
+        for batch_idx, batch in enumerate(prog_bar_loader):
+
+            batch = tuple(t.cuda() for t in batch)
+            x = batch[0]
+            y = batch[1]
+            g = batch[2]
+            if args.model == 'bert':
+                input_ids = x[:, :, 0]
+                input_masks = x[:, :, 1]
+                segment_ids = x[:, :, 2]
+                outputs = model(
+                    input_ids=input_ids,
+                    attention_mask=input_masks,
+                    token_type_ids=segment_ids,
+                    labels=y
+                )[1] # [1] returns logits
+            else:
+                outputs = model(x)
+
+            loss_main = loss_computer.loss(outputs, y, g, is_training)
+
+            if is_training:
+                if args.model == 'bert':
+                    loss_main.backward()
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+                    scheduler.step()
+                    optimizer.step()
+                    model.zero_grad()
+                else:
+                    optimizer.zero_grad()
+                    loss_main.backward()
+                    optimizer.step()
+
+            if is_training and (batch_idx+1) % log_every==0:
+                csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
+                csv_logger.flush()
+                loss_computer.log_stats(logger, is_training)
+                loss_computer.reset_stats()
+
+        if (not is_training) or loss_computer.batch_count > 0:
+            csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
+            csv_logger.flush()
+            loss_computer.log_stats(logger, is_training)
+            if is_training:
+                loss_computer.reset_stats()
+
 
 
 def train(model, criterion, dataset,

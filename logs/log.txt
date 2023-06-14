@@ -1,0 +1,52 @@
+Dataset: CelebA
+Shift type: confounder
+Target name: Blond_Hair
+Confounder names: ['Male']
+Resume: False
+Minority fraction: None
+Imbalance ratio: None
+Fraction: 1.0
+Root dir: None
+Reweight groups: False
+Augment data: False
+Val fraction: 0.1
+Robust: False
+Alpha: 0.2
+Generalization adjustment: 0.0
+Automatic adjustment: False
+Robust step size: 0.01
+Use normalized loss: False
+Btl: False
+Hinge: False
+Model: resnet50
+Train from scratch: False
+N epochs: 50
+Batch size: 128
+Lr: 0.0001
+Scheduler: False
+Weight decay: 0.0001
+Gamma: 0.1
+Minimum variational weight: 0
+Seed: 0
+Show progress: False
+Log dir: ./logs
+Log every: 50
+Save step: 1000
+Save best: True
+Save last: True
+
+Training Data...
+    Blond_Hair = 0, Male = 0: n = 71629
+    Blond_Hair = 0, Male = 1: n = 66874
+    Blond_Hair = 1, Male = 0: n = 22880
+    Blond_Hair = 1, Male = 1: n = 1387
+Validation Data...
+    Blond_Hair = 0, Male = 0: n = 8535
+    Blond_Hair = 0, Male = 1: n = 8276
+    Blond_Hair = 1, Male = 0: n = 2874
+    Blond_Hair = 1, Male = 1: n = 182
+Test Data...
+    Blond_Hair = 0, Male = 0: n = 9767
+    Blond_Hair = 0, Male = 1: n = 7535
+    Blond_Hair = 1, Male = 0: n = 2480
+    Blond_Hair = 1, Male = 1: n = 180

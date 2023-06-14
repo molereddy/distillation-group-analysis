@@ -1,5 +1,5 @@
 # python run_simple_erm.py -s confounder -d CelebA -t Blond_Hair -c Male --lr 0.0001 --batch_size 128 --weight_decay 0.0001 --model resnet50 --n_epochs 50 --reweight_groups --robust --gamma 0.1 --generalization_adjustment 0
-python3 run_simple_erm.py -s confounder -d CelebA -t Blond_Hair -c Male --model resnet50 --weight_decay 0.0001 --lr 0.0001 --batch_size 128 --n_epochs 50 --save_step 1000 --save_best --save_last
+python3 run_simple_erm.py -s confounder -d CelebA -t Blond_Hair -c Male --model resnet50 --weight_decay 0.0001 --lr 0.0001 --batch_size 128 --n_epochs 50 --save_best --save_last
 
-# python3 run_simple_erm.py -s confounder -d CUB -t waterbird_complete95 -c forest2water2 --model resnet50 --weight_decay 0.0001 --lr 0.001 --batch_size 128 --n_epochs 300 --save_step 1000 --save_best --save_last --reweight_groups --robust --alpha 0.01 --gamma 0.1 --generalization_adjustment 0
-# python3 run_simple_erm.py -s confounder -d CUB -t waterbird_complete95 -c forest2water2 --model resnet50 --weight_decay 0.0001 --lr 0.001 --batch_size 128 --n_epochs 300 --save_step 1000 --save_best --save_last
+# python3 run_simple_erm.py -s confounder -d CUB -t waterbird_complete95 -c forest2water2 --model resnet50 --weight_decay 0.0001 --lr 0.001 --batch_size 128 --n_epochs 300 --save_best --save_last --reweight_groups --robust --alpha 0.01 --gamma 0.1 --generalization_adjustment 0
+# python3 run_simple_erm.py -s confounder -d CUB -t waterbird_complete95 -c forest2water2 --model resnet50 --weight_decay 0.0001 --lr 0.001 --batch_size 128 --n_epochs 300 --save_best --save_last

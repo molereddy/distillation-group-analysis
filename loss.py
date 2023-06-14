@@ -5,9 +5,8 @@ import torch.nn.functional as F
 import numpy as np
 
 class LossComputer:
-    def __init__(self, criterion, dataset, gamma=0.1, adj=None, min_var_weight=0,normalize_loss=False):
+    def __init__(self, criterion, dataset, adj=None, min_var_weight=0,normalize_loss=False):
         self.criterion = criterion
-        self.gamma = gamma
         self.min_var_weight = min_var_weight
         self.normalize_loss = normalize_loss
 

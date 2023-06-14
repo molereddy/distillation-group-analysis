@@ -71,7 +71,6 @@ def train(model, criterion, dataset,
     train_loss_computer = LossComputer(
         criterion,
         dataset=dataset['train_data'],
-        gamma=args.gamma,
         adj=adjustments,
         normalize_loss=args.use_normalized_loss,
         min_var_weight=args.minimum_variational_weight)

@@ -39,13 +39,14 @@ def main():
 
     # Model
     parser.add_argument( '--model', choices=model_attributes.keys(), default='resnet50')
+    parser.add_argument( '--teacher', choices=model_attributes.keys())
 
     # Optimization
     parser.add_argument('--n_epochs', type=int, default=50) # 300 for waterbirds and 50 for celebA
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
     parser.add_argument('--scheduler', action='store_true', default=False)
-    parser.add_argument('--weight_decay', type=float, default=5e-5)z
+    parser.add_argument('--weight_decay', type=float, default=5e-5)
     parser.add_argument('--minimum_variational_weight', type=float, default=0)
     # Misc
     parser.add_argument('--seed', type=int, default=0)
@@ -60,7 +61,8 @@ def main():
     check_args(args)
     
     args.log_dir = os.path.join(args.log_dir, args.dataset)
-    if teacher is not None and args.teacher is not None:
+    model_path_prefix = ""
+    if args.teacher is not None:
         model_path_prefix += args.teacher + "_"
     model_path_prefix += args.model + "_{}".format(args.seed)
     if model_path_prefix == "": model_path_prefix = "base"
@@ -75,13 +77,16 @@ def main():
 
     ## Initialize logs
     if not os.path.exists(args.log_dir):
-        os.makedirs(args.log_dir)
+        os.makedirs(args.log_dir, exist_ok=True)
 
-    logger = Logger(os.path.join(args.log_dir, 'log.txt'), mode)
+    log_file_path = os.path.join(args.log_dir, 'log.txt')
+    print(log_file_path)
+    logger = Logger(log_file_path, mode)
+    
     # Record args
     log_args(args, logger)
     set_seed(args.seed)
-
+    
     # Data
     # Test data for label_shift_step is not implemented yet
     data_start_time = time.time()

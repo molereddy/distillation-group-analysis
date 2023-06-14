@@ -117,10 +117,7 @@ class LossComputer:
     def log_stats(self, logger, is_training):
         if logger is None:
             return
-
-        logger.write(f'Average incurred loss: {self.avg_per_sample_loss.item():.3f}  \n')
-        logger.write(f'Average sample loss: {self.avg_actual_loss.item():.3f}  \n')
-        logger.write(f'Average acc: {self.avg_acc.item():.3f}  \n')
+        logger.write(f'batch count: {self.batch_count}, Average incurred loss: {self.avg_per_sample_loss.item():.3f}, Average sample loss: {self.avg_actual_loss.item():.3f}, Average acc: {self.avg_acc.item():.3f}  \n')
         for group_idx in range(self.n_groups):
             logger.write(
                 f'  {self.group_str(group_idx)}  '

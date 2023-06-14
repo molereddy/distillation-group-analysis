@@ -4,7 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 class DRODataset(Dataset):
-    def __init__(self, dataset, process_item_fn, n_groups, n_classes, group_str_fn):
+    def __init__(self, dataset, process_item_fn, n_groups, n_classes, group_str_fn, logger=None):
         self.dataset = dataset
         self.process_item = process_item_fn
         self.n_groups = n_groups
@@ -12,8 +12,20 @@ class DRODataset(Dataset):
         self.group_str = group_str_fn
         group_array = []
         y_array = []
-
+        total_size, tenth = len(self.dataset), len(self.dataset)//10
+        if logger:
+            logger.write("DRO dataset creation, len {}, tenth {}\n".format(total_size, tenth))
+            logger.flush()
+        
+        i = 0
         for x,y,g in self:
+            if logger and i % tenth == 0:
+                logger.write("dataset processing {} tenth, at num {}\n".format(
+                    i//tenth,
+                    i)
+                )
+            logger.flush()
+            i += 1
             group_array.append(g)
             y_array.append(y)
         self._group_array = torch.LongTensor(group_array)
@@ -40,26 +52,13 @@ class DRODataset(Dataset):
         for x,y,g in self:
             return x.size()
 
-    def get_loader(self, train, reweight_groups, **kwargs):
+    def get_loader(self, train, **kwargs):
         if not train: # Validation or testing
-            assert reweight_groups is None
             shuffle = False
             sampler = None
-        elif not reweight_groups: # Training but not reweighting
+        else: # Training but not reweighting
             shuffle = True
             sampler = None
-        else: # Training and reweighting
-            # When the --robust flag is not set, reweighting changes the loss function
-            # from the normal ERM (average loss over each training example)
-            # to a reweighted ERM (weighted average where each (y,c) group has equal weight) .
-            # When the --robust flag is set, reweighting does not change the loss function
-            # since the minibatch is only used for mean gradient estimation for each group separately
-            group_weights = len(self)/self._group_counts
-            weights = group_weights[self._group_array]
-
-            # Replacement needs to be set to True, otherwise we'll run out of minority samples
-            sampler = WeightedRandomSampler(weights, len(self), replacement=True)
-            shuffle = False
 
         loader = DataLoader(
             self,

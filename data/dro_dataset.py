@@ -40,26 +40,13 @@ class DRODataset(Dataset):
         for x,y,g in self:
             return x.size()
 
-    def get_loader(self, train, reweight_groups, **kwargs):
+    def get_loader(self, train, **kwargs):
         if not train: # Validation or testing
-            assert reweight_groups is None
             shuffle = False
             sampler = None
-        elif not reweight_groups: # Training but not reweighting
+        else: # Training but not reweighting
             shuffle = True
             sampler = None
-        else: # Training and reweighting
-            # When the --robust flag is not set, reweighting changes the loss function
-            # from the normal ERM (average loss over each training example)
-            # to a reweighted ERM (weighted average where each (y,c) group has equal weight) .
-            # When the --robust flag is set, reweighting does not change the loss function
-            # since the minibatch is only used for mean gradient estimation for each group separately
-            group_weights = len(self)/self._group_counts
-            weights = group_weights[self._group_array]
-
-            # Replacement needs to be set to True, otherwise we'll run out of minority samples
-            sampler = WeightedRandomSampler(weights, len(self), replacement=True)
-            shuffle = False
 
         loader = DataLoader(
             self,

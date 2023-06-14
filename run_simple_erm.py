@@ -31,7 +31,6 @@ def main():
     # Data
     parser.add_argument('--fraction', type=float, default=1.0)
     parser.add_argument('--root_dir', default=None)
-    parser.add_argument('--reweight_groups', action='store_true', default=False)
     parser.add_argument('--augment_data', action='store_true', default=False)
     parser.add_argument('--val_fraction', type=float, default=0.1)
     # Objective

@@ -23,8 +23,6 @@ class LossComputer:
 
         # quantities maintained throughout training
         self.adv_probs = torch.ones(self.n_groups).cuda()/self.n_groups
-        self.exp_avg_loss = torch.zeros(self.n_groups).cuda()
-        self.exp_avg_initialized = torch.zeros(self.n_groups).byte().cuda()
 
         self.reset_stats()
 
@@ -33,9 +31,6 @@ class LossComputer:
         per_sample_losses = self.criterion(yhat, y)
         group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
         group_acc, group_count = self.compute_group_avg((torch.argmax(yhat,1)==y).float(), group_idx)
-
-        # update historical losses
-        self.update_exp_avg_loss(group_loss, group_count)
 
         # compute overall loss
         actual_loss = per_sample_losses.mean()
@@ -53,12 +48,6 @@ class LossComputer:
         group_denom = group_count + (group_count==0).float() # avoid nans
         group_loss = (group_map @ losses.view(-1))/group_denom
         return group_loss, group_count
-
-    def update_exp_avg_loss(self, group_loss, group_count):
-        prev_weights = (1 - self.gamma*(group_count>0).float()) * (self.exp_avg_initialized>0).float()
-        curr_weights = 1 - prev_weights
-        self.exp_avg_loss = self.exp_avg_loss * prev_weights + group_loss*curr_weights
-        self.exp_avg_initialized = (self.exp_avg_initialized>0) + (group_count>0)
 
     def reset_stats(self):
         self.processed_data_counts = torch.zeros(self.n_groups).cuda()
@@ -109,7 +98,6 @@ class LossComputer:
         stats_dict = {}
         for idx in range(self.n_groups):
             stats_dict[f'avg_loss_group:{idx}'] = self.avg_group_loss[idx].item()
-            stats_dict[f'exp_avg_loss_group:{idx}'] = self.exp_avg_loss[idx].item()
             stats_dict[f'avg_acc_group:{idx}'] = self.avg_group_acc[idx].item()
             stats_dict[f'processed_data_count_group:{idx}'] = self.processed_data_counts[idx].item()
             stats_dict[f'update_data_count_group:{idx}'] = self.update_data_counts[idx].item()
@@ -138,8 +126,5 @@ class LossComputer:
                 f'  {self.group_str(group_idx)}  '
                 f'[n = {int(self.processed_data_counts[group_idx])}]:\t'
                 f'loss = {self.avg_group_loss[group_idx]:.3f}  '
-                f'exp loss = {self.exp_avg_loss[group_idx]:.3f}  '
-                f'adjusted loss = {self.exp_avg_loss[group_idx] + self.adj[group_idx]/torch.sqrt(self.group_counts)[group_idx]:.3f}  '
-                f'adv prob = {self.adv_probs[group_idx]:3f}   '
                 f'acc = {self.avg_group_acc[group_idx]:.3f}\n')
         logger.flush()

@@ -4384,3 +4384,919 @@ Average acc: 0.957
   Blond_Hair = 0, Male = 1  [n = 1157]:	loss = 0.014  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.998
   Blond_Hair = 1, Male = 0  [n = 417]:	loss = 0.362  exp loss = 0.324  adjusted loss = 0.324  adv prob = 0.250000   acc = 0.851
   Blond_Hair = 1, Male = 1  [n = 27]:	loss = 0.916  exp loss = 1.002  adjusted loss = 1.002  adv prob = 0.250000   acc = 0.481
+
+Validation:
+Average incurred loss: 0.117  
+Average sample loss: 0.117  
+Average acc: 0.951  
+  Blond_Hair = 0, Male = 0  [n = 8535]:	loss = 0.112  exp loss = 0.118  adjusted loss = 0.118  adv prob = 0.250000   acc = 0.950
+  Blond_Hair = 0, Male = 1  [n = 8276]:	loss = 0.017  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 2874]:	loss = 0.326  exp loss = 0.350  adjusted loss = 0.350  adv prob = 0.250000   acc = 0.867
+  Blond_Hair = 1, Male = 1  [n = 182]:	loss = 1.620  exp loss = 1.787  adjusted loss = 1.787  adv prob = 0.250000   acc = 0.330
+Current lr: 0.000100
+Current validation accuracy: 0.9510745406150818
+
+
+Epoch [22]:
+Training:
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2822]:	loss = 0.091  exp loss = 0.104  adjusted loss = 0.104  adv prob = 0.250000   acc = 0.960
+  Blond_Hair = 0, Male = 1  [n = 2672]:	loss = 0.018  exp loss = 0.019  adjusted loss = 0.019  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 864]:	loss = 0.248  exp loss = 0.256  adjusted loss = 0.256  adv prob = 0.250000   acc = 0.895
+  Blond_Hair = 1, Male = 1  [n = 42]:	loss = 1.404  exp loss = 1.378  adjusted loss = 1.378  adv prob = 0.250000   acc = 0.429
+Average incurred loss: 0.098  
+Average sample loss: 0.098  
+Average acc: 0.959  
+  Blond_Hair = 0, Male = 0  [n = 2799]:	loss = 0.080  exp loss = 0.094  adjusted loss = 0.094  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2599]:	loss = 0.014  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 953]:	loss = 0.308  exp loss = 0.320  adjusted loss = 0.320  adv prob = 0.250000   acc = 0.869
+  Blond_Hair = 1, Male = 1  [n = 49]:	loss = 1.489  exp loss = 1.324  adjusted loss = 1.324  adv prob = 0.250000   acc = 0.327
+Average incurred loss: 0.086  
+Average sample loss: 0.086  
+Average acc: 0.968  
+  Blond_Hair = 0, Male = 0  [n = 2900]:	loss = 0.080  exp loss = 0.087  adjusted loss = 0.087  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2573]:	loss = 0.018  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 869]:	loss = 0.263  exp loss = 0.261  adjusted loss = 0.261  adv prob = 0.250000   acc = 0.910
+  Blond_Hair = 1, Male = 1  [n = 58]:	loss = 0.761  exp loss = 0.755  adjusted loss = 0.755  adv prob = 0.250000   acc = 0.586
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2814]:	loss = 0.070  exp loss = 0.062  adjusted loss = 0.062  adv prob = 0.250000   acc = 0.971
+  Blond_Hair = 0, Male = 1  [n = 2593]:	loss = 0.015  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 932]:	loss = 0.295  exp loss = 0.287  adjusted loss = 0.287  adv prob = 0.250000   acc = 0.884
+  Blond_Hair = 1, Male = 1  [n = 61]:	loss = 1.153  exp loss = 1.211  adjusted loss = 1.211  adv prob = 0.250000   acc = 0.393
+Average incurred loss: 0.088  
+Average sample loss: 0.088  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2822]:	loss = 0.074  exp loss = 0.071  adjusted loss = 0.071  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2621]:	loss = 0.017  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 902]:	loss = 0.265  exp loss = 0.261  adjusted loss = 0.261  adv prob = 0.250000   acc = 0.884
+  Blond_Hair = 1, Male = 1  [n = 55]:	loss = 1.271  exp loss = 1.215  adjusted loss = 1.215  adv prob = 0.250000   acc = 0.418
+Average incurred loss: 0.088  
+Average sample loss: 0.088  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2811]:	loss = 0.072  exp loss = 0.066  adjusted loss = 0.066  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2631]:	loss = 0.015  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 914]:	loss = 0.270  exp loss = 0.291  adjusted loss = 0.291  adv prob = 0.250000   acc = 0.903
+  Blond_Hair = 1, Male = 1  [n = 44]:	loss = 1.776  exp loss = 1.634  adjusted loss = 1.634  adv prob = 0.250000   acc = 0.364
+Average incurred loss: 0.102  
+Average sample loss: 0.102  
+Average acc: 0.959  
+  Blond_Hair = 0, Male = 0  [n = 2806]:	loss = 0.092  exp loss = 0.101  adjusted loss = 0.101  adv prob = 0.250000   acc = 0.964
+  Blond_Hair = 0, Male = 1  [n = 2597]:	loss = 0.015  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 935]:	loss = 0.313  exp loss = 0.278  adjusted loss = 0.278  adv prob = 0.250000   acc = 0.868
+  Blond_Hair = 1, Male = 1  [n = 62]:	loss = 1.087  exp loss = 0.889  adjusted loss = 0.889  adv prob = 0.250000   acc = 0.548
+Average incurred loss: 0.096  
+Average sample loss: 0.096  
+Average acc: 0.959  
+  Blond_Hair = 0, Male = 0  [n = 2822]:	loss = 0.090  exp loss = 0.081  adjusted loss = 0.081  adv prob = 0.250000   acc = 0.962
+  Blond_Hair = 0, Male = 1  [n = 2616]:	loss = 0.019  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.994
+  Blond_Hair = 1, Male = 0  [n = 916]:	loss = 0.282  exp loss = 0.334  adjusted loss = 0.334  adv prob = 0.250000   acc = 0.878
+  Blond_Hair = 1, Male = 1  [n = 46]:	loss = 1.130  exp loss = 1.289  adjusted loss = 1.289  adv prob = 0.250000   acc = 0.457
+Average incurred loss: 0.094  
+Average sample loss: 0.094  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2785]:	loss = 0.085  exp loss = 0.088  adjusted loss = 0.088  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2644]:	loss = 0.014  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 897]:	loss = 0.257  exp loss = 0.211  adjusted loss = 0.211  adv prob = 0.250000   acc = 0.901
+  Blond_Hair = 1, Male = 1  [n = 74]:	loss = 1.311  exp loss = 1.206  adjusted loss = 1.206  adv prob = 0.250000   acc = 0.351
+Average incurred loss: 0.095  
+Average sample loss: 0.095  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2818]:	loss = 0.095  exp loss = 0.101  adjusted loss = 0.101  adv prob = 0.250000   acc = 0.958
+  Blond_Hair = 0, Male = 1  [n = 2650]:	loss = 0.016  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 887]:	loss = 0.275  exp loss = 0.258  adjusted loss = 0.258  adv prob = 0.250000   acc = 0.894
+  Blond_Hair = 1, Male = 1  [n = 45]:	loss = 1.237  exp loss = 1.487  adjusted loss = 1.487  adv prob = 0.250000   acc = 0.489
+Average incurred loss: 0.100  
+Average sample loss: 0.100  
+Average acc: 0.960  
+  Blond_Hair = 0, Male = 0  [n = 2831]:	loss = 0.084  exp loss = 0.078  adjusted loss = 0.078  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2633]:	loss = 0.018  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 866]:	loss = 0.311  exp loss = 0.305  adjusted loss = 0.305  adv prob = 0.250000   acc = 0.874
+  Blond_Hair = 1, Male = 1  [n = 70]:	loss = 1.270  exp loss = 1.121  adjusted loss = 1.121  adv prob = 0.250000   acc = 0.514
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2826]:	loss = 0.086  exp loss = 0.075  adjusted loss = 0.075  adv prob = 0.250000   acc = 0.963
+  Blond_Hair = 0, Male = 1  [n = 2677]:	loss = 0.017  exp loss = 0.021  adjusted loss = 0.021  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 850]:	loss = 0.267  exp loss = 0.231  adjusted loss = 0.231  adv prob = 0.250000   acc = 0.889
+  Blond_Hair = 1, Male = 1  [n = 47]:	loss = 1.437  exp loss = 1.569  adjusted loss = 1.569  adv prob = 0.250000   acc = 0.362
+Average incurred loss: 0.097  
+Average sample loss: 0.097  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2855]:	loss = 0.079  exp loss = 0.066  adjusted loss = 0.066  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2602]:	loss = 0.016  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 889]:	loss = 0.326  exp loss = 0.318  adjusted loss = 0.318  adv prob = 0.250000   acc = 0.876
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.138  exp loss = 1.155  adjusted loss = 1.155  adv prob = 0.250000   acc = 0.463
+Average incurred loss: 0.092  
+Average sample loss: 0.092  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2764]:	loss = 0.087  exp loss = 0.088  adjusted loss = 0.088  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2689]:	loss = 0.016  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 893]:	loss = 0.291  exp loss = 0.306  adjusted loss = 0.306  adv prob = 0.250000   acc = 0.876
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 0.882  exp loss = 0.767  adjusted loss = 0.767  adv prob = 0.250000   acc = 0.463
+Average incurred loss: 0.103  
+Average sample loss: 0.103  
+Average acc: 0.957  
+  Blond_Hair = 0, Male = 0  [n = 2877]:	loss = 0.094  exp loss = 0.079  adjusted loss = 0.079  adv prob = 0.250000   acc = 0.959
+  Blond_Hair = 0, Male = 1  [n = 2585]:	loss = 0.016  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 889]:	loss = 0.324  exp loss = 0.311  adjusted loss = 0.311  adv prob = 0.250000   acc = 0.866
+  Blond_Hair = 1, Male = 1  [n = 49]:	loss = 1.201  exp loss = 1.132  adjusted loss = 1.132  adv prob = 0.250000   acc = 0.449
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2834]:	loss = 0.075  exp loss = 0.072  adjusted loss = 0.072  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2598]:	loss = 0.017  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 912]:	loss = 0.264  exp loss = 0.236  adjusted loss = 0.236  adv prob = 0.250000   acc = 0.886
+  Blond_Hair = 1, Male = 1  [n = 56]:	loss = 1.314  exp loss = 1.361  adjusted loss = 1.361  adv prob = 0.250000   acc = 0.411
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2767]:	loss = 0.076  exp loss = 0.078  adjusted loss = 0.078  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2652]:	loss = 0.013  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 927]:	loss = 0.272  exp loss = 0.244  adjusted loss = 0.244  adv prob = 0.250000   acc = 0.894
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.105  exp loss = 1.131  adjusted loss = 1.131  adv prob = 0.250000   acc = 0.444
+Average incurred loss: 0.093  
+Average sample loss: 0.093  
+Average acc: 0.959  
+  Blond_Hair = 0, Male = 0  [n = 2811]:	loss = 0.072  exp loss = 0.079  adjusted loss = 0.079  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2578]:	loss = 0.017  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 955]:	loss = 0.298  exp loss = 0.266  adjusted loss = 0.266  adv prob = 0.250000   acc = 0.865
+  Blond_Hair = 1, Male = 1  [n = 56]:	loss = 1.151  exp loss = 1.236  adjusted loss = 1.236  adv prob = 0.250000   acc = 0.464
+Average incurred loss: 0.096  
+Average sample loss: 0.096  
+Average acc: 0.961  
+  Blond_Hair = 0, Male = 0  [n = 2822]:	loss = 0.089  exp loss = 0.116  adjusted loss = 0.116  adv prob = 0.250000   acc = 0.960
+  Blond_Hair = 0, Male = 1  [n = 2604]:	loss = 0.018  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.994
+  Blond_Hair = 1, Male = 0  [n = 919]:	loss = 0.273  exp loss = 0.311  adjusted loss = 0.311  adv prob = 0.250000   acc = 0.898
+  Blond_Hair = 1, Male = 1  [n = 55]:	loss = 1.225  exp loss = 1.318  adjusted loss = 1.318  adv prob = 0.250000   acc = 0.509
+Average incurred loss: 0.094  
+Average sample loss: 0.094  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2764]:	loss = 0.090  exp loss = 0.083  adjusted loss = 0.083  adv prob = 0.250000   acc = 0.961
+  Blond_Hair = 0, Male = 1  [n = 2683]:	loss = 0.018  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 901]:	loss = 0.265  exp loss = 0.231  adjusted loss = 0.231  adv prob = 0.250000   acc = 0.899
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.271  exp loss = 1.122  adjusted loss = 1.122  adv prob = 0.250000   acc = 0.462
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2894]:	loss = 0.080  exp loss = 0.072  adjusted loss = 0.072  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2572]:	loss = 0.017  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 866]:	loss = 0.262  exp loss = 0.228  adjusted loss = 0.228  adv prob = 0.250000   acc = 0.897
+  Blond_Hair = 1, Male = 1  [n = 68]:	loss = 1.186  exp loss = 1.359  adjusted loss = 1.359  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.092  
+Average sample loss: 0.092  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2827]:	loss = 0.084  exp loss = 0.100  adjusted loss = 0.100  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2656]:	loss = 0.017  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 868]:	loss = 0.285  exp loss = 0.307  adjusted loss = 0.307  adv prob = 0.250000   acc = 0.881
+  Blond_Hair = 1, Male = 1  [n = 49]:	loss = 1.131  exp loss = 0.896  adjusted loss = 0.896  adv prob = 0.250000   acc = 0.490
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2805]:	loss = 0.083  exp loss = 0.074  adjusted loss = 0.074  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2686]:	loss = 0.020  exp loss = 0.022  adjusted loss = 0.022  adv prob = 0.250000   acc = 0.994
+  Blond_Hair = 1, Male = 0  [n = 859]:	loss = 0.273  exp loss = 0.293  adjusted loss = 0.293  adv prob = 0.250000   acc = 0.887
+  Blond_Hair = 1, Male = 1  [n = 50]:	loss = 1.017  exp loss = 1.084  adjusted loss = 1.084  adv prob = 0.250000   acc = 0.420
+Average incurred loss: 0.097  
+Average sample loss: 0.097  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2790]:	loss = 0.082  exp loss = 0.080  adjusted loss = 0.080  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2618]:	loss = 0.015  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 930]:	loss = 0.290  exp loss = 0.275  adjusted loss = 0.275  adv prob = 0.250000   acc = 0.878
+  Blond_Hair = 1, Male = 1  [n = 62]:	loss = 1.295  exp loss = 1.058  adjusted loss = 1.058  adv prob = 0.250000   acc = 0.468
+Average incurred loss: 0.098  
+Average sample loss: 0.098  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2772]:	loss = 0.087  exp loss = 0.084  adjusted loss = 0.084  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2664]:	loss = 0.014  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 912]:	loss = 0.297  exp loss = 0.268  adjusted loss = 0.268  adv prob = 0.250000   acc = 0.877
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.476  exp loss = 1.234  adjusted loss = 1.234  adv prob = 0.250000   acc = 0.423
+Average incurred loss: 0.090  
+Average sample loss: 0.091  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 1191]:	loss = 0.088  exp loss = 0.088  adjusted loss = 0.088  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 1181]:	loss = 0.015  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 375]:	loss = 0.263  exp loss = 0.247  adjusted loss = 0.247  adv prob = 0.250000   acc = 0.904
+  Blond_Hair = 1, Male = 1  [n = 23]:	loss = 1.249  exp loss = 1.398  adjusted loss = 1.398  adv prob = 0.250000   acc = 0.478
+
+Validation:
+Average incurred loss: 0.117  
+Average sample loss: 0.117  
+Average acc: 0.951  
+  Blond_Hair = 0, Male = 0  [n = 8535]:	loss = 0.109  exp loss = 0.116  adjusted loss = 0.116  adv prob = 0.250000   acc = 0.952
+  Blond_Hair = 0, Male = 1  [n = 8276]:	loss = 0.016  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 2874]:	loss = 0.333  exp loss = 0.359  adjusted loss = 0.359  adv prob = 0.250000   acc = 0.864
+  Blond_Hair = 1, Male = 1  [n = 182]:	loss = 1.657  exp loss = 1.816  adjusted loss = 1.816  adv prob = 0.250000   acc = 0.324
+Current lr: 0.000100
+Current validation accuracy: 0.9514772891998291
+Best model saved at epoch 22
+
+
+Epoch [23]:
+Training:
+Average incurred loss: 0.088  
+Average sample loss: 0.088  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2826]:	loss = 0.080  exp loss = 0.082  adjusted loss = 0.082  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2604]:	loss = 0.014  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 918]:	loss = 0.254  exp loss = 0.225  adjusted loss = 0.225  adv prob = 0.250000   acc = 0.898
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.250  exp loss = 1.021  adjusted loss = 1.021  adv prob = 0.250000   acc = 0.423
+Average incurred loss: 0.095  
+Average sample loss: 0.095  
+Average acc: 0.960  
+  Blond_Hair = 0, Male = 0  [n = 2854]:	loss = 0.085  exp loss = 0.084  adjusted loss = 0.084  adv prob = 0.250000   acc = 0.961
+  Blond_Hair = 0, Male = 1  [n = 2616]:	loss = 0.019  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 887]:	loss = 0.298  exp loss = 0.262  adjusted loss = 0.262  adv prob = 0.250000   acc = 0.871
+  Blond_Hair = 1, Male = 1  [n = 43]:	loss = 1.230  exp loss = 0.852  adjusted loss = 0.852  adv prob = 0.250000   acc = 0.535
+Average incurred loss: 0.082  
+Average sample loss: 0.082  
+Average acc: 0.968  
+  Blond_Hair = 0, Male = 0  [n = 2811]:	loss = 0.075  exp loss = 0.070  adjusted loss = 0.070  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2634]:	loss = 0.013  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 887]:	loss = 0.238  exp loss = 0.213  adjusted loss = 0.213  adv prob = 0.250000   acc = 0.911
+  Blond_Hair = 1, Male = 1  [n = 68]:	loss = 1.009  exp loss = 0.699  adjusted loss = 0.699  adv prob = 0.250000   acc = 0.485
+Average incurred loss: 0.085  
+Average sample loss: 0.085  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2847]:	loss = 0.080  exp loss = 0.081  adjusted loss = 0.081  adv prob = 0.250000   acc = 0.963
+  Blond_Hair = 0, Male = 1  [n = 2595]:	loss = 0.015  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 912]:	loss = 0.249  exp loss = 0.202  adjusted loss = 0.202  adv prob = 0.250000   acc = 0.909
+  Blond_Hair = 1, Male = 1  [n = 46]:	loss = 1.040  exp loss = 0.935  adjusted loss = 0.935  adv prob = 0.250000   acc = 0.478
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2839]:	loss = 0.070  exp loss = 0.067  adjusted loss = 0.067  adv prob = 0.250000   acc = 0.971
+  Blond_Hair = 0, Male = 1  [n = 2588]:	loss = 0.013  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 919]:	loss = 0.302  exp loss = 0.277  adjusted loss = 0.277  adv prob = 0.250000   acc = 0.872
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.274  exp loss = 1.562  adjusted loss = 1.562  adv prob = 0.250000   acc = 0.426
+Average incurred loss: 0.100  
+Average sample loss: 0.100  
+Average acc: 0.961  
+  Blond_Hair = 0, Male = 0  [n = 2853]:	loss = 0.089  exp loss = 0.088  adjusted loss = 0.088  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2605]:	loss = 0.018  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 879]:	loss = 0.286  exp loss = 0.269  adjusted loss = 0.269  adv prob = 0.250000   acc = 0.885
+  Blond_Hair = 1, Male = 1  [n = 63]:	loss = 1.362  exp loss = 1.407  adjusted loss = 1.407  adv prob = 0.250000   acc = 0.413
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2808]:	loss = 0.078  exp loss = 0.074  adjusted loss = 0.074  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2640]:	loss = 0.016  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 886]:	loss = 0.265  exp loss = 0.233  adjusted loss = 0.233  adv prob = 0.250000   acc = 0.885
+  Blond_Hair = 1, Male = 1  [n = 66]:	loss = 0.958  exp loss = 0.983  adjusted loss = 0.983  adv prob = 0.250000   acc = 0.576
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2785]:	loss = 0.078  exp loss = 0.076  adjusted loss = 0.076  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2642]:	loss = 0.014  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 919]:	loss = 0.268  exp loss = 0.309  adjusted loss = 0.309  adv prob = 0.250000   acc = 0.893
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.307  exp loss = 1.368  adjusted loss = 1.368  adv prob = 0.250000   acc = 0.407
+Average incurred loss: 0.099  
+Average sample loss: 0.099  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2862]:	loss = 0.088  exp loss = 0.082  adjusted loss = 0.082  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2622]:	loss = 0.022  exp loss = 0.025  adjusted loss = 0.025  adv prob = 0.250000   acc = 0.992
+  Blond_Hair = 1, Male = 0  [n = 862]:	loss = 0.271  exp loss = 0.242  adjusted loss = 0.242  adv prob = 0.250000   acc = 0.894
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.683  exp loss = 1.563  adjusted loss = 1.563  adv prob = 0.250000   acc = 0.296
+Average incurred loss: 0.096  
+Average sample loss: 0.096  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2861]:	loss = 0.090  exp loss = 0.103  adjusted loss = 0.103  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 2630]:	loss = 0.015  exp loss = 0.022  adjusted loss = 0.022  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 865]:	loss = 0.289  exp loss = 0.238  adjusted loss = 0.238  adv prob = 0.250000   acc = 0.882
+  Blond_Hair = 1, Male = 1  [n = 44]:	loss = 1.497  exp loss = 1.820  adjusted loss = 1.820  adv prob = 0.250000   acc = 0.341
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2790]:	loss = 0.081  exp loss = 0.085  adjusted loss = 0.085  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 2668]:	loss = 0.013  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 882]:	loss = 0.284  exp loss = 0.270  adjusted loss = 0.270  adv prob = 0.250000   acc = 0.888
+  Blond_Hair = 1, Male = 1  [n = 60]:	loss = 1.126  exp loss = 1.364  adjusted loss = 1.364  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.096  
+Average sample loss: 0.096  
+Average acc: 0.961  
+  Blond_Hair = 0, Male = 0  [n = 2716]:	loss = 0.081  exp loss = 0.090  adjusted loss = 0.090  adv prob = 0.250000   acc = 0.971
+  Blond_Hair = 0, Male = 1  [n = 2710]:	loss = 0.016  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 916]:	loss = 0.293  exp loss = 0.261  adjusted loss = 0.261  adv prob = 0.250000   acc = 0.868
+  Blond_Hair = 1, Male = 1  [n = 58]:	loss = 1.400  exp loss = 1.822  adjusted loss = 1.822  adv prob = 0.250000   acc = 0.345
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2770]:	loss = 0.075  exp loss = 0.070  adjusted loss = 0.070  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2628]:	loss = 0.015  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 944]:	loss = 0.258  exp loss = 0.273  adjusted loss = 0.273  adv prob = 0.250000   acc = 0.889
+  Blond_Hair = 1, Male = 1  [n = 58]:	loss = 1.317  exp loss = 1.565  adjusted loss = 1.565  adv prob = 0.250000   acc = 0.448
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2833]:	loss = 0.081  exp loss = 0.077  adjusted loss = 0.077  adv prob = 0.250000   acc = 0.962
+  Blond_Hair = 0, Male = 1  [n = 2591]:	loss = 0.015  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 919]:	loss = 0.268  exp loss = 0.262  adjusted loss = 0.262  adv prob = 0.250000   acc = 0.898
+  Blond_Hair = 1, Male = 1  [n = 57]:	loss = 1.105  exp loss = 1.259  adjusted loss = 1.259  adv prob = 0.250000   acc = 0.526
+Average incurred loss: 0.085  
+Average sample loss: 0.085  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2797]:	loss = 0.073  exp loss = 0.062  adjusted loss = 0.062  adv prob = 0.250000   acc = 0.972
+  Blond_Hair = 0, Male = 1  [n = 2649]:	loss = 0.016  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 898]:	loss = 0.255  exp loss = 0.233  adjusted loss = 0.233  adv prob = 0.250000   acc = 0.900
+  Blond_Hair = 1, Male = 1  [n = 56]:	loss = 1.249  exp loss = 1.325  adjusted loss = 1.325  adv prob = 0.250000   acc = 0.357
+Average incurred loss: 0.095  
+Average sample loss: 0.095  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2798]:	loss = 0.081  exp loss = 0.091  adjusted loss = 0.091  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2623]:	loss = 0.016  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 926]:	loss = 0.303  exp loss = 0.288  adjusted loss = 0.288  adv prob = 0.250000   acc = 0.882
+  Blond_Hair = 1, Male = 1  [n = 53]:	loss = 1.089  exp loss = 1.064  adjusted loss = 1.064  adv prob = 0.250000   acc = 0.509
+Average incurred loss: 0.094  
+Average sample loss: 0.094  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2744]:	loss = 0.083  exp loss = 0.073  adjusted loss = 0.073  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 2682]:	loss = 0.017  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 917]:	loss = 0.290  exp loss = 0.306  adjusted loss = 0.306  adv prob = 0.250000   acc = 0.884
+  Blond_Hair = 1, Male = 1  [n = 57]:	loss = 1.103  exp loss = 1.221  adjusted loss = 1.221  adv prob = 0.250000   acc = 0.561
+Average incurred loss: 0.099  
+Average sample loss: 0.099  
+Average acc: 0.960  
+  Blond_Hair = 0, Male = 0  [n = 2878]:	loss = 0.093  exp loss = 0.078  adjusted loss = 0.078  adv prob = 0.250000   acc = 0.958
+  Blond_Hair = 0, Male = 1  [n = 2586]:	loss = 0.017  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 887]:	loss = 0.296  exp loss = 0.276  adjusted loss = 0.276  adv prob = 0.250000   acc = 0.886
+  Blond_Hair = 1, Male = 1  [n = 49]:	loss = 1.227  exp loss = 1.288  adjusted loss = 1.288  adv prob = 0.250000   acc = 0.429
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2801]:	loss = 0.084  exp loss = 0.093  adjusted loss = 0.093  adv prob = 0.250000   acc = 0.964
+  Blond_Hair = 0, Male = 1  [n = 2641]:	loss = 0.016  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 918]:	loss = 0.245  exp loss = 0.220  adjusted loss = 0.220  adv prob = 0.250000   acc = 0.905
+  Blond_Hair = 1, Male = 1  [n = 40]:	loss = 1.351  exp loss = 1.470  adjusted loss = 1.470  adv prob = 0.250000   acc = 0.375
+Average incurred loss: 0.096  
+Average sample loss: 0.096  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2773]:	loss = 0.087  exp loss = 0.091  adjusted loss = 0.091  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2699]:	loss = 0.017  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 864]:	loss = 0.285  exp loss = 0.281  adjusted loss = 0.281  adv prob = 0.250000   acc = 0.892
+  Blond_Hair = 1, Male = 1  [n = 64]:	loss = 1.339  exp loss = 1.219  adjusted loss = 1.219  adv prob = 0.250000   acc = 0.328
+Average incurred loss: 0.094  
+Average sample loss: 0.094  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2721]:	loss = 0.079  exp loss = 0.096  adjusted loss = 0.096  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2690]:	loss = 0.016  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 942]:	loss = 0.295  exp loss = 0.293  adjusted loss = 0.293  adv prob = 0.250000   acc = 0.876
+  Blond_Hair = 1, Male = 1  [n = 47]:	loss = 1.461  exp loss = 1.726  adjusted loss = 1.726  adv prob = 0.250000   acc = 0.383
+Average incurred loss: 0.095  
+Average sample loss: 0.095  
+Average acc: 0.960  
+  Blond_Hair = 0, Male = 0  [n = 2863]:	loss = 0.088  exp loss = 0.081  adjusted loss = 0.081  adv prob = 0.250000   acc = 0.963
+  Blond_Hair = 0, Male = 1  [n = 2583]:	loss = 0.015  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 901]:	loss = 0.287  exp loss = 0.298  adjusted loss = 0.298  adv prob = 0.250000   acc = 0.870
+  Blond_Hair = 1, Male = 1  [n = 53]:	loss = 1.140  exp loss = 1.128  adjusted loss = 1.128  adv prob = 0.250000   acc = 0.528
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2824]:	loss = 0.074  exp loss = 0.080  adjusted loss = 0.080  adv prob = 0.250000   acc = 0.973
+  Blond_Hair = 0, Male = 1  [n = 2601]:	loss = 0.015  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 920]:	loss = 0.295  exp loss = 0.262  adjusted loss = 0.262  adv prob = 0.250000   acc = 0.885
+  Blond_Hair = 1, Male = 1  [n = 55]:	loss = 0.917  exp loss = 0.911  adjusted loss = 0.911  adv prob = 0.250000   acc = 0.509
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2891]:	loss = 0.085  exp loss = 0.084  adjusted loss = 0.084  adv prob = 0.250000   acc = 0.962
+  Blond_Hair = 0, Male = 1  [n = 2601]:	loss = 0.022  exp loss = 0.029  adjusted loss = 0.029  adv prob = 0.250000   acc = 0.993
+  Blond_Hair = 1, Male = 0  [n = 856]:	loss = 0.262  exp loss = 0.207  adjusted loss = 0.207  adv prob = 0.250000   acc = 0.901
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.052  exp loss = 1.080  adjusted loss = 1.080  adv prob = 0.250000   acc = 0.462
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2849]:	loss = 0.073  exp loss = 0.059  adjusted loss = 0.059  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2589]:	loss = 0.014  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 908]:	loss = 0.284  exp loss = 0.257  adjusted loss = 0.257  adv prob = 0.250000   acc = 0.890
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.350  exp loss = 1.443  adjusted loss = 1.443  adv prob = 0.250000   acc = 0.389
+Average incurred loss: 0.083  
+Average sample loss: 0.083  
+Average acc: 0.969  
+  Blond_Hair = 0, Male = 0  [n = 1235]:	loss = 0.081  exp loss = 0.076  adjusted loss = 0.076  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 1157]:	loss = 0.015  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 348]:	loss = 0.238  exp loss = 0.237  adjusted loss = 0.237  adv prob = 0.250000   acc = 0.905
+  Blond_Hair = 1, Male = 1  [n = 30]:	loss = 0.973  exp loss = 1.016  adjusted loss = 1.016  adv prob = 0.250000   acc = 0.500
+
+Validation:
+Average incurred loss: 0.118  
+Average sample loss: 0.118  
+Average acc: 0.951  
+  Blond_Hair = 0, Male = 0  [n = 8535]:	loss = 0.113  exp loss = 0.120  adjusted loss = 0.120  adv prob = 0.250000   acc = 0.949
+  Blond_Hair = 0, Male = 1  [n = 8276]:	loss = 0.017  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 2874]:	loss = 0.326  exp loss = 0.352  adjusted loss = 0.352  adv prob = 0.250000   acc = 0.868
+  Blond_Hair = 1, Male = 1  [n = 182]:	loss = 1.641  exp loss = 1.790  adjusted loss = 1.790  adv prob = 0.250000   acc = 0.324
+Current lr: 0.000100
+Current validation accuracy: 0.9507220983505249
+
+
+Epoch [24]:
+Training:
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2909]:	loss = 0.076  exp loss = 0.068  adjusted loss = 0.068  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2547]:	loss = 0.015  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 883]:	loss = 0.292  exp loss = 0.327  adjusted loss = 0.327  adv prob = 0.250000   acc = 0.875
+  Blond_Hair = 1, Male = 1  [n = 61]:	loss = 1.059  exp loss = 1.014  adjusted loss = 1.014  adv prob = 0.250000   acc = 0.475
+Average incurred loss: 0.093  
+Average sample loss: 0.093  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2851]:	loss = 0.087  exp loss = 0.085  adjusted loss = 0.085  adv prob = 0.250000   acc = 0.964
+  Blond_Hair = 0, Male = 1  [n = 2612]:	loss = 0.018  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 883]:	loss = 0.270  exp loss = 0.261  adjusted loss = 0.261  adv prob = 0.250000   acc = 0.886
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.163  exp loss = 1.072  adjusted loss = 1.072  adv prob = 0.250000   acc = 0.481
+Average incurred loss: 0.088  
+Average sample loss: 0.088  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2876]:	loss = 0.081  exp loss = 0.076  adjusted loss = 0.076  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2586]:	loss = 0.014  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 882]:	loss = 0.248  exp loss = 0.239  adjusted loss = 0.239  adv prob = 0.250000   acc = 0.901
+  Blond_Hair = 1, Male = 1  [n = 56]:	loss = 1.372  exp loss = 1.251  adjusted loss = 1.251  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.100  
+Average sample loss: 0.100  
+Average acc: 0.958  
+  Blond_Hair = 0, Male = 0  [n = 2757]:	loss = 0.080  exp loss = 0.081  adjusted loss = 0.081  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2612]:	loss = 0.017  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 963]:	loss = 0.309  exp loss = 0.290  adjusted loss = 0.290  adv prob = 0.250000   acc = 0.872
+  Blond_Hair = 1, Male = 1  [n = 68]:	loss = 1.163  exp loss = 1.303  adjusted loss = 1.303  adv prob = 0.250000   acc = 0.397
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2874]:	loss = 0.093  exp loss = 0.094  adjusted loss = 0.094  adv prob = 0.250000   acc = 0.959
+  Blond_Hair = 0, Male = 1  [n = 2644]:	loss = 0.016  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 830]:	loss = 0.234  exp loss = 0.225  adjusted loss = 0.225  adv prob = 0.250000   acc = 0.920
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.330  exp loss = 1.321  adjusted loss = 1.321  adv prob = 0.250000   acc = 0.423
+Average incurred loss: 0.086  
+Average sample loss: 0.086  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2740]:	loss = 0.077  exp loss = 0.074  adjusted loss = 0.074  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2720]:	loss = 0.017  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 893]:	loss = 0.263  exp loss = 0.197  adjusted loss = 0.197  adv prob = 0.250000   acc = 0.879
+  Blond_Hair = 1, Male = 1  [n = 47]:	loss = 1.206  exp loss = 1.164  adjusted loss = 1.164  adv prob = 0.250000   acc = 0.404
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2763]:	loss = 0.077  exp loss = 0.080  adjusted loss = 0.080  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2686]:	loss = 0.016  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 899]:	loss = 0.301  exp loss = 0.331  adjusted loss = 0.331  adv prob = 0.250000   acc = 0.887
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 0.847  exp loss = 0.826  adjusted loss = 0.826  adv prob = 0.250000   acc = 0.615
+Average incurred loss: 0.093  
+Average sample loss: 0.093  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2770]:	loss = 0.077  exp loss = 0.085  adjusted loss = 0.085  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2643]:	loss = 0.016  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 935]:	loss = 0.297  exp loss = 0.255  adjusted loss = 0.255  adv prob = 0.250000   acc = 0.875
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.156  exp loss = 1.439  adjusted loss = 1.439  adv prob = 0.250000   acc = 0.481
+Average incurred loss: 0.084  
+Average sample loss: 0.084  
+Average acc: 0.969  
+  Blond_Hair = 0, Male = 0  [n = 2806]:	loss = 0.077  exp loss = 0.080  adjusted loss = 0.080  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2647]:	loss = 0.014  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 907]:	loss = 0.264  exp loss = 0.256  adjusted loss = 0.256  adv prob = 0.250000   acc = 0.904
+  Blond_Hair = 1, Male = 1  [n = 40]:	loss = 1.070  exp loss = 1.156  adjusted loss = 1.156  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.099  
+Average sample loss: 0.099  
+Average acc: 0.961  
+  Blond_Hair = 0, Male = 0  [n = 2775]:	loss = 0.084  exp loss = 0.079  adjusted loss = 0.079  adv prob = 0.250000   acc = 0.964
+  Blond_Hair = 0, Male = 1  [n = 2667]:	loss = 0.014  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 891]:	loss = 0.313  exp loss = 0.266  adjusted loss = 0.266  adv prob = 0.250000   acc = 0.873
+  Blond_Hair = 1, Male = 1  [n = 67]:	loss = 1.227  exp loss = 0.920  adjusted loss = 0.920  adv prob = 0.250000   acc = 0.507
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2821]:	loss = 0.084  exp loss = 0.087  adjusted loss = 0.087  adv prob = 0.250000   acc = 0.962
+  Blond_Hair = 0, Male = 1  [n = 2608]:	loss = 0.018  exp loss = 0.022  adjusted loss = 0.022  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 911]:	loss = 0.249  exp loss = 0.247  adjusted loss = 0.247  adv prob = 0.250000   acc = 0.905
+  Blond_Hair = 1, Male = 1  [n = 60]:	loss = 1.216  exp loss = 1.098  adjusted loss = 1.098  adv prob = 0.250000   acc = 0.433
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2808]:	loss = 0.084  exp loss = 0.078  adjusted loss = 0.078  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2632]:	loss = 0.015  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 896]:	loss = 0.244  exp loss = 0.237  adjusted loss = 0.237  adv prob = 0.250000   acc = 0.901
+  Blond_Hair = 1, Male = 1  [n = 64]:	loss = 0.912  exp loss = 1.315  adjusted loss = 1.315  adv prob = 0.250000   acc = 0.578
+Average incurred loss: 0.092  
+Average sample loss: 0.092  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2822]:	loss = 0.085  exp loss = 0.080  adjusted loss = 0.080  adv prob = 0.250000   acc = 0.962
+  Blond_Hair = 0, Male = 1  [n = 2598]:	loss = 0.014  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 930]:	loss = 0.264  exp loss = 0.258  adjusted loss = 0.258  adv prob = 0.250000   acc = 0.894
+  Blond_Hair = 1, Male = 1  [n = 50]:	loss = 1.349  exp loss = 1.694  adjusted loss = 1.694  adv prob = 0.250000   acc = 0.480
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2845]:	loss = 0.083  exp loss = 0.074  adjusted loss = 0.074  adv prob = 0.250000   acc = 0.963
+  Blond_Hair = 0, Male = 1  [n = 2593]:	loss = 0.017  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 911]:	loss = 0.253  exp loss = 0.223  adjusted loss = 0.223  adv prob = 0.250000   acc = 0.897
+  Blond_Hair = 1, Male = 1  [n = 51]:	loss = 1.435  exp loss = 1.707  adjusted loss = 1.707  adv prob = 0.250000   acc = 0.373
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2857]:	loss = 0.074  exp loss = 0.072  adjusted loss = 0.072  adv prob = 0.250000   acc = 0.971
+  Blond_Hair = 0, Male = 1  [n = 2624]:	loss = 0.017  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 858]:	loss = 0.281  exp loss = 0.254  adjusted loss = 0.254  adv prob = 0.250000   acc = 0.893
+  Blond_Hair = 1, Male = 1  [n = 61]:	loss = 1.267  exp loss = 1.421  adjusted loss = 1.421  adv prob = 0.250000   acc = 0.295
+Average incurred loss: 0.095  
+Average sample loss: 0.095  
+Average acc: 0.959  
+  Blond_Hair = 0, Male = 0  [n = 2813]:	loss = 0.079  exp loss = 0.095  adjusted loss = 0.095  adv prob = 0.250000   acc = 0.964
+  Blond_Hair = 0, Male = 1  [n = 2600]:	loss = 0.012  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 925]:	loss = 0.286  exp loss = 0.254  adjusted loss = 0.254  adv prob = 0.250000   acc = 0.875
+  Blond_Hair = 1, Male = 1  [n = 62]:	loss = 1.390  exp loss = 0.997  adjusted loss = 0.997  adv prob = 0.250000   acc = 0.403
+Average incurred loss: 0.088  
+Average sample loss: 0.088  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2780]:	loss = 0.076  exp loss = 0.074  adjusted loss = 0.074  adv prob = 0.250000   acc = 0.972
+  Blond_Hair = 0, Male = 1  [n = 2653]:	loss = 0.014  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 900]:	loss = 0.259  exp loss = 0.282  adjusted loss = 0.282  adv prob = 0.250000   acc = 0.893
+  Blond_Hair = 1, Male = 1  [n = 67]:	loss = 1.193  exp loss = 1.309  adjusted loss = 1.309  adv prob = 0.250000   acc = 0.478
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2783]:	loss = 0.071  exp loss = 0.066  adjusted loss = 0.066  adv prob = 0.250000   acc = 0.973
+  Blond_Hair = 0, Male = 1  [n = 2646]:	loss = 0.019  exp loss = 0.020  adjusted loss = 0.020  adv prob = 0.250000   acc = 0.993
+  Blond_Hair = 1, Male = 0  [n = 922]:	loss = 0.291  exp loss = 0.288  adjusted loss = 0.288  adv prob = 0.250000   acc = 0.872
+  Blond_Hair = 1, Male = 1  [n = 49]:	loss = 1.173  exp loss = 1.120  adjusted loss = 1.120  adv prob = 0.250000   acc = 0.510
+Average incurred loss: 0.095  
+Average sample loss: 0.095  
+Average acc: 0.961  
+  Blond_Hair = 0, Male = 0  [n = 2819]:	loss = 0.076  exp loss = 0.080  adjusted loss = 0.080  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2609]:	loss = 0.020  exp loss = 0.022  adjusted loss = 0.022  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 918]:	loss = 0.288  exp loss = 0.274  adjusted loss = 0.274  adv prob = 0.250000   acc = 0.878
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.403  exp loss = 1.098  adjusted loss = 1.098  adv prob = 0.250000   acc = 0.389
+Average incurred loss: 0.088  
+Average sample loss: 0.088  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2883]:	loss = 0.089  exp loss = 0.096  adjusted loss = 0.096  adv prob = 0.250000   acc = 0.961
+  Blond_Hair = 0, Male = 1  [n = 2622]:	loss = 0.017  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 844]:	loss = 0.235  exp loss = 0.213  adjusted loss = 0.213  adv prob = 0.250000   acc = 0.910
+  Blond_Hair = 1, Male = 1  [n = 51]:	loss = 1.283  exp loss = 1.090  adjusted loss = 1.090  adv prob = 0.250000   acc = 0.490
+Average incurred loss: 0.088  
+Average sample loss: 0.088  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2810]:	loss = 0.076  exp loss = 0.071  adjusted loss = 0.071  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2643]:	loss = 0.015  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 907]:	loss = 0.293  exp loss = 0.275  adjusted loss = 0.275  adv prob = 0.250000   acc = 0.873
+  Blond_Hair = 1, Male = 1  [n = 40]:	loss = 1.187  exp loss = 1.101  adjusted loss = 1.101  adv prob = 0.250000   acc = 0.475
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2829]:	loss = 0.073  exp loss = 0.082  adjusted loss = 0.082  adv prob = 0.250000   acc = 0.974
+  Blond_Hair = 0, Male = 1  [n = 2610]:	loss = 0.015  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 917]:	loss = 0.293  exp loss = 0.281  adjusted loss = 0.281  adv prob = 0.250000   acc = 0.883
+  Blond_Hair = 1, Male = 1  [n = 44]:	loss = 1.270  exp loss = 1.330  adjusted loss = 1.330  adv prob = 0.250000   acc = 0.477
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2781]:	loss = 0.084  exp loss = 0.069  adjusted loss = 0.069  adv prob = 0.250000   acc = 0.964
+  Blond_Hair = 0, Male = 1  [n = 2657]:	loss = 0.015  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 902]:	loss = 0.267  exp loss = 0.255  adjusted loss = 0.255  adv prob = 0.250000   acc = 0.890
+  Blond_Hair = 1, Male = 1  [n = 60]:	loss = 1.067  exp loss = 1.570  adjusted loss = 1.570  adv prob = 0.250000   acc = 0.600
+Average incurred loss: 0.088  
+Average sample loss: 0.088  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2831]:	loss = 0.088  exp loss = 0.101  adjusted loss = 0.101  adv prob = 0.250000   acc = 0.963
+  Blond_Hair = 0, Male = 1  [n = 2634]:	loss = 0.014  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 893]:	loss = 0.254  exp loss = 0.225  adjusted loss = 0.225  adv prob = 0.250000   acc = 0.901
+  Blond_Hair = 1, Male = 1  [n = 42]:	loss = 1.177  exp loss = 1.002  adjusted loss = 1.002  adv prob = 0.250000   acc = 0.405
+Average incurred loss: 0.093  
+Average sample loss: 0.093  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2843]:	loss = 0.090  exp loss = 0.080  adjusted loss = 0.080  adv prob = 0.250000   acc = 0.964
+  Blond_Hair = 0, Male = 1  [n = 2603]:	loss = 0.013  exp loss = 0.008  adjusted loss = 0.008  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 900]:	loss = 0.280  exp loss = 0.290  adjusted loss = 0.290  adv prob = 0.250000   acc = 0.877
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 0.977  exp loss = 0.767  adjusted loss = 0.767  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.077  
+Average sample loss: 0.078  
+Average acc: 0.972  
+  Blond_Hair = 0, Male = 0  [n = 1183]:	loss = 0.067  exp loss = 0.067  adjusted loss = 0.067  adv prob = 0.250000   acc = 0.976
+  Blond_Hair = 0, Male = 1  [n = 1178]:	loss = 0.016  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 380]:	loss = 0.227  exp loss = 0.227  adjusted loss = 0.227  adv prob = 0.250000   acc = 0.924
+  Blond_Hair = 1, Male = 1  [n = 29]:	loss = 1.016  exp loss = 0.784  adjusted loss = 0.784  adv prob = 0.250000   acc = 0.414
+
+Validation:
+Average incurred loss: 0.118  
+Average sample loss: 0.118  
+Average acc: 0.951  
+  Blond_Hair = 0, Male = 0  [n = 8535]:	loss = 0.105  exp loss = 0.110  adjusted loss = 0.110  adv prob = 0.250000   acc = 0.953
+  Blond_Hair = 0, Male = 1  [n = 8276]:	loss = 0.015  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 2874]:	loss = 0.351  exp loss = 0.371  adjusted loss = 0.371  adv prob = 0.250000   acc = 0.860
+  Blond_Hair = 1, Male = 1  [n = 182]:	loss = 1.743  exp loss = 1.923  adjusted loss = 1.923  adv prob = 0.250000   acc = 0.313
+Current lr: 0.000100
+Current validation accuracy: 0.9514771699905396
+
+
+Epoch [25]:
+Training:
+Average incurred loss: 0.083  
+Average sample loss: 0.083  
+Average acc: 0.968  
+  Blond_Hair = 0, Male = 0  [n = 2858]:	loss = 0.075  exp loss = 0.068  adjusted loss = 0.068  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2577]:	loss = 0.012  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 910]:	loss = 0.238  exp loss = 0.249  adjusted loss = 0.249  adv prob = 0.250000   acc = 0.909
+  Blond_Hair = 1, Male = 1  [n = 55]:	loss = 1.208  exp loss = 1.581  adjusted loss = 1.581  adv prob = 0.250000   acc = 0.509
+Average incurred loss: 0.092  
+Average sample loss: 0.092  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2848]:	loss = 0.080  exp loss = 0.080  adjusted loss = 0.080  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2547]:	loss = 0.012  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 953]:	loss = 0.283  exp loss = 0.287  adjusted loss = 0.287  adv prob = 0.250000   acc = 0.888
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.186  exp loss = 1.219  adjusted loss = 1.219  adv prob = 0.250000   acc = 0.404
+Average incurred loss: 0.082  
+Average sample loss: 0.082  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2804]:	loss = 0.083  exp loss = 0.076  adjusted loss = 0.076  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 2673]:	loss = 0.015  exp loss = 0.019  adjusted loss = 0.019  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 878]:	loss = 0.236  exp loss = 0.264  adjusted loss = 0.264  adv prob = 0.250000   acc = 0.894
+  Blond_Hair = 1, Male = 1  [n = 45]:	loss = 0.961  exp loss = 0.948  adjusted loss = 0.948  adv prob = 0.250000   acc = 0.578
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.962  
+  Blond_Hair = 0, Male = 0  [n = 2819]:	loss = 0.085  exp loss = 0.082  adjusted loss = 0.082  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2657]:	loss = 0.017  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 857]:	loss = 0.255  exp loss = 0.294  adjusted loss = 0.294  adv prob = 0.250000   acc = 0.884
+  Blond_Hair = 1, Male = 1  [n = 67]:	loss = 1.097  exp loss = 1.214  adjusted loss = 1.214  adv prob = 0.250000   acc = 0.493
+Average incurred loss: 0.095  
+Average sample loss: 0.095  
+Average acc: 0.960  
+  Blond_Hair = 0, Male = 0  [n = 2813]:	loss = 0.082  exp loss = 0.063  adjusted loss = 0.063  adv prob = 0.250000   acc = 0.963
+  Blond_Hair = 0, Male = 1  [n = 2609]:	loss = 0.014  exp loss = 0.016  adjusted loss = 0.016  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 929]:	loss = 0.304  exp loss = 0.288  adjusted loss = 0.288  adv prob = 0.250000   acc = 0.874
+  Blond_Hair = 1, Male = 1  [n = 49]:	loss = 1.263  exp loss = 1.228  adjusted loss = 1.228  adv prob = 0.250000   acc = 0.449
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2779]:	loss = 0.080  exp loss = 0.079  adjusted loss = 0.079  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2671]:	loss = 0.015  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 894]:	loss = 0.281  exp loss = 0.306  adjusted loss = 0.306  adv prob = 0.250000   acc = 0.883
+  Blond_Hair = 1, Male = 1  [n = 56]:	loss = 1.205  exp loss = 1.038  adjusted loss = 1.038  adv prob = 0.250000   acc = 0.571
+Average incurred loss: 0.083  
+Average sample loss: 0.083  
+Average acc: 0.968  
+  Blond_Hair = 0, Male = 0  [n = 2870]:	loss = 0.070  exp loss = 0.070  adjusted loss = 0.070  adv prob = 0.250000   acc = 0.971
+  Blond_Hair = 0, Male = 1  [n = 2587]:	loss = 0.015  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 883]:	loss = 0.253  exp loss = 0.239  adjusted loss = 0.239  adv prob = 0.250000   acc = 0.904
+  Blond_Hair = 1, Male = 1  [n = 60]:	loss = 1.154  exp loss = 1.092  adjusted loss = 1.092  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2807]:	loss = 0.073  exp loss = 0.075  adjusted loss = 0.075  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2600]:	loss = 0.016  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 931]:	loss = 0.273  exp loss = 0.269  adjusted loss = 0.269  adv prob = 0.250000   acc = 0.884
+  Blond_Hair = 1, Male = 1  [n = 62]:	loss = 1.163  exp loss = 1.321  adjusted loss = 1.321  adv prob = 0.250000   acc = 0.484
+Average incurred loss: 0.080  
+Average sample loss: 0.080  
+Average acc: 0.970  
+  Blond_Hair = 0, Male = 0  [n = 2795]:	loss = 0.073  exp loss = 0.075  adjusted loss = 0.075  adv prob = 0.250000   acc = 0.972
+  Blond_Hair = 0, Male = 1  [n = 2641]:	loss = 0.014  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 919]:	loss = 0.249  exp loss = 0.236  adjusted loss = 0.236  adv prob = 0.250000   acc = 0.903
+  Blond_Hair = 1, Male = 1  [n = 45]:	loss = 0.962  exp loss = 0.874  adjusted loss = 0.874  adv prob = 0.250000   acc = 0.533
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2835]:	loss = 0.074  exp loss = 0.072  adjusted loss = 0.072  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 2571]:	loss = 0.013  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 940]:	loss = 0.256  exp loss = 0.224  adjusted loss = 0.224  adv prob = 0.250000   acc = 0.904
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.513  exp loss = 1.656  adjusted loss = 1.656  adv prob = 0.250000   acc = 0.296
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2827]:	loss = 0.081  exp loss = 0.084  adjusted loss = 0.084  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2642]:	loss = 0.016  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 882]:	loss = 0.269  exp loss = 0.284  adjusted loss = 0.284  adv prob = 0.250000   acc = 0.892
+  Blond_Hair = 1, Male = 1  [n = 49]:	loss = 1.036  exp loss = 1.078  adjusted loss = 1.078  adv prob = 0.250000   acc = 0.531
+Average incurred loss: 0.085  
+Average sample loss: 0.085  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2800]:	loss = 0.078  exp loss = 0.077  adjusted loss = 0.077  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2635]:	loss = 0.015  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 911]:	loss = 0.253  exp loss = 0.262  adjusted loss = 0.262  adv prob = 0.250000   acc = 0.895
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.068  exp loss = 1.000  adjusted loss = 1.000  adv prob = 0.250000   acc = 0.481
+Average incurred loss: 0.084  
+Average sample loss: 0.084  
+Average acc: 0.969  
+  Blond_Hair = 0, Male = 0  [n = 2806]:	loss = 0.077  exp loss = 0.094  adjusted loss = 0.094  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2651]:	loss = 0.019  exp loss = 0.019  adjusted loss = 0.019  adv prob = 0.250000   acc = 0.994
+  Blond_Hair = 1, Male = 0  [n = 890]:	loss = 0.248  exp loss = 0.247  adjusted loss = 0.247  adv prob = 0.250000   acc = 0.911
+  Blond_Hair = 1, Male = 1  [n = 53]:	loss = 1.011  exp loss = 1.229  adjusted loss = 1.229  adv prob = 0.250000   acc = 0.585
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2792]:	loss = 0.078  exp loss = 0.070  adjusted loss = 0.070  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2642]:	loss = 0.014  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 914]:	loss = 0.241  exp loss = 0.256  adjusted loss = 0.256  adv prob = 0.250000   acc = 0.903
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.577  exp loss = 1.886  adjusted loss = 1.886  adv prob = 0.250000   acc = 0.327
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2837]:	loss = 0.090  exp loss = 0.075  adjusted loss = 0.075  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2640]:	loss = 0.014  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 878]:	loss = 0.261  exp loss = 0.292  adjusted loss = 0.292  adv prob = 0.250000   acc = 0.895
+  Blond_Hair = 1, Male = 1  [n = 45]:	loss = 1.010  exp loss = 1.118  adjusted loss = 1.118  adv prob = 0.250000   acc = 0.533
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2855]:	loss = 0.069  exp loss = 0.069  adjusted loss = 0.069  adv prob = 0.250000   acc = 0.972
+  Blond_Hair = 0, Male = 1  [n = 2569]:	loss = 0.015  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 908]:	loss = 0.272  exp loss = 0.280  adjusted loss = 0.280  adv prob = 0.250000   acc = 0.890
+  Blond_Hair = 1, Male = 1  [n = 68]:	loss = 1.123  exp loss = 1.093  adjusted loss = 1.093  adv prob = 0.250000   acc = 0.471
+Average incurred loss: 0.096  
+Average sample loss: 0.096  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2746]:	loss = 0.078  exp loss = 0.086  adjusted loss = 0.086  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2646]:	loss = 0.015  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.998
+  Blond_Hair = 1, Male = 0  [n = 949]:	loss = 0.288  exp loss = 0.271  adjusted loss = 0.271  adv prob = 0.250000   acc = 0.899
+  Blond_Hair = 1, Male = 1  [n = 59]:	loss = 1.418  exp loss = 1.210  adjusted loss = 1.210  adv prob = 0.250000   acc = 0.390
+Average incurred loss: 0.095  
+Average sample loss: 0.095  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2866]:	loss = 0.083  exp loss = 0.073  adjusted loss = 0.073  adv prob = 0.250000   acc = 0.964
+  Blond_Hair = 0, Male = 1  [n = 2611]:	loss = 0.016  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 859]:	loss = 0.289  exp loss = 0.317  adjusted loss = 0.317  adv prob = 0.250000   acc = 0.888
+  Blond_Hair = 1, Male = 1  [n = 64]:	loss = 1.254  exp loss = 1.317  adjusted loss = 1.317  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.085  
+Average sample loss: 0.085  
+Average acc: 0.969  
+  Blond_Hair = 0, Male = 0  [n = 2810]:	loss = 0.077  exp loss = 0.073  adjusted loss = 0.073  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2663]:	loss = 0.016  exp loss = 0.019  adjusted loss = 0.019  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 879]:	loss = 0.256  exp loss = 0.236  adjusted loss = 0.236  adv prob = 0.250000   acc = 0.906
+  Blond_Hair = 1, Male = 1  [n = 48]:	loss = 1.318  exp loss = 1.842  adjusted loss = 1.842  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2783]:	loss = 0.079  exp loss = 0.081  adjusted loss = 0.081  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2684]:	loss = 0.020  exp loss = 0.025  adjusted loss = 0.025  adv prob = 0.250000   acc = 0.993
+  Blond_Hair = 1, Male = 0  [n = 879]:	loss = 0.262  exp loss = 0.337  adjusted loss = 0.337  adv prob = 0.250000   acc = 0.895
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.462  exp loss = 1.580  adjusted loss = 1.580  adv prob = 0.250000   acc = 0.463
+Average incurred loss: 0.093  
+Average sample loss: 0.093  
+Average acc: 0.960  
+  Blond_Hair = 0, Male = 0  [n = 2796]:	loss = 0.079  exp loss = 0.070  adjusted loss = 0.070  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 2625]:	loss = 0.016  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 913]:	loss = 0.291  exp loss = 0.218  adjusted loss = 0.218  adv prob = 0.250000   acc = 0.875
+  Blond_Hair = 1, Male = 1  [n = 66]:	loss = 1.034  exp loss = 1.092  adjusted loss = 1.092  adv prob = 0.250000   acc = 0.409
+Average incurred loss: 0.094  
+Average sample loss: 0.094  
+Average acc: 0.961  
+  Blond_Hair = 0, Male = 0  [n = 2752]:	loss = 0.084  exp loss = 0.086  adjusted loss = 0.086  adv prob = 0.250000   acc = 0.963
+  Blond_Hair = 0, Male = 1  [n = 2671]:	loss = 0.017  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.995
+  Blond_Hair = 1, Male = 0  [n = 917]:	loss = 0.283  exp loss = 0.281  adjusted loss = 0.281  adv prob = 0.250000   acc = 0.884
+  Blond_Hair = 1, Male = 1  [n = 60]:	loss = 1.064  exp loss = 0.947  adjusted loss = 0.947  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.086  
+Average sample loss: 0.086  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2829]:	loss = 0.087  exp loss = 0.088  adjusted loss = 0.088  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2645]:	loss = 0.016  exp loss = 0.017  adjusted loss = 0.017  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 874]:	loss = 0.236  exp loss = 0.208  adjusted loss = 0.208  adv prob = 0.250000   acc = 0.904
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.091  exp loss = 1.074  adjusted loss = 1.074  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2826]:	loss = 0.087  exp loss = 0.092  adjusted loss = 0.092  adv prob = 0.250000   acc = 0.963
+  Blond_Hair = 0, Male = 1  [n = 2661]:	loss = 0.018  exp loss = 0.019  adjusted loss = 0.019  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 871]:	loss = 0.252  exp loss = 0.219  adjusted loss = 0.219  adv prob = 0.250000   acc = 0.897
+  Blond_Hair = 1, Male = 1  [n = 42]:	loss = 1.055  exp loss = 1.084  adjusted loss = 1.084  adv prob = 0.250000   acc = 0.429
+Average incurred loss: 0.089  
+Average sample loss: 0.089  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2829]:	loss = 0.079  exp loss = 0.065  adjusted loss = 0.065  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2637]:	loss = 0.015  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 882]:	loss = 0.289  exp loss = 0.300  adjusted loss = 0.300  adv prob = 0.250000   acc = 0.873
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 1.017  exp loss = 1.113  adjusted loss = 1.113  adv prob = 0.250000   acc = 0.500
+Average incurred loss: 0.094  
+Average sample loss: 0.094  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 1247]:	loss = 0.085  exp loss = 0.084  adjusted loss = 0.084  adv prob = 0.250000   acc = 0.962
+  Blond_Hair = 0, Male = 1  [n = 1119]:	loss = 0.014  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 380]:	loss = 0.284  exp loss = 0.247  adjusted loss = 0.247  adv prob = 0.250000   acc = 0.905
+  Blond_Hair = 1, Male = 1  [n = 24]:	loss = 1.275  exp loss = 1.212  adjusted loss = 1.212  adv prob = 0.250000   acc = 0.500
+
+Validation:
+Average incurred loss: 0.118  
+Average sample loss: 0.118  
+Average acc: 0.951  
+  Blond_Hair = 0, Male = 0  [n = 8535]:	loss = 0.103  exp loss = 0.110  adjusted loss = 0.110  adv prob = 0.250000   acc = 0.954
+  Blond_Hair = 0, Male = 1  [n = 8276]:	loss = 0.015  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 2874]:	loss = 0.359  exp loss = 0.376  adjusted loss = 0.376  adv prob = 0.250000   acc = 0.852
+  Blond_Hair = 1, Male = 1  [n = 182]:	loss = 1.741  exp loss = 1.928  adjusted loss = 1.928  adv prob = 0.250000   acc = 0.308
+Current lr: 0.000100
+Current validation accuracy: 0.950671911239624
+
+
+Epoch [26]:
+Training:
+Average incurred loss: 0.083  
+Average sample loss: 0.083  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2777]:	loss = 0.074  exp loss = 0.068  adjusted loss = 0.068  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2693]:	loss = 0.015  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 890]:	loss = 0.270  exp loss = 0.258  adjusted loss = 0.258  adv prob = 0.250000   acc = 0.889
+  Blond_Hair = 1, Male = 1  [n = 40]:	loss = 1.084  exp loss = 0.896  adjusted loss = 0.896  adv prob = 0.250000   acc = 0.450
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2781]:	loss = 0.071  exp loss = 0.064  adjusted loss = 0.064  adv prob = 0.250000   acc = 0.970
+  Blond_Hair = 0, Male = 1  [n = 2675]:	loss = 0.015  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 887]:	loss = 0.283  exp loss = 0.229  adjusted loss = 0.229  adv prob = 0.250000   acc = 0.892
+  Blond_Hair = 1, Male = 1  [n = 57]:	loss = 1.195  exp loss = 1.408  adjusted loss = 1.408  adv prob = 0.250000   acc = 0.404
+Average incurred loss: 0.092  
+Average sample loss: 0.092  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2833]:	loss = 0.078  exp loss = 0.085  adjusted loss = 0.085  adv prob = 0.250000   acc = 0.968
+  Blond_Hair = 0, Male = 1  [n = 2590]:	loss = 0.014  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 918]:	loss = 0.285  exp loss = 0.310  adjusted loss = 0.310  adv prob = 0.250000   acc = 0.883
+  Blond_Hair = 1, Male = 1  [n = 59]:	loss = 1.130  exp loss = 0.813  adjusted loss = 0.813  adv prob = 0.250000   acc = 0.593
+Average incurred loss: 0.083  
+Average sample loss: 0.083  
+Average acc: 0.968  
+  Blond_Hair = 0, Male = 0  [n = 2786]:	loss = 0.069  exp loss = 0.075  adjusted loss = 0.075  adv prob = 0.250000   acc = 0.973
+  Blond_Hair = 0, Male = 1  [n = 2638]:	loss = 0.014  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 916]:	loss = 0.251  exp loss = 0.237  adjusted loss = 0.237  adv prob = 0.250000   acc = 0.904
+  Blond_Hair = 1, Male = 1  [n = 60]:	loss = 1.216  exp loss = 1.106  adjusted loss = 1.106  adv prob = 0.250000   acc = 0.433
+Average incurred loss: 0.083  
+Average sample loss: 0.083  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2823]:	loss = 0.081  exp loss = 0.067  adjusted loss = 0.067  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2664]:	loss = 0.014  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 859]:	loss = 0.236  exp loss = 0.259  adjusted loss = 0.259  adv prob = 0.250000   acc = 0.899
+  Blond_Hair = 1, Male = 1  [n = 54]:	loss = 1.132  exp loss = 1.071  adjusted loss = 1.071  adv prob = 0.250000   acc = 0.519
+Average incurred loss: 0.086  
+Average sample loss: 0.086  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2776]:	loss = 0.073  exp loss = 0.069  adjusted loss = 0.069  adv prob = 0.250000   acc = 0.971
+  Blond_Hair = 0, Male = 1  [n = 2640]:	loss = 0.012  exp loss = 0.011  adjusted loss = 0.011  adv prob = 0.250000   acc = 0.999
+  Blond_Hair = 1, Male = 0  [n = 926]:	loss = 0.274  exp loss = 0.237  adjusted loss = 0.237  adv prob = 0.250000   acc = 0.886
+  Blond_Hair = 1, Male = 1  [n = 58]:	loss = 1.041  exp loss = 1.068  adjusted loss = 1.068  adv prob = 0.250000   acc = 0.534
+Average incurred loss: 0.093  
+Average sample loss: 0.093  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2867]:	loss = 0.084  exp loss = 0.083  adjusted loss = 0.083  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2596]:	loss = 0.016  exp loss = 0.018  adjusted loss = 0.018  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 880]:	loss = 0.286  exp loss = 0.229  adjusted loss = 0.229  adv prob = 0.250000   acc = 0.892
+  Blond_Hair = 1, Male = 1  [n = 57]:	loss = 1.070  exp loss = 1.119  adjusted loss = 1.119  adv prob = 0.250000   acc = 0.509
+Average incurred loss: 0.082  
+Average sample loss: 0.082  
+Average acc: 0.968  
+  Blond_Hair = 0, Male = 0  [n = 2803]:	loss = 0.075  exp loss = 0.085  adjusted loss = 0.085  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2645]:	loss = 0.013  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 904]:	loss = 0.248  exp loss = 0.243  adjusted loss = 0.243  adv prob = 0.250000   acc = 0.903
+  Blond_Hair = 1, Male = 1  [n = 48]:	loss = 1.190  exp loss = 1.552  adjusted loss = 1.552  adv prob = 0.250000   acc = 0.542
+Average incurred loss: 0.086  
+Average sample loss: 0.086  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2823]:	loss = 0.079  exp loss = 0.071  adjusted loss = 0.071  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2611]:	loss = 0.015  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 914]:	loss = 0.263  exp loss = 0.212  adjusted loss = 0.212  adv prob = 0.250000   acc = 0.904
+  Blond_Hair = 1, Male = 1  [n = 52]:	loss = 0.997  exp loss = 0.883  adjusted loss = 0.883  adv prob = 0.250000   acc = 0.538
+Average incurred loss: 0.079  
+Average sample loss: 0.079  
+Average acc: 0.967  
+  Blond_Hair = 0, Male = 0  [n = 2902]:	loss = 0.070  exp loss = 0.069  adjusted loss = 0.069  adv prob = 0.250000   acc = 0.969
+  Blond_Hair = 0, Male = 1  [n = 2580]:	loss = 0.015  exp loss = 0.010  adjusted loss = 0.010  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 868]:	loss = 0.245  exp loss = 0.287  adjusted loss = 0.287  adv prob = 0.250000   acc = 0.904
+  Blond_Hair = 1, Male = 1  [n = 50]:	loss = 1.112  exp loss = 1.244  adjusted loss = 1.244  adv prob = 0.250000   acc = 0.400
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.964  
+  Blond_Hair = 0, Male = 0  [n = 2828]:	loss = 0.080  exp loss = 0.083  adjusted loss = 0.083  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2615]:	loss = 0.016  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 900]:	loss = 0.264  exp loss = 0.260  adjusted loss = 0.260  adv prob = 0.250000   acc = 0.896
+  Blond_Hair = 1, Male = 1  [n = 57]:	loss = 1.262  exp loss = 1.401  adjusted loss = 1.401  adv prob = 0.250000   acc = 0.421
+Average incurred loss: 0.090  
+Average sample loss: 0.090  
+Average acc: 0.963  
+  Blond_Hair = 0, Male = 0  [n = 2763]:	loss = 0.079  exp loss = 0.076  adjusted loss = 0.076  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 2664]:	loss = 0.016  exp loss = 0.012  adjusted loss = 0.012  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 909]:	loss = 0.266  exp loss = 0.245  adjusted loss = 0.245  adv prob = 0.250000   acc = 0.887
+  Blond_Hair = 1, Male = 1  [n = 64]:	loss = 1.152  exp loss = 1.339  adjusted loss = 1.339  adv prob = 0.250000   acc = 0.453
+Average incurred loss: 0.086  
+Average sample loss: 0.086  
+Average acc: 0.966  
+  Blond_Hair = 0, Male = 0  [n = 2790]:	loss = 0.084  exp loss = 0.078  adjusted loss = 0.078  adv prob = 0.250000   acc = 0.966
+  Blond_Hair = 0, Male = 1  [n = 2669]:	loss = 0.016  exp loss = 0.019  adjusted loss = 0.019  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 890]:	loss = 0.252  exp loss = 0.245  adjusted loss = 0.245  adv prob = 0.250000   acc = 0.903
+  Blond_Hair = 1, Male = 1  [n = 51]:	loss = 0.989  exp loss = 0.906  adjusted loss = 0.906  adv prob = 0.250000   acc = 0.510
+Average incurred loss: 0.091  
+Average sample loss: 0.091  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2805]:	loss = 0.072  exp loss = 0.074  adjusted loss = 0.074  adv prob = 0.250000   acc = 0.972
+  Blond_Hair = 0, Male = 1  [n = 2593]:	loss = 0.018  exp loss = 0.015  adjusted loss = 0.015  adv prob = 0.250000   acc = 0.996
+  Blond_Hair = 1, Male = 0  [n = 947]:	loss = 0.295  exp loss = 0.261  adjusted loss = 0.261  adv prob = 0.250000   acc = 0.879
+  Blond_Hair = 1, Male = 1  [n = 55]:	loss = 0.966  exp loss = 0.783  adjusted loss = 0.783  adv prob = 0.250000   acc = 0.600
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2837]:	loss = 0.085  exp loss = 0.093  adjusted loss = 0.093  adv prob = 0.250000   acc = 0.965
+  Blond_Hair = 0, Male = 1  [n = 2639]:	loss = 0.013  exp loss = 0.014  adjusted loss = 0.014  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 874]:	loss = 0.255  exp loss = 0.287  adjusted loss = 0.287  adv prob = 0.250000   acc = 0.887
+  Blond_Hair = 1, Male = 1  [n = 50]:	loss = 1.172  exp loss = 1.202  adjusted loss = 1.202  adv prob = 0.250000   acc = 0.560
+Average incurred loss: 0.087  
+Average sample loss: 0.087  
+Average acc: 0.965  
+  Blond_Hair = 0, Male = 0  [n = 2846]:	loss = 0.080  exp loss = 0.069  adjusted loss = 0.069  adv prob = 0.250000   acc = 0.967
+  Blond_Hair = 0, Male = 1  [n = 2610]:	loss = 0.013  exp loss = 0.013  adjusted loss = 0.013  adv prob = 0.250000   acc = 0.997
+  Blond_Hair = 1, Male = 0  [n = 886]:	loss = 0.256  exp loss = 0.260  adjusted loss = 0.260  adv prob = 0.250000   acc = 0.901
+  Blond_Hair = 1, Male = 1  [n = 58]:	loss = 1.235  exp loss = 1.141  adjusted loss = 1.141  adv prob = 0.250000   acc = 0.414

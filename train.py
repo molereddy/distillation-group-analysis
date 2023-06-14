@@ -158,14 +158,4 @@ def train(model, criterion, dataset,
                 best_val_acc = curr_val_acc
                 torch.save(model, os.path.join(args.log_dir, model_path_prefix+'best_model.pth'))
                 logger.write(f'Best model saved at epoch {epoch}\n')
-
-        if args.automatic_adjustment:
-            gen_gap = val_loss_computer.avg_group_loss - train_loss_computer.exp_avg_loss
-            adjustments = gen_gap * torch.sqrt(train_loss_computer.group_counts)
-            train_loss_computer.adj = adjustments
-            logger.write('Adjustments updated\n')
-            for group_idx in range(train_loss_computer.n_groups):
-                logger.write(
-                    f'  {train_loss_computer.get_group_name(group_idx)}:\t'
-                    f'adj = {train_loss_computer.adj[group_idx]:.3f}\n')
         logger.write('\n')

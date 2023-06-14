@@ -1,7 +1,7 @@
 import os, csv
 import argparse
 import pandas as pd
-import torch
+import torch, time
 import torch.nn as nn
 import torchvision
 
@@ -35,14 +35,9 @@ def main():
     parser.add_argument('--augment_data', action='store_true', default=False)
     parser.add_argument('--val_fraction', type=float, default=0.1)
     # Objective
-    parser.add_argument('--robust', default=False, action='store_true')
-    parser.add_argument('--alpha', type=float, default=0.2)
     parser.add_argument('--generalization_adjustment', default="0.0")
     parser.add_argument('--automatic_adjustment', default=False, action='store_true')
-    parser.add_argument('--robust_step_size', default=0.01, type=float)
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
-    parser.add_argument('--btl', default=False, action='store_true')
-    parser.add_argument('--hinge', default=False, action='store_true')
 
     # Model
     parser.add_argument( '--model', choices=model_attributes.keys(), default='resnet50')
@@ -59,7 +54,7 @@ def main():
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--show_progress', default=False, action='store_true')
     parser.add_argument('--log_dir', default='./logs')
-    parser.add_argument('--log_every', default=50, type=int)
+    parser.add_argument('--log_every', default=50, type=int) # number of batches after which to log
     parser.add_argument('--save_step', type=int, default=10)
     parser.add_argument('--save_best', action='store_true', default=False)
     parser.add_argument('--save_last', action='store_true', default=False)
@@ -91,6 +86,7 @@ def main():
 
     # Data
     # Test data for label_shift_step is not implemented yet
+    data_start_time = time.time()
     test_data = None
     test_loader = None
     if args.shift_type == 'confounder':
@@ -99,11 +95,13 @@ def main():
         train_data, val_data = prepare_data(args, train=True)
 
     loader_kwargs = {'batch_size':args.batch_size, 'num_workers':4, 'pin_memory':True}
-    train_loader = train_data.get_loader(train=True, reweight_groups=args.reweight_groups, **loader_kwargs)
-    val_loader = val_data.get_loader(train=False, reweight_groups=None, **loader_kwargs)
+    train_loader = train_data.get_loader(train=True, **loader_kwargs)
+    val_loader = val_data.get_loader(train=False, **loader_kwargs)
     if test_data is not None:
-        test_loader = test_data.get_loader(train=False, reweight_groups=None, **loader_kwargs)
-
+        test_loader = test_data.get_loader(train=False, **loader_kwargs)
+    
+    print("{:.2g} minutes for data processing".format((time.time()-data_start_time)/60))
+    
     data = {}
     data['train_loader'] = train_loader
     data['val_loader'] = val_loader
@@ -116,6 +114,7 @@ def main():
     log_data(data, logger)
 
     ## Initialize model
+    print("loading model")
     if resume:
         model = torch.load(os.path.join(args.log_dir, 'last_model.pth')).to(device=args.device)
         d = train_data.input_size()[0]
@@ -126,19 +125,19 @@ def main():
         model = nn.Linear(d, n_classes).to(device=args.device)
         model.has_aux_logits = False
     elif args.model == 'resnet18':
-        model = torchvision.models.resnet18(pretrained=pretrained).to(device=args.device)
+        model = torchvision.models.resnet18(weights='DEFAULT').to(device=args.device)
         d = model.fc.in_features
         model.fc = nn.Linear(d, n_classes)
     elif args.model == 'resnet50':
-        model = torchvision.models.resnet50(pretrained=pretrained).to(device=args.device)
+        model = torchvision.models.resnet50(weights='DEFAULT').to(device=args.device)
         d = model.fc.in_features
         model.fc = nn.Linear(d, n_classes)
     elif args.model == 'resnet34':
-        model = torchvision.models.resnet34(pretrained=pretrained).to(device=args.device)
+        model = torchvision.models.resnet34(weights='DEFAULT').to(device=args.device)
         d = model.fc.in_features
         model.fc = nn.Linear(d, n_classes)
     elif args.model == 'wideresnet50':
-        model = torchvision.models.wide_resnet50_2(pretrained=pretrained).to(device=args.device)
+        model = torchvision.models.wide_resnet50_2(weights='DEFAULT').to(device=args.device)
         d = model.fc.in_features
         model.fc = nn.Linear(d, n_classes)
     elif args.model == 'bert':

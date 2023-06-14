@@ -9,5 +9,8 @@
 __pycache__/
 logs/.ipynb_checkpoints/
 logs/__pycache__/
+logs/*.csv
+logs/*.txt
+logs/*.pth
 .ipynb_checkpoints/
 *~

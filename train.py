@@ -16,14 +16,8 @@ from pytorch_transformers import AdamW, WarmupLinearSchedule
 
 def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger, args,
               is_training, show_progress=False, log_every=10, scheduler=None):
-    """
-    scheduler is only used inside this function if model is bert.
-    """
-
     if is_training:
         model.train()
-        if args.model == 'bert':
-            model.zero_grad()
     else:
         model.eval()
 
@@ -39,32 +33,14 @@ def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger
             x = batch[0]
             y = batch[1]
             g = batch[2]
-            if args.model == 'bert':
-                input_ids = x[:, :, 0]
-                input_masks = x[:, :, 1]
-                segment_ids = x[:, :, 2]
-                outputs = model(
-                    input_ids=input_ids,
-                    attention_mask=input_masks,
-                    token_type_ids=segment_ids,
-                    labels=y
-                )[1] # [1] returns logits
-            else:
-                outputs = model(x)
+            outputs = model(x)
 
             loss_main = loss_computer.loss(outputs, y, g, is_training)
 
             if is_training:
-                if args.model == 'bert':
-                    loss_main.backward()
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-                    scheduler.step()
-                    optimizer.step()
-                    model.zero_grad()
-                else:
-                    optimizer.zero_grad()
-                    loss_main.backward()
-                    optimizer.step()
+                optimizer.zero_grad()
+                loss_main.backward()
+                optimizer.step()
 
             if is_training and (batch_idx+1) % log_every==0:
                 csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
@@ -78,77 +54,10 @@ def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger
             loss_computer.log_stats(logger, is_training)
             if is_training:
                 loss_computer.reset_stats()
-
-def run_distillation_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger, args,
-              is_training, show_progress=False, log_every=10, scheduler=None):
-    """
-    scheduler is only used inside this function if model is bert.
-    """
-
-    if is_training:
-        model.train()
-        if args.model == 'bert':
-            model.zero_grad()
-    else:
-        model.eval()
-
-    if show_progress:
-        prog_bar_loader = tqdm(loader)
-    else:
-        prog_bar_loader = loader
-
-    with torch.set_grad_enabled(is_training):
-        for batch_idx, batch in enumerate(prog_bar_loader):
-
-            batch = tuple(t.cuda() for t in batch)
-            x = batch[0]
-            y = batch[1]
-            g = batch[2]
-            if args.model == 'bert':
-                input_ids = x[:, :, 0]
-                input_masks = x[:, :, 1]
-                segment_ids = x[:, :, 2]
-                outputs = model(
-                    input_ids=input_ids,
-                    attention_mask=input_masks,
-                    token_type_ids=segment_ids,
-                    labels=y
-                )[1] # [1] returns logits
-            else:
-                outputs = model(x)
-
-            loss_main = loss_computer.loss(outputs, y, g, is_training)
-
-            if is_training:
-                if args.model == 'bert':
-                    loss_main.backward()
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-                    scheduler.step()
-                    optimizer.step()
-                    model.zero_grad()
-                else:
-                    optimizer.zero_grad()
-                    loss_main.backward()
-                    optimizer.step()
-
-            if is_training and (batch_idx+1) % log_every==0:
-                csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
-                csv_logger.flush()
-                loss_computer.log_stats(logger, is_training)
-                loss_computer.reset_stats()
-
-        if (not is_training) or loss_computer.batch_count > 0:
-            csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
-            csv_logger.flush()
-            loss_computer.log_stats(logger, is_training)
-            if is_training:
-                loss_computer.reset_stats()
-
-
 
 def train(model, criterion, dataset,
           logger, train_csv_logger, val_csv_logger, test_csv_logger,
-          args, epoch_offset):
+          args, epoch_offset, teacher=None):
     model = model.cuda()
 
     # process generalization adjustment stuff
@@ -161,52 +70,35 @@ def train(model, criterion, dataset,
 
     train_loss_computer = LossComputer(
         criterion,
-        is_robust=args.robust,
         dataset=dataset['train_data'],
-        alpha=args.alpha,
         gamma=args.gamma,
         adj=adjustments,
-        step_size=args.robust_step_size,
         normalize_loss=args.use_normalized_loss,
-        btl=args.btl,
         min_var_weight=args.minimum_variational_weight)
 
-    # BERT uses its own scheduler and optimizer
-    if args.model == 'bert':
-        no_decay = ['bias', 'LayerNorm.weight']
-        optimizer_grouped_parameters = [
-            {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': args.weight_decay},
-            {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-            ]
-        optimizer = AdamW(
-            optimizer_grouped_parameters,
-            lr=args.lr,
-            eps=args.adam_epsilon)
-        t_total = len(dataset['train_loader']) * args.n_epochs
-        print(f'\nt_total is {t_total}\n')
-        scheduler = WarmupLinearSchedule(
+    optimizer = torch.optim.SGD(
+        filter(lambda p: p.requires_grad, model.parameters()),
+        lr=args.lr,
+        momentum=0.9,
+        weight_decay=args.weight_decay)
+    if args.scheduler:
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer,
-            warmup_steps=args.warmup_steps,
-            t_total=t_total)
+            'min',
+            factor=0.1,
+            patience=5,
+            threshold=0.0001,
+            min_lr=0,
+            eps=1e-08)
     else:
-        optimizer = torch.optim.SGD(
-            filter(lambda p: p.requires_grad, model.parameters()),
-            lr=args.lr,
-            momentum=0.9,
-            weight_decay=args.weight_decay)
-        if args.scheduler:
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer,
-                'min',
-                factor=0.1,
-                patience=5,
-                threshold=0.0001,
-                min_lr=0,
-                eps=1e-08)
-        else:
-            scheduler = None
+        scheduler = None
 
     best_val_acc = 0
+    model_path_prefix = ""
+    if teacher is not None and args.teacher is not None:
+        model_path_prefix += args.teacher + "_"
+    if args.model is not None:
+        model_path_prefix += args.model + "_"
     for epoch in range(epoch_offset, epoch_offset+args.n_epochs):
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
@@ -223,10 +115,7 @@ def train(model, criterion, dataset,
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(
             criterion,
-            is_robust=args.robust,
-            dataset=dataset['val_data'],
-            step_size=args.robust_step_size,
-            alpha=args.alpha)
+            dataset=dataset['val_data'])
         run_epoch(
             epoch, model, optimizer,
             dataset['val_loader'],
@@ -238,10 +127,7 @@ def train(model, criterion, dataset,
         if dataset['test_data'] is not None:
             test_loss_computer = LossComputer(
                 criterion,
-                is_robust=args.robust,
-                dataset=dataset['test_data'],
-                step_size=args.robust_step_size,
-                alpha=args.alpha)
+                dataset=dataset['test_data'])
             run_epoch(
                 epoch, model, optimizer,
                 dataset['test_loader'],
@@ -255,28 +141,22 @@ def train(model, criterion, dataset,
                 curr_lr = param_group['lr']
                 logger.write('Current lr: %f\n' % curr_lr)
 
-        if args.scheduler and args.model != 'bert':
-            if args.robust:
-                val_loss, _ = val_loss_computer.compute_robust_loss_greedy(val_loss_computer.avg_group_loss, val_loss_computer.avg_group_loss)
-            else:
-                val_loss = val_loss_computer.avg_actual_loss
+        if args.scheduler:
+            val_loss = val_loss_computer.avg_actual_loss
             scheduler.step(val_loss) #scheduler step to update lr at the end of epoch
 
         if epoch % args.save_step == 0:
-            torch.save(model, os.path.join(args.log_dir, '%d_model.pth' % epoch))
+            torch.save(model, os.path.join(args.log_dir, model_path_prefix+'%d_model.pth' % epoch))
 
         if args.save_last:
-            torch.save(model, os.path.join(args.log_dir, 'last_model.pth'))
+            torch.save(model, os.path.join(args.log_dir, model_path_prefix+'last_model.pth'))
 
         if args.save_best:
-            if args.robust or args.reweight_groups:
-                curr_val_acc = min(val_loss_computer.avg_group_acc)
-            else:
-                curr_val_acc = val_loss_computer.avg_acc
+            curr_val_acc = val_loss_computer.avg_acc
             logger.write(f'Current validation accuracy: {curr_val_acc}\n')
             if curr_val_acc > best_val_acc:
                 best_val_acc = curr_val_acc
-                torch.save(model, os.path.join(args.log_dir, 'best_model.pth'))
+                torch.save(model, os.path.join(args.log_dir, model_path_prefix+'best_model.pth'))
                 logger.write(f'Best model saved at epoch {epoch}\n')
 
         if args.automatic_adjustment:

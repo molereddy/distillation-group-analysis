@@ -38,8 +38,6 @@ def main():
     parser.add_argument('--automatic_adjustment', default=False, action='store_true')
     parser.add_argument('--robust_step_size', default=0.01, type=float)
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
-    parser.add_argument('--btl', default=False, action='store_true')
-    parser.add_argument('--hinge', default=False, action='store_true')
 
     # Model
     parser.add_argument('--model', choices=model_attributes.keys(), default='resnet50')

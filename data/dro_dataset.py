@@ -4,7 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 class DRODataset(Dataset):
-    def __init__(self, dataset, process_item_fn, n_groups, n_classes, group_str_fn):
+    def __init__(self, dataset, process_item_fn, n_groups, n_classes, group_str_fn, logger=None):
         self.dataset = dataset
         self.process_item = process_item_fn
         self.n_groups = n_groups
@@ -12,8 +12,20 @@ class DRODataset(Dataset):
         self.group_str = group_str_fn
         group_array = []
         y_array = []
-
+        total_size, tenth = len(self.dataset), len(self.dataset)//10
+        if logger:
+            logger.write("DRO dataset creation, len {}, tenth {}\n".format(total_size, tenth))
+            logger.flush()
+        
+        i = 0
         for x,y,g in self:
+            if logger and i % tenth == 0:
+                logger.write("dataset processing {} tenth, at num {}\n".format(
+                    i//tenth,
+                    i)
+                )
+            logger.flush()
+            i += 1
             group_array.append(g)
             y_array.append(y)
         self._group_array = torch.LongTensor(group_array)

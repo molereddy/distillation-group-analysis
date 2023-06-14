@@ -93,7 +93,7 @@ def main():
     test_data = None
     test_loader = None
     if args.shift_type == 'confounder':
-        train_data, val_data, test_data = prepare_data(args, train=True)
+        train_data, val_data, test_data = prepare_data(args, train=True, logger=logger)
     elif args.shift_type == 'label_shift_step':
         train_data, val_data = prepare_data(args, train=True)
 
@@ -103,7 +103,8 @@ def main():
     if test_data is not None:
         test_loader = test_data.get_loader(train=False, **loader_kwargs)
     
-    print("{:.2g} minutes for data processing".format((time.time()-data_start_time)/60))
+    logger.write("{:.2g} minutes for data processing".format((time.time()-data_start_time)/60))
+    logger.flush()
     
     data = {}
     data['train_loader'] = train_loader
@@ -116,8 +117,9 @@ def main():
 
     log_data(data, logger)
 
+
     ## Initialize model
-    print("loading model")
+    logger.write("loading model")
     if resume:
         model = torch.load(os.path.join(args.log_dir, 'last_model.pth')).to(device=args.device)
         d = train_data.input_size()[0]

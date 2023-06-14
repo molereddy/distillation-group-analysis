@@ -92,7 +92,7 @@ def train(model, criterion, dataset,
     else:
         scheduler = None
 
-    best_val_acc = 0
+    best_val_acc, best_epoch = 0, 0
 
     for epoch in range(epoch_offset, epoch_offset+args.n_epochs):
         logger.write('\nEpoch [%d]:\n' % epoch)
@@ -119,6 +119,7 @@ def train(model, criterion, dataset,
             is_training=False)
 
         # Test set; don't print to avoid peeking
+        logger.write(f'\nTest:\n')
         if dataset['test_data'] is not None:
             test_loss_computer = LossComputer(
                 criterion,
@@ -127,7 +128,7 @@ def train(model, criterion, dataset,
                 epoch, model, optimizer,
                 dataset['test_loader'],
                 test_loss_computer,
-                None, test_csv_logger, args,
+                logger, test_csv_logger, args,
                 is_training=False)
 
         # Inspect learning rates
@@ -151,6 +152,8 @@ def train(model, criterion, dataset,
             logger.write(f'Current validation accuracy: {curr_val_acc}\n')
             if curr_val_acc > best_val_acc:
                 best_val_acc = curr_val_acc
+                best_epoch = epoch
                 torch.save(model, os.path.join(args.log_dir, 'best_model.pth'))
-                logger.write(f'Best model saved at epoch {epoch}\n')
+                logger.write(f'New best!\n')
+            logger.write(f'Best model saved at epoch {best_epoch}\n')
         logger.write('\n')

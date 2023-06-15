@@ -8,7 +8,7 @@ import torchvision
 from models import model_attributes
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from utils import set_seed, Logger, CSVBatchLogger, log_args
-from train import train
+from train import test
 
 
 def main():
@@ -38,20 +38,16 @@ def main():
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
 
     # Model
-    parser.add_argument( '--model', choices=model_attributes.keys(), default='resnet50')
-    parser.add_argument( '--teacher', choices=model_attributes.keys())
+    parser.add_argument( '--model_path', type=str)
+    parser.add_argument( '--model', type=str, default="resnet18")
+    parser.add_argument( '--seed', type=int, default=0)
+    parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
+    parser.add_argument('--weight_decay', type=float, default=5e-5)
 
     # Optimization
-    parser.add_argument('--n_epochs', type=int, default=50) # 300 for waterbirds and 50 for celebA
     parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
-    parser.add_argument('--scheduler', action='store_true', default=False)
-    parser.add_argument('--weight_decay', type=float, default=5e-5)
-    parser.add_argument('--minimum_variational_weight', type=float, default=0)
     # Misc
-    parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--show_progress', default=False, action='store_true')
-    parser.add_argument('--log_dir', default='./logs')
     parser.add_argument('--log_every', default=50, type=int) # number of batches after which to log
     parser.add_argument('--save_step', type=int, default=10)
     parser.add_argument('--save_best', action='store_true', default=False)
@@ -59,16 +55,8 @@ def main():
 
     args = parser.parse_args()
     check_args(args)
-    if args.dataset != "CelebA":
-        args.save_step = 50
     
-    args.log_dir = os.path.join(args.log_dir, args.dataset)
-    model_path_prefix = ""
-    if args.teacher is not None:
-        model_path_prefix += args.teacher + "_"
-    model_path_prefix += args.model + "_{}".format(args.seed)
-    if model_path_prefix == "": model_path_prefix = "base"
-    args.log_dir = os.path.join(args.log_dir, model_path_prefix)
+    args.log_dir = os.path.dirname(args.model_path)
     
     if os.path.exists(args.log_dir) and args.resume:
         resume=True
@@ -77,11 +65,8 @@ def main():
         resume=False
         mode='w'
 
-    ## Initialize logs
-    if not os.path.exists(args.log_dir):
-        os.makedirs(args.log_dir, exist_ok=True)
 
-    log_file_path = os.path.join(args.log_dir, 'log.txt')
+    log_file_path = os.path.join(args.log_dir, 'test_{}.txt'.format(os.path.basename(args.model_path)))
     print(log_file_path)
     logger = Logger(log_file_path, mode)
     
@@ -118,48 +103,14 @@ def main():
     n_classes = train_data.n_classes
 
     log_data(data, logger)
-
-
-    ## Initialize model
-    logger.write("loading model")
-    if resume:
-        model = torch.load(os.path.join(args.log_dir, 'last_model.pth')).to(device=args.device)
-        d = train_data.input_size()[0]
-    elif model_attributes[args.model]['feature_type'] in ('precomputed', 'raw_flattened'):
-        assert pretrained
-        # Load precomputed features
-        d = train_data.input_size()[0]
-        model = nn.Linear(d, n_classes).to(device=args.device)
-        model.has_aux_logits = False
-    elif args.model == 'resnet18':
-        model = torchvision.models.resnet18(weights='DEFAULT').to(device=args.device)
-        d = model.fc.in_features
-        model.fc = nn.Linear(d, n_classes)
-    elif args.model == 'resnet50':
-        model = torchvision.models.resnet50(weights='DEFAULT').to(device=args.device)
-        d = model.fc.in_features
-        model.fc = nn.Linear(d, n_classes)
-    elif args.model == 'resnet34':
-        model = torchvision.models.resnet34(weights='DEFAULT').to(device=args.device)
-        d = model.fc.in_features
-        model.fc = nn.Linear(d, n_classes)
-    elif args.model == 'wideresnet50':
-        model = torchvision.models.wide_resnet50_2(weights='DEFAULT').to(device=args.device)
-        d = model.fc.in_features
-        model.fc = nn.Linear(d, n_classes)
-    else:
-        raise ValueError('Model not recognized.')
     
     logger.flush()
 
-    if args.teacher is not None:
-        teacher = torch.load("/home/anmolreddy/projects/distillation-bias-analysis/logs/{}/{}_{}/best_model.pth".format(
-            args.dataset, args.teacher, args.seed
-        ))
-        teacher.eval()
-        logger.write("teacher loaded\n")
-        logger.flush()
-    
+    model = torch.load(args.model_path)
+    model.eval()
+    logger.write("model loaded\n")
+    logger.flush()
+
     criterion = torch.nn.CrossEntropyLoss(reduction='none')
 
     if resume:
@@ -168,15 +119,9 @@ def main():
         logger.write(f'starting from epoch {epoch_offset}')
     else:
         epoch_offset=0
-    train_csv_logger = CSVBatchLogger(os.path.join(args.log_dir, 'train.csv'), train_data.n_groups, mode=mode)
-    val_csv_logger =  CSVBatchLogger(os.path.join(args.log_dir, 'val.csv'), train_data.n_groups, mode=mode)
     test_csv_logger =  CSVBatchLogger(os.path.join(args.log_dir, 'test.csv'), train_data.n_groups, mode=mode)
-    if args.teacher is None:
-        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
-    else:
-        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset, teacher=teacher)
-    train_csv_logger.close()
-    val_csv_logger.close()
+    test(model, criterion, data, logger, test_csv_logger, args)
+
     test_csv_logger.close()
 
 def check_args(args):

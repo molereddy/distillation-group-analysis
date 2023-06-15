@@ -159,3 +159,30 @@ def train(model, criterion, dataset,
                 logger.write(f'New best!\n')
             logger.write(f'Best model saved at epoch {best_epoch}\n')
         logger.write('\n')
+
+def test(model, criterion, dataset, logger, test_csv_logger, args):
+    model = model.cuda()
+    # process generalization adjustment stuff
+    adjustments = [float(c) for c in args.generalization_adjustment.split(',')]
+    assert len(adjustments) in (1, dataset['train_data'].n_groups)
+    if len(adjustments)==1:
+        adjustments = np.array(adjustments* dataset['train_data'].n_groups)
+    else:
+        adjustments = np.array(adjustments)
+
+    optimizer = torch.optim.SGD(
+        filter(lambda p: p.requires_grad, model.parameters()),
+        lr=args.lr,
+        momentum=0.9,
+        weight_decay=args.weight_decay)
+    logger.write(f'\nTest:\n')
+    if dataset['test_data'] is not None:
+        test_loss_computer = LossComputer(
+            criterion,
+            dataset=dataset['test_data'])
+        run_epoch(
+            0, model, optimizer,
+            dataset['test_loader'],
+            test_loss_computer,
+            logger, test_csv_logger, args,
+            is_training=False)

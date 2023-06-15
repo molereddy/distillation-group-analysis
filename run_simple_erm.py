@@ -103,7 +103,7 @@ def main():
     if test_data is not None:
         test_loader = test_data.get_loader(train=False, **loader_kwargs)
     
-    logger.write("{:.2g} minutes for data processing".format((time.time()-data_start_time)/60))
+    logger.write("{:.2g} minutes for data processing\n".format((time.time()-data_start_time)/60))
     logger.flush()
     
     data = {}
@@ -150,6 +150,14 @@ def main():
     
     logger.flush()
 
+    if args.teacher is not None:
+        teacher = torch.load("/home/anmolreddy/projects/distillation-bias-analysis/logs/{}/{}_{}/best_model.pth".format(
+            args.dataset, args.teacher, args.seed
+        ))
+        teacher.eval()
+        logger.write("teacher loaded\n")
+        logger.flush()
+    
     criterion = torch.nn.CrossEntropyLoss(reduction='none')
 
     if resume:
@@ -161,9 +169,10 @@ def main():
     train_csv_logger = CSVBatchLogger(os.path.join(args.log_dir, 'train.csv'), train_data.n_groups, mode=mode)
     val_csv_logger =  CSVBatchLogger(os.path.join(args.log_dir, 'val.csv'), train_data.n_groups, mode=mode)
     test_csv_logger =  CSVBatchLogger(os.path.join(args.log_dir, 'test.csv'), train_data.n_groups, mode=mode)
-
-    train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
-
+    if args.teacher is None:
+        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
+    else:
+        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset, teacher=teacher)
     train_csv_logger.close()
     val_csv_logger.close()
     test_csv_logger.close()

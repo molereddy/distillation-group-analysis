@@ -15,12 +15,11 @@ from loss import LossComputer
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
 def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger, args,
-              is_training, show_progress=False, log_every=10, scheduler=None):
+              is_training, show_progress=False, log_every=10, scheduler=None, teacher=None):
     if is_training:
         model.train()
     else:
         model.eval()
-
     if show_progress:
         prog_bar_loader = tqdm(loader)
     else:
@@ -28,15 +27,17 @@ def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger
 
     with torch.set_grad_enabled(is_training):
         for batch_idx, batch in enumerate(prog_bar_loader):
-
             batch = tuple(t.cuda() for t in batch)
             x = batch[0]
             y = batch[1]
             g = batch[2]
             outputs = model(x)
-
-            loss_main = loss_computer.loss(outputs, y, g, is_training)
-
+            
+            if teacher is None:
+                loss_main = loss_computer.loss(outputs, y, g, is_training)
+            else:
+                teacher_logits = teacher(x)
+                loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
             if is_training:
                 optimizer.zero_grad()
                 loss_main.backward()
@@ -105,7 +106,8 @@ def train(model, criterion, dataset,
             is_training=True,
             show_progress=args.show_progress,
             log_every=args.log_every,
-            scheduler=scheduler)
+            scheduler=scheduler,
+            teacher=teacher)
 
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(

@@ -1,0 +1,17 @@
+*.aux
+*.bbl
+*.blg
+*.out
+*.pdf
+*.ps
+*.dvi
+*.synctex.gz
+__pycache__/
+logs/.ipynb_checkpoints/
+logs/__pycache__/
+logs/
+logs/*.csv
+logs/*.txt
+logs/*.pth
+.ipynb_checkpoints/
+*~

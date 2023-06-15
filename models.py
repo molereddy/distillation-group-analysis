@@ -1,7 +1,4 @@
 model_attributes = {
-    'bert': {
-        'feature_type': 'text'
-    },
     'inception_v3': {
         'feature_type': 'image',
         'target_resolution': (299, 299),
@@ -13,6 +10,11 @@ model_attributes = {
         'flatten': False
     },
     'resnet50': {
+        'feature_type': 'image',
+        'target_resolution': (224, 224),
+        'flatten': False
+    },
+    'resnet18': {
         'feature_type': 'image',
         'target_resolution': (224, 224),
         'flatten': False

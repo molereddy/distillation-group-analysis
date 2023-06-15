@@ -41,7 +41,6 @@ class CSVBatchLogger:
         columns = ['epoch', 'batch']
         for idx in range(n_groups):
             columns.append(f'avg_loss_group:{idx}')
-            columns.append(f'exp_avg_loss_group:{idx}')
             columns.append(f'avg_acc_group:{idx}')
             columns.append(f'processed_data_count_group:{idx}')
             columns.append(f'update_data_count_group:{idx}')

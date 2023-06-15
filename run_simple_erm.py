@@ -121,7 +121,7 @@ def main():
 
 
     ## Initialize model
-    logger.write("loading model")
+    logger.write("loading model\n")
     if resume:
         model = torch.load(os.path.join(args.log_dir, 'last_model.pth')).to(device=args.device)
         d = train_data.input_size()[0]

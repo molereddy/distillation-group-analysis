@@ -129,7 +129,7 @@ class LossComputer:
         return stats_dict
 
     def log_stats(self, logger, is_training):
-        if logger is None:
+        if logger is None or is_training:
             return
         logger.write(f'Average incurred loss: {self.avg_per_sample_loss.item():.3f}, Average sample loss: {self.avg_actual_loss.item():.3f}, Average acc: {self.avg_acc.item():.3f}  \n')
         for group_idx in range(self.n_groups):

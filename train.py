@@ -94,7 +94,8 @@ def train(model, criterion, dataset,
         scheduler = None
 
     best_val_acc, best_test_acc, best_epoch = 0, 0, 0
-
+    midway = args.n_epochs//2
+    
     for epoch in range(epoch_offset, epoch_offset+args.n_epochs):
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
@@ -139,6 +140,9 @@ def train(model, criterion, dataset,
             for param_group in optimizer.param_groups:
                 curr_lr = param_group['lr']
                 logger.write('Current lr: %f\n' % curr_lr)
+        if epoch == midway:
+            for param_group in optimizer.param_groups:
+                param_group['lr'] /= 10
 
         if args.scheduler:
             val_loss = val_loss_computer.avg_actual_loss

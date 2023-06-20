@@ -15,12 +15,11 @@ from loss import LossComputer
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
 def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger, args,
-              is_training, show_progress=False, log_every=10, scheduler=None):
+              is_training, show_progress=False, log_every=10, scheduler=None, teacher=None):
     if is_training:
         model.train()
     else:
         model.eval()
-
     if show_progress:
         prog_bar_loader = tqdm(loader)
     else:
@@ -28,15 +27,17 @@ def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger
 
     with torch.set_grad_enabled(is_training):
         for batch_idx, batch in enumerate(prog_bar_loader):
-
             batch = tuple(t.cuda() for t in batch)
             x = batch[0]
             y = batch[1]
             g = batch[2]
             outputs = model(x)
-
-            loss_main = loss_computer.loss(outputs, y, g, is_training)
-
+            
+            if teacher is None:
+                loss_main = loss_computer.loss(outputs, y, g, is_training)
+            else:
+                teacher_logits = teacher(x)
+                loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
             if is_training:
                 optimizer.zero_grad()
                 loss_main.backward()
@@ -92,8 +93,9 @@ def train(model, criterion, dataset,
     else:
         scheduler = None
 
-    best_val_acc, best_epoch = 0, 0
-
+    best_val_acc, best_test_acc, best_epoch = 0, 0, 0
+    midway = args.n_epochs//2
+    
     for epoch in range(epoch_offset, epoch_offset+args.n_epochs):
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
@@ -105,7 +107,8 @@ def train(model, criterion, dataset,
             is_training=True,
             show_progress=args.show_progress,
             log_every=args.log_every,
-            scheduler=scheduler)
+            scheduler=scheduler,
+            teacher=teacher)
 
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(
@@ -130,12 +133,16 @@ def train(model, criterion, dataset,
                 test_loss_computer,
                 logger, test_csv_logger, args,
                 is_training=False)
+            curr_test_acc = test_loss_computer.avg_acc
 
         # Inspect learning rates
         if (epoch+1) % 1 == 0:
             for param_group in optimizer.param_groups:
                 curr_lr = param_group['lr']
                 logger.write('Current lr: %f\n' % curr_lr)
+        if epoch == midway:
+            for param_group in optimizer.param_groups:
+                param_group['lr'] /= 10
 
         if args.scheduler:
             val_loss = val_loss_computer.avg_actual_loss
@@ -152,8 +159,36 @@ def train(model, criterion, dataset,
             logger.write(f'Current validation accuracy: {curr_val_acc}\n')
             if curr_val_acc > best_val_acc:
                 best_val_acc = curr_val_acc
+                best_test_acc = curr_test_acc
                 best_epoch = epoch
                 torch.save(model, os.path.join(args.log_dir, 'best_model.pth'))
                 logger.write(f'New best!\n')
-            logger.write(f'Best model saved at epoch {best_epoch}\n')
+            logger.write(f'Best model saved at epoch {best_epoch}, with acc {best_test_acc}\n')
         logger.write('\n')
+
+def test(model, criterion, dataset, logger, test_csv_logger, args):
+    model = model.cuda()
+    # process generalization adjustment stuff
+    adjustments = [float(c) for c in args.generalization_adjustment.split(',')]
+    assert len(adjustments) in (1, dataset['train_data'].n_groups)
+    if len(adjustments)==1:
+        adjustments = np.array(adjustments* dataset['train_data'].n_groups)
+    else:
+        adjustments = np.array(adjustments)
+
+    optimizer = torch.optim.SGD(
+        filter(lambda p: p.requires_grad, model.parameters()),
+        lr=args.lr,
+        momentum=0.9,
+        weight_decay=args.weight_decay)
+    logger.write(f'\nTest:\n')
+    if dataset['test_data'] is not None:
+        test_loss_computer = LossComputer(
+            criterion,
+            dataset=dataset['test_data'])
+        run_epoch(
+            0, model, optimizer,
+            dataset['test_loader'],
+            test_loss_computer,
+            logger, test_csv_logger, args,
+            is_training=False)

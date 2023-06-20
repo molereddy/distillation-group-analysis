@@ -30,11 +30,26 @@ class LossComputer:
         per_sample_losses = self.criterion(yhat, y)
         group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
         group_acc, group_count = self.compute_group_avg((torch.argmax(yhat,1)==y).float(), group_idx)
-
         # compute overall loss
         actual_loss = per_sample_losses.mean()
         weights = None
+        # update stats
+        self.update_stats(actual_loss, group_loss, group_acc, group_count, weights)
 
+        return actual_loss
+
+    def loss_kd(self, yhat, y, teacher_yhat, group_idx=None, is_training=False):
+        # compute per-sample and per-group losses
+        per_sample_ce_losses = self.criterion(yhat, y)
+        per_sample_kd_losses = 3*3*nn.KLDivLoss(reduction='none')(F.log_softmax(yhat/3, dim=1),
+                                                              F.softmax(teacher_yhat/3, dim=1))
+        per_sample_kd_losses = torch.sum(per_sample_kd_losses, dim=1)
+        per_sample_losses = 0.9*per_sample_kd_losses + 0.1*per_sample_ce_losses
+        group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
+        group_acc, group_count = self.compute_group_avg((torch.argmax(yhat,1)==y).float(), group_idx)
+        # compute overall loss
+        actual_loss = per_sample_losses.mean()
+        weights = None
         # update stats
         self.update_stats(actual_loss, group_loss, group_acc, group_count, weights)
 
@@ -119,8 +134,8 @@ class LossComputer:
         logger.write(f'Average incurred loss: {self.avg_per_sample_loss.item():.3f}, Average sample loss: {self.avg_actual_loss.item():.3f}, Average acc: {self.avg_acc.item():.3f}  \n')
         for group_idx in range(self.n_groups):
             logger.write(
-                f'  {self.group_str(group_idx)}  '
+                f'\t{self.group_str(group_idx)}\t'
                 f'[n = {int(self.processed_data_counts[group_idx])}]:\t'
-                f'loss = {self.avg_group_loss[group_idx]:.3f}  '
+                f'loss = {self.avg_group_loss[group_idx]:.3f}\t'
                 f'acc = {self.avg_group_acc[group_idx]:.3f}\n')
         logger.flush()

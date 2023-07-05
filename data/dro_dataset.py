@@ -19,6 +19,8 @@ class DRODataset(Dataset):
         
         i = 0
         for x,y,g in self:
+            group_array.append(g)
+            y_array.append(y)
             if logger and i % tenth == 0:
                 logger.write("dataset processing {} tenth, at num {}\n".format(
                     i//tenth,
@@ -26,8 +28,6 @@ class DRODataset(Dataset):
                 )
             logger.flush()
             i += 1
-            group_array.append(g)
-            y_array.append(y)
         self._group_array = torch.LongTensor(group_array)
         self._y_array = torch.LongTensor(y_array)
         self._group_counts = (torch.arange(self.n_groups).unsqueeze(1)==self._group_array).sum(1).float()

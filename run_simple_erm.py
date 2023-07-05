@@ -38,11 +38,12 @@ def main():
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
 
     # Model
-    parser.add_argument( '--model', choices=model_attributes.keys(), default='resnet50')
-    parser.add_argument( '--teacher', choices=model_attributes.keys())
+    parser.add_argument('--model', choices=model_attributes.keys(), default='resnet50')
+    parser.add_argument('--teacher', choices=model_attributes.keys())
+    parser.add_argument('--teacher_stage', choices=['best', 'last'], default='best')
 
     # Optimization
-    parser.add_argument('--n_epochs', type=int, default=50) # 300 for waterbirds and 50 for celebA
+    parser.add_argument('--n_epochs', type=int, default=300) # 300 for waterbirds and 50 for celebA
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
     parser.add_argument('--scheduler', action='store_true', default=False)
@@ -66,10 +67,11 @@ def main():
     else:
         args.n_epochs = 75
         args.lr = 1e-4
+        args.log_every = 30
     args.log_dir = os.path.join(args.log_dir, args.dataset)
     model_path_prefix = ""
     if args.teacher is not None:
-        model_path_prefix += args.teacher + "_"
+        model_path_prefix += args.teacher + "_" + ("" if args.teacher_stage == 'best' else 'last_')
     model_path_prefix += args.model + "_{}".format(args.seed)
     if model_path_prefix == "": model_path_prefix = "base"
     args.log_dir = os.path.join(args.log_dir, model_path_prefix)
@@ -159,11 +161,12 @@ def main():
     logger.flush()
 
     if args.teacher is not None:
-        teacher = torch.load("/home/anmolreddy/projects/distillation-bias-analysis/logs/{}/{}_{}/best_model.pth".format(
-            args.dataset, args.teacher, args.seed
+        teacher = torch.load("/home/anmolreddy/projects/distillation-bias-analysis/logs/{}/{}_{}/{}_model.pth".format(
+            args.dataset, args.teacher, args.seed, args.teacher_stage
         ))
         teacher.eval()
-        logger.write("teacher loaded\n")
+        logger.write("teacher loaded: {}/{}_{}/{}_model.pth\n".format(
+            args.dataset, args.teacher, args.seed, args.teacher_stage))
         logger.flush()
     
     criterion = torch.nn.CrossEntropyLoss(reduction='none')

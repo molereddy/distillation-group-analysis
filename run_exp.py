@@ -41,7 +41,7 @@ def main():
     # Model
     parser.add_argument('--model', choices=model_attributes.keys(), default='resnet50')
     parser.add_argument('--model_state', choices=['scratch', 'pretrained'], default='scratch')
-    parser.add_argument('--teacher', choices=model_attributes.keys())
+    parser.add_argument('--teacher', choices=model_attributes.keys() + [name+'-pt' for name in model_attributes.keys()])
     parser.add_argument('--teacher_stage', choices=['best', 'last'], default='best')
 
     # Optimization
@@ -61,24 +61,36 @@ def main():
     args = parser.parse_args()
     check_args(args)
     if args.dataset == "CUB":
-        args.save_step = 40
         args.n_epochs = 160
         args.lr = 1e-3
         args.widx = 2
     elif args.dataset == 'CelebA':
         args.n_epochs = 75
         args.lr = 1e-4
-        args.log_every = 30
+        args.log_every = 60
         args.widx = 3
-    args.save_step = args.n_epochs/5
-    args.logs_dir = os.path.join(args.logs_dir, args.dataset)
-    model_path_prefix = ""
-    if args.teacher is not None:
-        model_path_prefix += args.teacher + "_" + ("" if args.teacher_stage == 'best' else 'last_')
-    model_path_prefix += args.model + "_{}".format(args.seed)
-    if model_path_prefix == "": model_path_prefix = "base"
-    args.logs_dir = os.path.join(args.logs_dir, model_path_prefix)
     
+    args.save_step = args.n_epochs//5
+
+
+    # set model, teacher and log file paths
+    if args.model_state == 'scratch':
+        model_state_name = args.model
+    else:
+        model_state_name = args.model + '-pt'
+    
+    if args.teacher is not None:
+        # teacher pretrain state is given in args.teacher itself
+        teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
+        args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
+                                     '_'.join([args.teacher, model_state_name, str(args.seed)]))
+    else:
+         args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
+                                 '_'.join([model_state_name, str(args.rand_seed)]))
+    
+    if not os.path.exists(args.logs_dir):
+        os.makedirs(args.logs_dir, exist_ok=True)
+    # resume training
     if os.path.exists(args.logs_dir) and args.resume:
         resume=True
         mode='a'
@@ -86,22 +98,10 @@ def main():
         resume=False
         mode='w'
     
-    if args.model_state == 'scratch':
-        model_state_name = args.model
-    else:
-        model_state_name = args.model + '-pt'
-    
-    args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
-                                 '_'.join([model_state_name, str(args.rseed)]))
     ## Initialize logs
-    if not os.path.exists(args.logs_dir):
-        os.makedirs(args.logs_dir, exist_ok=True)
-
-    log_file_path = os.path.join(args.logs_dir, 'log.txt')
-    print(log_file_path)
+    log_file_path = os.path.join(args.logs_dir, 'train.log')
     logger = Logger(log_file_path, mode)
-    
-    # Record args
+    print(log_file_path)
     log_args(args, logger)
     set_seed(args.seed)
     
@@ -171,13 +171,20 @@ def main():
     
     logger.flush()
 
+    # load teacher
     if args.teacher is not None:
-        teacher = torch.load("/home/anmolreddy/projects/distillation-bias-analysis/logs/{}/{}_{}/{}_model.pth".format(
-            args.dataset, args.teacher, args.seed, args.teacher_stage
-        ))
+        if 'resnet18' in args.teacher:
+            teacher = torchvision.models.resnet18().to(device=device)
+            d = teacher.fc.in_features
+            teacher.fc = nn.Linear(d, n_classes).to(device=device)
+        elif 'resnet50' in args.teacher:     
+            teacher = torchvision.models.resnet50().to(device=device)
+            d = teacher.fc.in_features
+            teacher.fc = nn.Linear(d, n_classes).to(device=device)
+        teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
+        teacher.load_state_dict(teacher_ckpt['model'])
         teacher.eval()
-        logger.write("teacher loaded: {}/{}_{}/{}_model.pth\n".format(
-            args.dataset, args.teacher, args.seed, args.teacher_stage))
+        logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}")
         logger.flush()
     
     criterion = torch.nn.CrossEntropyLoss(reduction='none')

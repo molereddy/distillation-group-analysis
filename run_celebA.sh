@@ -1,3 +1,3 @@
-TZ=IST-5:30 date; python3 run_simple_erm.py -s confounder -d CelebA -t Blond_Hair -c Male --model resnet18 --batch_size 128 --save_best --save_last > /dev/null; TZ=IST-5:30 date;
-TZ=IST-5:30 date; python3 run_simple_erm.py -s confounder -d CelebA -t Blond_Hair -c Male --model resnet50 --batch_size 128 --save_best --save_last > /dev/null; TZ=IST-5:30 date;
-TZ=IST-5:30 date; python3 run_simple_erm.py -s confounder -d CelebA -t Blond_Hair -c Male --model resnet18 --teacher resnet50 --batch_size 128 --save_best --save_last > /dev/null; TZ=IST-5:30 date;
+TZ=IST-5:30 date; python3 run_exp.py -s confounder -d CelebA -t Blond_Hair -c Male --model resnet18 --batch_size 128 --save_best --save_last > /dev/null; TZ=IST-5:30 date;
+TZ=IST-5:30 date; python3 run_exp.py -s confounder -d CelebA -t Blond_Hair -c Male --model resnet50 --batch_size 128 --save_best --save_last > /dev/null; TZ=IST-5:30 date;
+TZ=IST-5:30 date; python3 run_exp.py -s confounder -d CelebA -t Blond_Hair -c Male --model resnet18 --teacher resnet50 --batch_size 128 --save_best --save_last > /dev/null; TZ=IST-5:30 date;

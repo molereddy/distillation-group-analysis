@@ -1,4 +1,4 @@
-import os
+import os, copy, pickle
 import types
 
 import torch
@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 import numpy as np
 from tqdm import tqdm
 
-from utils import AverageMeter, accuracy
+from utils import AverageMeter, accuracy, save_checkpoint
 from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
@@ -49,12 +49,16 @@ def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger
                 loss_computer.log_stats(logger, is_training)
                 loss_computer.reset_stats()
 
-        if (not is_training) or loss_computer.batch_count > 0:
+        if not is_training:
+            csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
+            csv_logger.flush()
+            return loss_computer.log_stats(logger, is_training, target_group_idx=args.widx)
+        
+        elif loss_computer.batch_count > 0:
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
             csv_logger.flush()
             loss_computer.log_stats(logger, is_training)
-            if is_training:
-                loss_computer.reset_stats()
+            oss_computer.reset_stats()
 
 def train(model, criterion, dataset,
           logger, train_csv_logger, val_csv_logger, test_csv_logger,
@@ -94,7 +98,12 @@ def train(model, criterion, dataset,
         scheduler = None
 
     best_val_acc, best_test_acc, best_epoch = 0, 0, 0
+    best_state_dict = copy.deepcopy(model.state_dict())
     midway = args.n_epochs//2
+
+    best_acc = 0   
+    is_last = False
+    test_wg_accs, test_avg_accs, test_ub_accs = [], [], []
     
     for epoch in range(epoch_offset, epoch_offset+args.n_epochs):
         logger.write('\nEpoch [%d]:\n' % epoch)
@@ -127,13 +136,17 @@ def train(model, criterion, dataset,
             test_loss_computer = LossComputer(
                 criterion,
                 dataset=dataset['test_data'])
-            run_epoch(
+            avg_acc, ub_acc, wg_acc = run_epoch(
                 epoch, model, optimizer,
                 dataset['test_loader'],
                 test_loss_computer,
                 logger, test_csv_logger, args,
-                is_training=False)
+                is_training=False,
+                target_group_idx=args.widx)
             curr_test_acc = test_loss_computer.avg_acc
+            test_avg_accs.append(avg_acc)
+            test_ub_accs.append(ub_acc)
+            test_wg_accs.append(wg_acc)
 
         # Inspect learning rates
         if (epoch+1) % 1 == 0:
@@ -148,23 +161,44 @@ def train(model, criterion, dataset,
             val_loss = val_loss_computer.avg_actual_loss
             scheduler.step(val_loss) #scheduler step to update lr at the end of epoch
 
-        if epoch % args.save_step == 0:
-            torch.save(model, os.path.join(args.log_dir, '%d_model.pth' % epoch))
+        curr_val_acc = val_loss_computer.avg_acc
 
-        if args.save_last:
-            torch.save(model, os.path.join(args.log_dir, 'last_model.pth'))
+        if curr_val_acc >= best_val_acc or epoch == 0:
+            best_val_acc = curr_val_acc
+            best_test_acc = curr_test_acc
+            is_best = True
+            best_state_dict = copy.deepcopy(model.state_dict())
+            best_epoch = epoch
+        else:
+            is_best = False
+        if epoch == args.n_epochs-1:
+            is_last = True
+        state = {'epoch': epoch,
+                'val_acc': curr_val_acc,
+                'test_acc': curr_test_acc,
+                'model': copy.deepcopy(model.state_dict()),
+                'best_epoch': best_epoch,
+                'best_val_acc': best_val_acc,
+                'best_test_acc': best_test_acc,
+                'best_model' : best_state_dict,}
+        save_checkpoint(state, logs_dir = args.log_dir, is_best=is_best, save_freq=args.save_step, is_last=is_last)
+        
+        logger.write(f'Current validation acc: {curr_val_acc:.4f}\n')
+        logger.write(f'Current {epoch} test avg acc: {avg_acc:.4f}, unbiased acc: {ub_acc:.4f}, worst acc: {wg_acc:.4f}\n')
+        if is_best: logger.write(f'New best!\n')
+        logger.write(f'Best epoch {best_epoch} of val acc {best_val_acc:.4f}: avg acc {best_test_acc:.4f}, unbiased acc: {test_ub_accs[best_epoch]:.4f}, worst acc: {test_wg_accs[best_epoch]:.4f}\n')        
 
-        if args.save_best:
-            curr_val_acc = val_loss_computer.avg_acc
-            logger.write(f'Current validation accuracy: {curr_val_acc}\n')
-            if curr_val_acc > best_val_acc:
-                best_val_acc = curr_val_acc
-                best_test_acc = curr_test_acc
-                best_epoch = epoch
-                torch.save(model, os.path.join(args.log_dir, 'best_model.pth'))
-                logger.write(f'New best!\n')
-            logger.write(f'Best model saved at epoch {best_epoch}, with acc {best_test_acc}\n')
         logger.write('\n')
+        
+    plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, os.path.join(args.logs_dir, 'training_curves.png'))
+    
+    with open(os.path.join(args.logs_dir, 'train_history.pkl'), 'wb') as file:
+        pickle.dump({'test_avg_accs': test_avg_accs,
+                     'test_ub_accs': test_ub_accs,
+                     'test_wg_accs': test_wg_accs
+                    },
+                    file)
+    
 
 def test(model, criterion, dataset, logger, test_csv_logger, args):
     model = model.cuda()

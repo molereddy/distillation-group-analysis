@@ -23,6 +23,7 @@ def main():
     # Confounders
     parser.add_argument('-t', '--target_name')
     parser.add_argument('-c', '--confounder_names', nargs='+')
+    parser.add_argument('-widx', '--worst_group_idx', type=int, default=2)
     # Resume?
     parser.add_argument('--resume', default=False, action='store_true')
     # Label shifts
@@ -39,11 +40,12 @@ def main():
 
     # Model
     parser.add_argument('--model', choices=model_attributes.keys(), default='resnet50')
+    parser.add_argument('--model_state', choices=['scratch', 'pretrained'], default='scratch')
     parser.add_argument('--teacher', choices=model_attributes.keys())
     parser.add_argument('--teacher_stage', choices=['best', 'last'], default='best')
 
     # Optimization
-    parser.add_argument('--n_epochs', type=int, default=300) # 300 for waterbirds and 50 for celebA
+    parser.add_argument('--n_epochs', type=int, default=160) # 160 for waterbirds and 75 for celebA
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
     parser.add_argument('--scheduler', action='store_true', default=False)
@@ -52,42 +54,50 @@ def main():
     # Misc
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--show_progress', default=False, action='store_true')
-    parser.add_argument('--log_dir', default='./logs')
+    parser.add_argument('--logs_dir', default='./logs')
     parser.add_argument('--log_every', default=10, type=int) # number of batches after which to log
     parser.add_argument('--save_step', type=int, default=10)
-    parser.add_argument('--save_best', action='store_true', default=False)
-    parser.add_argument('--save_last', action='store_true', default=False)
 
     args = parser.parse_args()
     check_args(args)
-    if args.dataset != "CelebA":
-        args.save_step = 50
-        args.n_epochs = 300
+    if args.dataset == "CUB":
+        args.save_step = 40
+        args.n_epochs = 160
         args.lr = 1e-3
-    else:
+        args.widx = 2
+    elif args.dataset == 'CelebA':
         args.n_epochs = 75
         args.lr = 1e-4
         args.log_every = 30
-    args.log_dir = os.path.join(args.log_dir, args.dataset)
+        args.widx = 3
+    args.save_step = args.n_epochs/5
+    args.logs_dir = os.path.join(args.logs_dir, args.dataset)
     model_path_prefix = ""
     if args.teacher is not None:
         model_path_prefix += args.teacher + "_" + ("" if args.teacher_stage == 'best' else 'last_')
     model_path_prefix += args.model + "_{}".format(args.seed)
     if model_path_prefix == "": model_path_prefix = "base"
-    args.log_dir = os.path.join(args.log_dir, model_path_prefix)
+    args.logs_dir = os.path.join(args.logs_dir, model_path_prefix)
     
-    if os.path.exists(args.log_dir) and args.resume:
+    if os.path.exists(args.logs_dir) and args.resume:
         resume=True
         mode='a'
     else:
         resume=False
         mode='w'
-
+    
+    if args.model_state == 'scratch':
+        model_state_name = args.model
+    else:
+        model_state_name = args.model + '-pt'
+    
+    args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
+                                 '_'.join([model_state_name, str(args.rseed)]))
     ## Initialize logs
-    if not os.path.exists(args.log_dir):
-        os.makedirs(args.log_dir, exist_ok=True)
+    if not os.path.exists(args.logs_dir):
+        os.makedirs(args.logs_dir, exist_ok=True)
 
-    log_file_path = os.path.join(args.log_dir, 'log.txt')
+    log_file_path = os.path.join(args.logs_dir, 'log.txt')
     print(log_file_path)
     logger = Logger(log_file_path, mode)
     
@@ -127,9 +137,10 @@ def main():
 
 
     ## Initialize model
-    logger.write("loading model\n")
+    logger.write("-" * 50 + '\n')
+    weights_dict = {} if args.model_state == 'scratch' else {'weights': 'DEFAULT'}
     if resume:
-        model = torch.load(os.path.join(args.log_dir, 'last_model.pth')).to(device=args.device)
+        model = torch.load(os.path.join(args.logs_dir, 'last_model.pth')).to(device=args.device)
         d = train_data.input_size()[0]
     elif model_attributes[args.model]['feature_type'] in ('precomputed', 'raw_flattened'):
         assert pretrained
@@ -138,25 +149,25 @@ def main():
         model = nn.Linear(d, n_classes).to(device=args.device)
         model.has_aux_logits = False
     elif args.model == 'resnet18':
-        # model = torchvision.models.resnet18(weights='DEFAULT').to(device=args.device)
-        model = torchvision.models.resnet18().to(device=args.device)
+        model = torchvision.models.resnet18(**weights_dict).to(device=args.device)
         d = model.fc.in_features
-        model.fc = nn.Linear(d, n_classes)
+        model.fc = nn.Linear(d, n_classes).to(device=args.device)
     elif args.model == 'resnet50':
-        model = torchvision.models.resnet50().to(device=args.device)
-        # model = torchvision.models.resnet50(weights='DEFAULT').to(device=args.device)
+        model = torchvision.models.resnet50(**weights_dict).to(device=args.device)
         d = model.fc.in_features
-        model.fc = nn.Linear(d, n_classes)
+        model.fc = nn.Linear(d, n_classes).to(device=args.device)
     elif args.model == 'resnet34':
-        model = torchvision.models.resnet34(weights='DEFAULT').to(device=args.device)
+        model = torchvision.models.resnet34(**weights_dict).to(device=args.device)
         d = model.fc.in_features
-        model.fc = nn.Linear(d, n_classes)
+        model.fc = nn.Linear(d, n_classes).to(device=args.device)
     elif args.model == 'wideresnet50':
-        model = torchvision.models.wide_resnet50_2(weights='DEFAULT').to(device=args.device)
+        model = torchvision.models.wide_resnet50_2(**weights_dict).to(device=args.device)
         d = model.fc.in_features
-        model.fc = nn.Linear(d, n_classes)
+        model.fc = nn.Linear(d, n_classes).to(device=args.device)
     else:
         raise ValueError('Model not recognized.')
+    
+    logger.write("loaded model\n")
     
     logger.flush()
 
@@ -172,14 +183,14 @@ def main():
     criterion = torch.nn.CrossEntropyLoss(reduction='none')
 
     if resume:
-        df = pd.read_csv(os.path.join(args.log_dir, 'test.csv'))
+        df = pd.read_csv(os.path.join(args.logs_dir, 'test.csv'))
         epoch_offset = df.loc[len(df)-1,'epoch']+1
         logger.write(f'starting from epoch {epoch_offset}')
     else:
         epoch_offset=0
-    train_csv_logger = CSVBatchLogger(os.path.join(args.log_dir, 'train.csv'), train_data.n_groups, mode=mode)
-    val_csv_logger =  CSVBatchLogger(os.path.join(args.log_dir, 'val.csv'), train_data.n_groups, mode=mode)
-    test_csv_logger =  CSVBatchLogger(os.path.join(args.log_dir, 'test.csv'), train_data.n_groups, mode=mode)
+    train_csv_logger = CSVBatchLogger(os.path.join(args.logs_dir, 'train.csv'), train_data.n_groups, mode=mode)
+    val_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'val.csv'), train_data.n_groups, mode=mode)
+    test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups, mode=mode)
     if args.teacher is None:
         train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
     else:

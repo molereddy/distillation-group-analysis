@@ -1,8 +1,57 @@
-import sys
-import os
-import torch
+import sys, os, torch, csv
 import numpy as np
-import csv
+from matplotlib import pyplot as plt
+
+
+def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
+    fig, axes = plt.subplots(2, 3, figsize=(10, 6))
+    
+    ax = axes[0, 0]
+    ax.plot(range(len(test_avg_accs)), test_avg_accs)
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Overall test acc (avg)')
+    
+    ax = axes[0, 1]
+    ax.plot(range(len(test_ub_accs)), test_ub_accs)
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Unbiased test acc')
+    
+    ax = axes[0, 2]
+    ax.plot(range(len(test_wg_accs)), test_wg_accs)
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Worst-group test acc')
+    
+    ax = axes[1, 0]
+    avg_ub = [avg_acc-ub_acc for avg_acc, ub_acc in zip(test_avg_accs, test_ub_accs)]
+    ax.plot(range(len(avg_ub)), avg_ub)
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Average-Unbiased acc')
+    
+    ax = axes[1, 1]
+    avg_wg = [avg_acc-wg_acc for avg_acc, wg_acc in zip(test_avg_accs, test_wg_accs)]
+    ax.plot(range(len(avg_wg)), avg_wg)
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Average-Worst acc')
+
+    ax = axes[1, 2]
+    ub_wg = [ub_acc-wg_acc for ub_acc, wg_acc in zip(test_ub_accs, test_wg_accs)]
+    ax.plot(range(len(ub_wg)), ub_wg)
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Unbiased-Worst acc')
+
+    plt.tight_layout()
+    plt.savefig(save_at)
+    plt.close()
+
+
+def save_checkpoint(state, logs_dir, is_best=False, is_last=False, save_freq=20):
+    if state['epoch']%save_freq==0:
+        torch.save(state, os.path.join(logs_dir, f'{state["epoch"]}_ckpt.pth.tar'))
+    if is_best:
+        torch.save(state, os.path.join(logs_dir, 'best_ckpt.pth.tar'))
+    if is_last:
+        torch.save(state, os.path.join(logs_dir, 'last_ckpt.pth.tar'))
+
 
 class Logger(object):
     def __init__(self, fpath=None, mode='w'):

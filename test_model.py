@@ -56,9 +56,9 @@ def main():
     args = parser.parse_args()
     check_args(args)
     
-    args.log_dir = os.path.dirname(args.model_path)
+    args.logs_dir = os.path.dirname(args.model_path)
     
-    if os.path.exists(args.log_dir) and args.resume:
+    if os.path.exists(args.logs_dir) and args.resume:
         resume=True
         mode='a'
     else:
@@ -66,7 +66,7 @@ def main():
         mode='w'
 
 
-    log_file_path = os.path.join(args.log_dir, 'test_{}.txt'.format(os.path.basename(args.model_path)))
+    log_file_path = os.path.join(args.logs_dir, 'test_{}.txt'.format(os.path.basename(args.model_path)))
     print(log_file_path)
     logger = Logger(log_file_path, mode)
     
@@ -114,12 +114,12 @@ def main():
     criterion = torch.nn.CrossEntropyLoss(reduction='none')
 
     if resume:
-        df = pd.read_csv(os.path.join(args.log_dir, 'test.csv'))
+        df = pd.read_csv(os.path.join(args.logs_dir, 'test.csv'))
         epoch_offset = df.loc[len(df)-1,'epoch']+1
         logger.write(f'starting from epoch {epoch_offset}')
     else:
         epoch_offset=0
-    test_csv_logger =  CSVBatchLogger(os.path.join(args.log_dir, 'test.csv'), train_data.n_groups, mode=mode)
+    test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups, mode=mode)
     test(model, criterion, data, logger, test_csv_logger, args)
 
     test_csv_logger.close()

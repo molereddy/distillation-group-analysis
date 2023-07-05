@@ -41,7 +41,7 @@ def main():
     # Model
     parser.add_argument('--model', choices=model_attributes.keys(), default='resnet50')
     parser.add_argument('--model_state', choices=['scratch', 'pretrained'], default='scratch')
-    parser.add_argument('--teacher', choices=model_attributes.keys() + [name+'-pt' for name in model_attributes.keys()])
+    parser.add_argument('--teacher', choices=list(model_attributes.keys()) + [name+'-pt' for name in model_attributes.keys()])
     parser.add_argument('--teacher_stage', choices=['best', 'last'], default='best')
 
     # Optimization
@@ -63,11 +63,12 @@ def main():
     if args.dataset == "CUB":
         args.n_epochs = 160
         args.lr = 1e-3
+        args.log_every = 10 * int(128 / args.batch_size)
         args.widx = 2
     elif args.dataset == 'CelebA':
         args.n_epochs = 75
         args.lr = 1e-4
-        args.log_every = 60
+        args.log_every = 80 * int(128 / args.batch_size)
         args.widx = 3
     
     args.save_step = args.n_epochs//5
@@ -86,7 +87,7 @@ def main():
                                      '_'.join([args.teacher, model_state_name, str(args.seed)]))
     else:
          args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
-                                 '_'.join([model_state_name, str(args.rand_seed)]))
+                                 '_'.join([model_state_name, str(args.seed)]))
     
     if not os.path.exists(args.logs_dir):
         os.makedirs(args.logs_dir, exist_ok=True)

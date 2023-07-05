@@ -140,8 +140,8 @@ class LossComputer:
                 f'acc = {self.avg_group_acc[group_idx]:.3f}\n')
         if not is_training and target_group_idx != -1: # i.e. when test/val epoch requests these metrics
             avg_acc = self.avg_acc.item()
-            unbiased_acc = np.average([self.avg_group_acc[group_idx] for group_idx in range(self.n_groups)])
-            target_group_acc = self.avg_group_acc[target_group_idx]
+            unbiased_acc = np.average([self.avg_group_acc[group_idx].item() for group_idx in range(self.n_groups)])
+            target_group_acc = self.avg_group_acc[target_group_idx].item()
             return avg_acc, unbiased_acc, target_group_acc
         logger.flush()
         

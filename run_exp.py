@@ -1,4 +1,4 @@
-import os, csv
+import os, csv, pickle
 import argparse
 import pandas as pd
 import torch, time
@@ -41,8 +41,9 @@ def main():
     # Model
     parser.add_argument('--model', choices=model_attributes.keys(), default='resnet50')
     parser.add_argument('--model_state', choices=['scratch', 'pretrained'], default='scratch')
-    parser.add_argument('--teacher', choices=list(model_attributes.keys()) + [name+'-pt' for name in model_attributes.keys()])
-    parser.add_argument('--teacher_stage', choices=['best', 'last'], default='best')
+    parser.add_argument("--finetune", type=int, choices=[0, 1], default=0)
+    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-ft'], default='resnet50', help="teacher name")
+    parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
 
     # Optimization
     parser.add_argument('--n_epochs', type=int, default=160) # 160 for waterbirds and 75 for celebA
@@ -63,12 +64,12 @@ def main():
     if args.dataset == "CUB":
         args.n_epochs = 160
         args.lr = 1e-3
-        args.log_every = 10 * int(128 / args.batch_size)
+        args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
         args.widx = 2
     elif args.dataset == 'CelebA':
         args.n_epochs = 75
         args.lr = 1e-4
-        args.log_every = 80 * int(128 / args.batch_size)
+        args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 10 # roughly 10240/batch_size
         args.widx = 3
     
     args.save_step = args.n_epochs//5
@@ -112,7 +113,12 @@ def main():
     test_data = None
     test_loader = None
     if args.shift_type == 'confounder':
-        train_data, val_data, test_data = prepare_data(args, train=True, logger=logger)
+        # train_data, val_data, test_data = prepare_data(args, train=True, logger=logger)
+        with open(f'./logs/{args.dataset}/dataset_processed_data.pkl', 'rb') as file:
+            data = pickle.load(file)
+            train_data = data['train_data']
+            val_data = data['val_data']
+            test_data = data['test_data']
     elif args.shift_type == 'label_shift_step':
         train_data, val_data = prepare_data(args, train=True)
 
@@ -175,13 +181,13 @@ def main():
     # load teacher
     if args.teacher is not None:
         if 'resnet18' in args.teacher:
-            teacher = torchvision.models.resnet18().to(device=device)
+            teacher = torchvision.models.resnet18().to(device=args.device)
             d = teacher.fc.in_features
-            teacher.fc = nn.Linear(d, n_classes).to(device=device)
+            teacher.fc = nn.Linear(d, n_classes).to(device=args.device)
         elif 'resnet50' in args.teacher:     
-            teacher = torchvision.models.resnet50().to(device=device)
+            teacher = torchvision.models.resnet50().to(device=args.device)
             d = teacher.fc.in_features
-            teacher.fc = nn.Linear(d, n_classes).to(device=device)
+            teacher.fc = nn.Linear(d, n_classes).to(device=args.device)
         teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
         teacher.load_state_dict(teacher_ckpt['model'])
         teacher.eval()

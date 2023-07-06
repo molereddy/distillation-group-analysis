@@ -9,12 +9,12 @@ from torch.utils.data import Dataset, DataLoader, Subset
 import numpy as np
 from tqdm import tqdm
 
-from utils import AverageMeter, accuracy, save_checkpoint
+from utils import AverageMeter, accuracy, save_checkpoint, plot_train_progress
 from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
-def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger, args,
+def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logger, args,
               is_training, show_progress=False, log_every=10, scheduler=None, teacher=None, target_group_idx=None):
     if is_training:
         model.train()
@@ -39,9 +39,11 @@ def run_epoch(epoch, model, optimizer, loader, loss_computer, logger, csv_logger
                 teacher_logits = teacher(x)
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
             if is_training:
-                optimizer.zero_grad()
+                for optimizer in optimizers:
+                    optimizer.zero_grad()
                 loss_main.backward()
-                optimizer.step()
+                for optimizer in optimizers:
+                    optimizer.step()
 
             if is_training and (batch_idx+1) % log_every==0:
                 csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
@@ -80,14 +82,25 @@ def train(model, criterion, dataset,
         normalize_loss=args.use_normalized_loss,
         min_var_weight=args.minimum_variational_weight)
 
-    optimizer = torch.optim.SGD(
-        filter(lambda p: p.requires_grad, model.parameters()),
-        lr=args.lr,
-        momentum=0.9,
-        weight_decay=args.weight_decay)
+    if args.finetune == 1:
+        parameters_fc = model.fc.parameters()
+        parameters_rest = filter(lambda p: p not in parameters_fc, model.parameters())
+        optimizer = torch.optim.SGD(parameters_fc,
+            lr=args.lr,
+            momentum=0.9,
+            weight_decay=args.wd)
+        optimizer_slow = torch.optim.SGD(parameters_rest, lr=args.lr/100, momentum=0.9, weight_decay=args.wd/100)
+        optimizers = [optimizer, optimizer_slow]
+    else:
+        optimizer = torch.optim.SGD(
+           filter(lambda p: p.requires_grad, model.parameters()),
+           lr=args.lr,
+           momentum=0.9,
+           weight_decay=args.wd)
+        optimizers = [optimizer]
     if args.scheduler:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
+            optimizers[0],
             'min',
             factor=0.1,
             patience=5,
@@ -109,7 +122,7 @@ def train(model, criterion, dataset,
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
         run_epoch(
-            epoch, model, optimizer,
+            epoch, model, optimizers,
             dataset['train_loader'],
             train_loss_computer,
             logger, train_csv_logger, args,
@@ -124,7 +137,7 @@ def train(model, criterion, dataset,
             criterion,
             dataset=dataset['val_data'])
         run_epoch(
-            epoch, model, optimizer,
+            epoch, model, optimizers,
             dataset['val_loader'],
             val_loss_computer,
             logger, val_csv_logger, args,
@@ -137,7 +150,7 @@ def train(model, criterion, dataset,
                 criterion,
                 dataset=dataset['test_data'])
             avg_acc, ub_acc, wg_acc = run_epoch(
-                epoch, model, optimizer,
+                epoch, model, optimizers,
                 dataset['test_loader'],
                 test_loss_computer,
                 logger, test_csv_logger, args,
@@ -150,12 +163,13 @@ def train(model, criterion, dataset,
 
         # Inspect learning rates
         if (epoch+1) % 1 == 0:
-            for param_group in optimizer.param_groups:
+            for param_group in optimizers[0].param_groups:
                 curr_lr = param_group['lr']
                 logger.write('Current lr: %f\n' % curr_lr)
         if epoch == midway:
-            for param_group in optimizer.param_groups:
-                param_group['lr'] /= 10
+            for optimizer in optimizers:
+                for param_group in optimizer.param_groups:
+                    param_group['lr'] /= 10
 
         if args.scheduler:
             val_loss = val_loss_computer.avg_actual_loss
@@ -181,7 +195,7 @@ def train(model, criterion, dataset,
                 'best_val_acc': best_val_acc,
                 'best_test_acc': best_test_acc,
                 'best_model' : best_state_dict,}
-        save_checkpoint(state, logs_dir = args.log_dir, is_best=is_best, save_freq=args.save_step, is_last=is_last)
+        save_checkpoint(state, logs_dir = args.logs_dir, is_best=is_best, save_freq=args.save_step, is_last=is_last)
         
         logger.write(f'Current validation acc: {curr_val_acc:.4f}\n')
         logger.write(f'Current {epoch} test avg acc: {avg_acc:.4f}, unbiased acc: {ub_acc:.4f}, worst acc: {wg_acc:.4f}\n')
@@ -221,7 +235,7 @@ def test(model, criterion, dataset, logger, test_csv_logger, args):
             criterion,
             dataset=dataset['test_data'])
         run_epoch(
-            0, model, optimizer,
+            0, model, optimizers,
             dataset['test_loader'],
             test_loss_computer,
             logger, test_csv_logger, args,

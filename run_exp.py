@@ -66,17 +66,17 @@ def main():
         args.batch_size = 64
     
     if args.dataset == "CUB":
-        args.n_epochs = 200
+        args.n_epochs = 150
         args.lr = 1e-3
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
         args.widx = 2
     elif args.dataset == 'CelebA':
-        args.n_epochs = 75
+        args.n_epochs = 60
         args.lr = 1e-4
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 10 # roughly 10240/batch_size
         args.widx = 3
     
-    args.save_step = args.n_epochs//5
+    args.save_step = args.n_epochs//4
 
 
     # set model, teacher and log file paths

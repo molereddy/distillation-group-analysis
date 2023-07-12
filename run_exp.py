@@ -42,7 +42,7 @@ def main():
     parser.add_argument('--model', choices=model_attributes.keys(), default='resnet50')
     parser.add_argument('--model_state', choices=['scratch', 'pretrained'], default='scratch')
     parser.add_argument("--finetune", type=int, choices=[0, 1], default=0)
-    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-ft'], default='resnet50', help="teacher name")
+    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-ft'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
 
     # Optimization
@@ -50,7 +50,7 @@ def main():
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
     parser.add_argument('--scheduler', action='store_true', default=False)
-    parser.add_argument('--weight_decay', type=float, default=1e-4)
+    parser.add_argument('--weight_decay', type=float, default=5e-4)
     parser.add_argument('--minimum_variational_weight', type=float, default=0)
     # Misc
     parser.add_argument('--seed', type=int, default=0)
@@ -61,8 +61,12 @@ def main():
 
     args = parser.parse_args()
     check_args(args)
+    
+    if (args.teacher is not None or 'resnet50' in args.model) and args.dataset == 'CUB':
+        args.batch_size = 64
+    
     if args.dataset == "CUB":
-        args.n_epochs = 160
+        args.n_epochs = 200
         args.lr = 1e-3
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
         args.widx = 2
@@ -76,10 +80,15 @@ def main():
 
 
     # set model, teacher and log file paths
-    if args.model_state == 'scratch':
+    if args.model_state == 'scratch' and args.finetune == 0:
         model_state_name = args.model
-    else:
+    elif args.model_state == 'scratch' and args.finetune == 1:
+        raise Exception("Cannnot finetune scratch model")
+        sys.exit()
+    elif args.model_state == 'pretrained' and args.finetune == 0:
         model_state_name = args.model + '-pt'
+    elif args.model_state == 'pretrained' and args.finetune == 1:
+        model_state_name = args.model + '-ft'
     
     if args.teacher is not None:
         # teacher pretrain state is given in args.teacher itself

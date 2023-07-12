@@ -88,15 +88,15 @@ def train(model, criterion, dataset,
         optimizer = torch.optim.SGD(parameters_fc,
             lr=args.lr,
             momentum=0.9,
-            weight_decay=args.wd)
-        optimizer_slow = torch.optim.SGD(parameters_rest, lr=args.lr/100, momentum=0.9, weight_decay=args.wd/100)
+            weight_decay=args.weight_decay)
+        optimizer_slow = torch.optim.SGD(parameters_rest, lr=args.lr/100, momentum=0.9, weight_decay=args.weight_decay/100)
         optimizers = [optimizer, optimizer_slow]
     else:
         optimizer = torch.optim.SGD(
            filter(lambda p: p.requires_grad, model.parameters()),
            lr=args.lr,
            momentum=0.9,
-           weight_decay=args.wd)
+           weight_decay=args.weight_decay)
         optimizers = [optimizer]
     if args.scheduler:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -190,6 +190,9 @@ def train(model, criterion, dataset,
         state = {'epoch': epoch,
                 'val_acc': curr_val_acc,
                 'test_acc': curr_test_acc,
+                'ub_acc': ub_acc,
+                'avg_acc': avg_acc,
+                'wg_acc': wg_acc,
                 'model': copy.deepcopy(model.state_dict()),
                 'best_epoch': best_epoch,
                 'best_val_acc': best_val_acc,
@@ -203,8 +206,6 @@ def train(model, criterion, dataset,
         logger.write(f'Best epoch {best_epoch} of val acc {best_val_acc:.4f}: avg acc {best_test_acc:.4f}, unbiased acc: {test_ub_accs[best_epoch]:.4f}, worst acc: {test_wg_accs[best_epoch]:.4f}\n')        
 
         logger.write('\n')
-        
-    plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, os.path.join(args.logs_dir, 'training_curves.png'))
     
     with open(os.path.join(args.logs_dir, 'train_history.pkl'), 'wb') as file:
         pickle.dump({'test_avg_accs': test_avg_accs,
@@ -212,6 +213,9 @@ def train(model, criterion, dataset,
                      'test_wg_accs': test_wg_accs
                     },
                     file)
+        
+    plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, os.path.join(args.logs_dir, 'training_curves.png'))
+    
     
 
 def test(model, criterion, dataset, logger, test_csv_logger, args):

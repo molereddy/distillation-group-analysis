@@ -1,3 +1,0 @@
-TZ=IST-5:30 date; python3 run_exp.py -s confounder -d CUB -t waterbird_complete95 -c forest2water2 --model resnet50 --batch_size 64 > /dev/null; TZ=IST-5:30 date;
-TZ=IST-5:30 date; python3 run_exp.py -s confounder -d CUB -t waterbird_complete95 -c forest2water2 --model resnet18 --batch_size 64 > /dev/null; TZ=IST-5:30 date;
-TZ=IST-5:30 date; python3 run_exp.py -s confounder -d CUB -t waterbird_complete95 -c forest2water2 --model resnet18 --teacher resnet50 --batch_size 64 > /dev/null; TZ=IST-5:30 date;

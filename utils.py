@@ -4,40 +4,24 @@ from matplotlib import pyplot as plt
 
 
 def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
-    fig, axes = plt.subplots(2, 3, figsize=(10, 6))
+    fig, axes = plt.subplots(2, 1, figsize=(10, 6))
     
-    ax = axes[0, 0]
-    ax.plot(range(len(test_avg_accs)), test_avg_accs)
+    ax = axes[0]
+    ax.plot(range(len(test_avg_accs)), test_avg_accs, label='avg acc')
+    ax.plot(range(len(test_ub_accs)), test_ub_accs, label='unbiased acc')
+    ax.plot(range(len(test_wg_accs)), test_wg_accs, label='worst acc')
     ax.set_xlabel('Epochs')
-    ax.set_ylabel('Overall test acc (avg)')
+    ax.set_ylabel('Acc')
     
-    ax = axes[0, 1]
-    ax.plot(range(len(test_ub_accs)), test_ub_accs)
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel('Unbiased test acc')
-    
-    ax = axes[0, 2]
-    ax.plot(range(len(test_wg_accs)), test_wg_accs)
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel('Worst-group test acc')
-    
-    ax = axes[1, 0]
+    ax = axes[1]
     avg_ub = [avg_acc-ub_acc for avg_acc, ub_acc in zip(test_avg_accs, test_ub_accs)]
-    ax.plot(range(len(avg_ub)), avg_ub)
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel('Average-Unbiased acc')
-    
-    ax = axes[1, 1]
     avg_wg = [avg_acc-wg_acc for avg_acc, wg_acc in zip(test_avg_accs, test_wg_accs)]
-    ax.plot(range(len(avg_wg)), avg_wg)
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel('Average-Worst acc')
-
-    ax = axes[1, 2]
     ub_wg = [ub_acc-wg_acc for ub_acc, wg_acc in zip(test_ub_accs, test_wg_accs)]
-    ax.plot(range(len(ub_wg)), ub_wg)
+    ax.plot(range(len(avg_ub)), avg_ub, label='avg - ub')
+    ax.plot(range(len(avg_wg)), avg_wg, label='avg - wg')
+    ax.plot(range(len(ub_wg)), ub_wg, label='ub - ub')
     ax.set_xlabel('Epochs')
-    ax.set_ylabel('Unbiased-Worst acc')
+    ax.set_ylabel('Difference in accuracies')
 
     plt.tight_layout()
     plt.savefig(save_at)

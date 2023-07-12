@@ -15,4 +15,5 @@ logs/*.csv
 logs/*.txt
 logs/*.pth
 .ipynb_checkpoints/
+*.sh
 *~

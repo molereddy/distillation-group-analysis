@@ -44,6 +44,7 @@ def main():
     parser.add_argument("--finetune", type=int, choices=[0, 1], default=0)
     parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-ft'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
+    parser.add_argument('--ft_distil', choices=[0, 1], default=0)
 
     # Optimization
     parser.add_argument('--n_epochs', type=int, default=160) # 160 for waterbirds and 75 for celebA
@@ -78,6 +79,8 @@ def main():
     
     args.save_step = args.n_epochs//4
 
+    feature_distil_cond = args.ft_distil == 1 and ('resnet18' not in args.model or args.teacher is None or 'resnet50' not in args.teacher)
+    assert not feature_distil_cond, "wrong arguments for feature distillation"
 
     # set model, teacher and log file paths
     if args.model_state == 'scratch' and args.finetune == 0:
@@ -90,7 +93,10 @@ def main():
     elif args.model_state == 'pretrained' and args.finetune == 1:
         model_state_name = args.model + '-ft'
     
-    if args.teacher is not None:
+    if args.ft_distil == 1:
+        args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
+                                     '_'.join([args.teacher, 'ft', model_state_name, str(args.seed)]))
+    elif args.teacher is not None:
         # teacher pretrain state is given in args.teacher itself
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
@@ -188,7 +194,7 @@ def main():
     logger.flush()
 
     # load teacher
-    if args.teacher is not None:
+    if args.teacher is not None and args.ft_distil == 0:
         if 'resnet18' in args.teacher:
             teacher = torchvision.models.resnet18().to(device=args.device)
             d = teacher.fc.in_features
@@ -202,6 +208,14 @@ def main():
         teacher.eval()
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}")
         logger.flush()
+    elif args.ft_distil == 1:
+        teacher = torchvision.models.resnet18(weights='DEFAULT').to(device=args.device)
+        tft_mod_list, sft_mod_list = list(teacher.children())[:-1], list(model.children())[:-1]
+        tft_extr, sft_extr = torch.nn.Sequential(*tft_mod_list), torch.nn.Sequential(*sft_mod_list)
+        tft_extr.add_module("flatten", nn.Flatten(start_dim=1, end_dim=3))
+        tft_extr.add_module("projection", nn.Linear(2048, 512))
+        sft_extr.add_module("flatten", nn.Flatten(start_dim=1, end_dim=3))
+        
     
     criterion = torch.nn.CrossEntropyLoss(reduction='none')
 
@@ -216,8 +230,11 @@ def main():
     test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups, mode=mode)
     if args.teacher is None:
         train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
-    else:
+    elif args.ft_distil == 0:
         train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset, teacher=teacher)
+    else:
+        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset, 
+              tft_extractor=tft_extr, sft_extractor=sft_extr)
     train_csv_logger.close()
     val_csv_logger.close()
     test_csv_logger.close()

@@ -54,6 +54,22 @@ class LossComputer:
         self.update_stats(actual_loss, group_loss, group_acc, group_count, weights)
 
         return actual_loss
+    
+    def loss_ft_kd(self, yhat, y, tft, sft, group_idx=None, is_training=False):
+        # compute per-sample and per-group losses
+        per_sample_ce_losses = self.criterion(yhat, y)
+        dims = tuple(range(1, tft.dim()))
+        per_sample_kd_losses = torch.mean((tft - sft) ** 2, dim=dims).squeeze()
+        per_sample_losses = 0.9*per_sample_kd_losses + 0.1*per_sample_ce_losses
+        group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
+        group_acc, group_count = self.compute_group_avg((torch.argmax(yhat,1)==y).float(), group_idx)
+        # compute overall loss
+        actual_loss = per_sample_losses.mean()
+        weights = None
+        # update stats
+        self.update_stats(actual_loss, group_loss, group_acc, group_count, weights)
+
+        return actual_loss
 
     def compute_group_avg(self, losses, group_idx):
         # compute observed counts and mean loss for each group

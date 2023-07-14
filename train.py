@@ -15,7 +15,9 @@ from loss import LossComputer
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
 def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logger, args,
-              is_training, show_progress=False, log_every=10, scheduler=None, teacher=None, target_group_idx=None):
+              is_training, show_progress=False, log_every=10, scheduler=None, teacher=None,
+              sft_extractor=None, tft_extractor=None, 
+              target_group_idx=None):
     if is_training:
         model.train()
     else:
@@ -35,9 +37,12 @@ def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logge
             
             if teacher is None:
                 loss_main = loss_computer.loss(outputs, y, g, is_training)
-            else:
+            elif args.ft_distil == 0:
                 teacher_logits = teacher(x)
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
+            else:
+                teacher_features, student_features = tft_extractor(x), sft_extractor(x)
+                loss_main = loss_computer.loss_ft_kd(outputs, y, teacher_features, student_features, g, is_training)
             if is_training:
                 for optimizer in optimizers:
                     optimizer.zero_grad()

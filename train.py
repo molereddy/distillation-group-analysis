@@ -69,7 +69,8 @@ def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logge
 
 def train(model, criterion, dataset,
           logger, train_csv_logger, val_csv_logger, test_csv_logger,
-          args, epoch_offset, teacher=None):
+          args, epoch_offset, teacher=None,
+          sft_extractor=None, tft_extractor=None, ):
     model = model.cuda()
 
     # process generalization adjustment stuff
@@ -146,7 +147,8 @@ def train(model, criterion, dataset,
             dataset['val_loader'],
             val_loss_computer,
             logger, val_csv_logger, args,
-            is_training=False)
+            is_training=False,
+            sft_extractor=None, tft_extractor=None)
 
         # Test set; don't print to avoid peeking
         logger.write(f'\nTest:\n')
@@ -160,7 +162,8 @@ def train(model, criterion, dataset,
                 test_loss_computer,
                 logger, test_csv_logger, args,
                 is_training=False,
-                target_group_idx=args.widx)
+                target_group_idx=args.widx,
+                sft_extractor=None, tft_extractor=None)
             curr_test_acc = test_loss_computer.avg_acc
             test_avg_accs.append(avg_acc)
             test_ub_accs.append(ub_acc)
@@ -248,4 +251,5 @@ def test(model, criterion, dataset, logger, test_csv_logger, args):
             dataset['test_loader'],
             test_loss_computer,
             logger, test_csv_logger, args,
-            is_training=False)
+            is_training=False,
+            sft_extractor=None, tft_extractor=None)

@@ -211,9 +211,9 @@ def main():
         teacher = torchvision.models.resnet50(weights='DEFAULT').to(device=args.device)
         tft_mod_list, sft_mod_list = list(teacher.children())[:-1], list(model.children())[:-1]
         tft_extr, sft_extr = torch.nn.Sequential(*tft_mod_list), torch.nn.Sequential(*sft_mod_list)
-        tft_extr.add_module("flatten", nn.Flatten(start_dim=1, end_dim=3))
-        tft_extr.add_module("projection", nn.Linear(2048, 512))
-        sft_extr.add_module("flatten", nn.Flatten(start_dim=1, end_dim=3))
+        tft_extr.add_module("flatten", nn.Flatten(start_dim=1, end_dim=3).to(device=args.device))
+        tft_extr.add_module("projection", nn.Linear(2048, 512).to(device=args.device))
+        sft_extr.add_module("flatten", nn.Flatten(start_dim=1, end_dim=3).to(device=args.device))
         teacher.eval()
     logger.flush()
     

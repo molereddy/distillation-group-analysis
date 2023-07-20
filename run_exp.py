@@ -208,13 +208,7 @@ def main():
         teacher.eval()
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}")
     elif args.ft_distil == 1:
-        teacher = torchvision.models.resnet50(weights='DEFAULT').to(device=args.device)
-        tft_mod_list, sft_mod_list = list(teacher.children())[:-1], list(model.children())[:-1]
-        tft_extr, sft_extr = torch.nn.Sequential(*tft_mod_list), torch.nn.Sequential(*sft_mod_list)
-        tft_extr.add_module("flatten", nn.Flatten(start_dim=1, end_dim=3).to(device=args.device))
-        tft_extr.add_module("projection", nn.Linear(2048, 512).to(device=args.device))
-        sft_extr.add_module("flatten", nn.Flatten(start_dim=1, end_dim=3).to(device=args.device))
-        teacher.eval()
+        pass
     logger.flush()
     
     criterion = torch.nn.CrossEntropyLoss(reduction='none')
@@ -230,11 +224,8 @@ def main():
     test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups, mode=mode)
     if args.teacher is None:
         train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
-    elif args.ft_distil == 0:
-        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset, teacher=teacher)
     else:
-        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset, 
-              tft_extractor=tft_extr, sft_extractor=sft_extr)
+        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset, teacher=teacher)
     train_csv_logger.close()
     val_csv_logger.close()
     test_csv_logger.close()

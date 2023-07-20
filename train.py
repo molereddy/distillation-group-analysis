@@ -16,7 +16,6 @@ from pytorch_transformers import AdamW, WarmupLinearSchedule
 
 def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logger, args,
               is_training, show_progress=False, log_every=10, scheduler=None, teacher=None,
-              sft_extractor=None, tft_extractor=None, 
               target_group_idx=None):
     if is_training:
         model.train()
@@ -37,12 +36,9 @@ def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logge
             
             if teacher is None:
                 loss_main = loss_computer.loss(outputs, y, g, is_training)
-            elif args.ft_distil == 0:
+            else:
                 teacher_logits = teacher(x)
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
-            else:
-                teacher_features, student_features = tft_extractor(x), sft_extractor(x)
-                loss_main = loss_computer.loss_ft_kd(outputs, y, teacher_features, student_features, g, is_training)
             if is_training:
                 for optimizer in optimizers:
                     optimizer.zero_grad()
@@ -69,8 +65,7 @@ def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logge
 
 def train(model, criterion, dataset,
           logger, train_csv_logger, val_csv_logger, test_csv_logger,
-          args, epoch_offset, teacher=None,
-          sft_extractor=None, tft_extractor=None, ):
+          args, epoch_offset, teacher=None):
     model = model.cuda()
 
     # process generalization adjustment stuff
@@ -147,8 +142,7 @@ def train(model, criterion, dataset,
             dataset['val_loader'],
             val_loss_computer,
             logger, val_csv_logger, args,
-            is_training=False,
-            sft_extractor=None, tft_extractor=None)
+            is_training=False)
 
         # Test set; don't print to avoid peeking
         logger.write(f'\nTest:\n')
@@ -162,8 +156,7 @@ def train(model, criterion, dataset,
                 test_loss_computer,
                 logger, test_csv_logger, args,
                 is_training=False,
-                target_group_idx=args.widx,
-                sft_extractor=None, tft_extractor=None)
+                target_group_idx=args.widx)
             curr_test_acc = test_loss_computer.avg_acc
             test_avg_accs.append(avg_acc)
             test_ub_accs.append(ub_acc)
@@ -251,5 +244,4 @@ def test(model, criterion, dataset, logger, test_csv_logger, args):
             dataset['test_loader'],
             test_loss_computer,
             logger, test_csv_logger, args,
-            is_training=False,
-            sft_extractor=None, tft_extractor=None)
+            is_training=False)

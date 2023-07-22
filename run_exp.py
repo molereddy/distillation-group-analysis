@@ -5,7 +5,7 @@ import torch, time
 import torch.nn as nn
 import torchvision
 
-from models import model_attributes
+from models import model_attributes, featured_forward, SimKD
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from utils import set_seed, Logger, CSVBatchLogger, log_args
 from train import train
@@ -41,10 +41,9 @@ def main():
     # Model
     parser.add_argument('--model', choices=model_attributes.keys(), default='resnet50')
     parser.add_argument('--model_state', choices=['scratch', 'pretrained'], default='scratch')
-    parser.add_argument("--finetune", type=int, choices=[0, 1], default=0)
     parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-ft'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
-    parser.add_argument('--ft_distil', type=int, choices=[0, 1], default=0)
+    parser.add_argument('--method', type=str, choices=['KD', 'SimKD'], default='KD')
 
     # Optimization
     parser.add_argument('--n_epochs', type=int, default=160) # 160 for waterbirds and 75 for celebA
@@ -79,23 +78,15 @@ def main():
     
     args.save_step = args.n_epochs//4
 
-    feature_distil_cond = args.ft_distil == 1 and ('resnet18' not in args.model or args.teacher is None or 'resnet50' not in args.teacher)
-    assert not feature_distil_cond, "wrong arguments for feature distillation"
-
     # set model, teacher and log file paths
-    if args.model_state == 'scratch' and args.finetune == 0:
+    if args.model_state == 'scratch':
         model_state_name = args.model
-    elif args.model_state == 'scratch' and args.finetune == 1:
-        raise Exception("Cannnot finetune scratch model")
-        sys.exit()
-    elif args.model_state == 'pretrained' and args.finetune == 0:
+    elif args.model_state == 'pretrained':
         model_state_name = args.model + '-pt'
-    elif args.model_state == 'pretrained' and args.finetune == 1:
-        model_state_name = args.model + '-ft'
     
-    if args.ft_distil == 1:
+    if args.teacher is not None and args.method != 'KD':
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
-                                     '_'.join([args.teacher, 'ft', model_state_name, str(args.seed)]))
+                                     '_'.join([args.teacher, args.method, model_state_name, str(args.seed)]))
     elif args.teacher is not None:
         # teacher pretrain state is given in args.teacher itself
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
@@ -157,7 +148,7 @@ def main():
 
     log_data(data, logger)
 
-
+    models = {}
     ## Initialize model
     logger.write("-" * 50 + '\n')
     weights_dict = {} if args.model_state == 'scratch' else {'weights': 'DEFAULT'}
@@ -190,11 +181,11 @@ def main():
         raise ValueError('Model not recognized.')
     
     logger.write("loaded model\n")
-    
+    models['student'] = model
     logger.flush()
 
     # load teacher
-    if args.teacher is not None and args.ft_distil == 0:
+    if args.teacher is not None:
         if 'resnet18' in args.teacher:
             teacher = torchvision.models.resnet18().to(device=args.device)
             d = teacher.fc.in_features
@@ -206,12 +197,23 @@ def main():
         teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
         teacher.load_state_dict(teacher_ckpt['model'])
         teacher.eval()
+        models['teacher'] = teacher
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}")
-    elif args.ft_distil == 1:
-        pass
-    logger.flush()
     
-    criterion = torch.nn.CrossEntropyLoss(reduction='none')
+    if args.method == 'SimKD':
+        models['teacher'].forward = featured_forward
+        models['student'].forward = featured_forward
+        models['teacher'].eval()
+        models['student'].eval()
+        
+        data_samples = next(iter(data['train_loader']))[0][:2]
+        t_n = models['teacher'](data_samples, is_feat=True)[0][0].shape[1]
+        s_n = models['student'](data_samples, is_feat=True)[0][0].shape[1]
+        model_simkd = SimKD(s_n=s_n, t_n=t_n, factor=2).to(device=args.device)
+        model_simkd.train()
+        models['simkd'] = model_simkd
+        
+    logger.flush()
 
     if resume:
         df = pd.read_csv(os.path.join(args.logs_dir, 'test.csv'))
@@ -219,13 +221,13 @@ def main():
         logger.write(f'starting from epoch {epoch_offset}')
     else:
         epoch_offset=0
+    
     train_csv_logger = CSVBatchLogger(os.path.join(args.logs_dir, 'train.csv'), train_data.n_groups, mode=mode)
     val_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'val.csv'), train_data.n_groups, mode=mode)
     test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups, mode=mode)
-    if args.teacher is None:
-        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
-    else:
-        train(model, criterion, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset, teacher=teacher)
+    
+    train(models, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
+    
     train_csv_logger.close()
     val_csv_logger.close()
     test_csv_logger.close()

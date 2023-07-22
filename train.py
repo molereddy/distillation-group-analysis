@@ -14,31 +14,49 @@ from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
-def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logger, args,
-              is_training, show_progress=False, log_every=10, scheduler=None, teacher=None,
+def run_epoch(epoch, models, optimizers, loader, loss_computer, logger, csv_logger, args,
+              is_training, show_progress=False, log_every=10, scheduler=None,
               target_group_idx=None):
+    
     if is_training:
-        model.train()
+        models['student'].train()
+        if args.method == 'SimKD': models['simkd'].train()
     else:
-        model.eval()
+        models['student'].eval()
+        if args.method == 'SimKD': models['simkd'].eval()
+    
     if show_progress:
         prog_bar_loader = tqdm(loader)
     else:
         prog_bar_loader = loader
 
     with torch.set_grad_enabled(is_training):
+        
         for batch_idx, batch in enumerate(prog_bar_loader):
+        
             batch = tuple(t.cuda() for t in batch)
             x = batch[0]
             y = batch[1]
             g = batch[2]
-            outputs = model(x)
             
-            if teacher is None:
+            if args.teacher is None:
+                outputs = models['student'](x)
                 loss_main = loss_computer.loss(outputs, y, g, is_training)
-            else:
-                teacher_logits = teacher(x)
+            elif args.method == 'KD':
+                outputs = models['student'](x)
+                teacher_logits = models['teacher'](x)
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
+            elif args.method == 'SimKD':
+                student_features = models['student'](x)[0][0]
+                teacher_features = models['teacher'](x)[0][0]
+                teacher_features = teacher_features.detach()
+                _, _, outputs = models['simkd'](student_features, teacher_features, 
+                                                models['teacher'].fc)
+                loss_main = loss_computer.mse_loss(outputs, y, 
+                                                   teacher_features, student_features, 
+                                                   g, is_training)
+            else:
+                raise NotImplementedError(args.method)
             if is_training:
                 for optimizer in optimizers:
                     optimizer.zero_grad()
@@ -47,26 +65,26 @@ def run_epoch(epoch, model, optimizers, loader, loss_computer, logger, csv_logge
                     optimizer.step()
 
             if is_training and (batch_idx+1) % log_every==0:
-                csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
+                csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
                 csv_logger.flush()
                 loss_computer.log_stats(logger, is_training)
                 loss_computer.reset_stats()
 
         if not is_training:
-            csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
+            csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
             csv_logger.flush()
             return loss_computer.log_stats(logger, is_training, target_group_idx=args.widx)
         
         elif loss_computer.batch_count > 0:
-            csv_logger.log(epoch, batch_idx, loss_computer.get_stats(model, args))
+            csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
             csv_logger.flush()
             loss_computer.log_stats(logger, is_training)
             loss_computer.reset_stats()
 
-def train(model, criterion, dataset,
+def train(models, dataset,
           logger, train_csv_logger, val_csv_logger, test_csv_logger,
-          args, epoch_offset, teacher=None):
-    model = model.cuda()
+          args, epoch_offset):
+    models['student'] = models['student'].cuda()
 
     # process generalization adjustment stuff
     adjustments = [float(c) for c in args.generalization_adjustment.split(',')]
@@ -77,28 +95,15 @@ def train(model, criterion, dataset,
         adjustments = np.array(adjustments)
 
     train_loss_computer = LossComputer(
-        criterion,
         dataset=dataset['train_data'],
         adj=adjustments,
         normalize_loss=args.use_normalized_loss,
         min_var_weight=args.minimum_variational_weight)
 
-    if args.finetune == 1:
-        parameters_fc = model.fc.parameters()
-        parameters_rest = filter(lambda p: p not in parameters_fc, model.parameters())
-        optimizer = torch.optim.SGD(parameters_fc,
-            lr=args.lr,
-            momentum=0.9,
-            weight_decay=args.weight_decay)
-        optimizer_slow = torch.optim.SGD(parameters_rest, lr=args.lr/100, momentum=0.9, weight_decay=args.weight_decay/100)
-        optimizers = [optimizer, optimizer_slow]
-    else:
-        optimizer = torch.optim.SGD(
-           filter(lambda p: p.requires_grad, model.parameters()),
-           lr=args.lr,
-           momentum=0.9,
-           weight_decay=args.weight_decay)
-        optimizers = [optimizer]
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, models['student'].parameters()),
+       lr=args.lr, momentum=0.9, weight_decay=args.weight_decay)
+    optimizers = [optimizer]
+    
     if args.scheduler:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizers[0],
@@ -112,8 +117,8 @@ def train(model, criterion, dataset,
         scheduler = None
 
     best_val_acc, best_test_acc, best_epoch = 0, 0, 0
-    best_state_dict = copy.deepcopy(model.state_dict())
-    midway = args.n_epochs//2
+    best_state_dict = copy.deepcopy(models['student'].state_dict())
+    midway = 3*args.n_epochs//5
 
     best_acc = 0   
     is_last = False
@@ -123,22 +128,19 @@ def train(model, criterion, dataset,
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
         run_epoch(
-            epoch, model, optimizers,
+            epoch, models, optimizers,
             dataset['train_loader'],
             train_loss_computer,
             logger, train_csv_logger, args,
             is_training=True,
             show_progress=args.show_progress,
             log_every=args.log_every,
-            scheduler=scheduler,
-            teacher=teacher)
+            scheduler=scheduler)
 
         logger.write(f'\nValidation:\n')
-        val_loss_computer = LossComputer(
-            criterion,
-            dataset=dataset['val_data'])
+        val_loss_computer = LossComputer(dataset=dataset['val_data'])
         run_epoch(
-            epoch, model, optimizers,
+            epoch, models, optimizers,
             dataset['val_loader'],
             val_loss_computer,
             logger, val_csv_logger, args,
@@ -147,11 +149,9 @@ def train(model, criterion, dataset,
         # Test set; don't print to avoid peeking
         logger.write(f'\nTest:\n')
         if dataset['test_data'] is not None:
-            test_loss_computer = LossComputer(
-                criterion,
-                dataset=dataset['test_data'])
+            test_loss_computer = LossComputer(dataset=dataset['test_data'])
             avg_acc, ub_acc, wg_acc = run_epoch(
-                epoch, model, optimizers,
+                epoch, models, optimizers,
                 dataset['test_loader'],
                 test_loss_computer,
                 logger, test_csv_logger, args,
@@ -182,7 +182,7 @@ def train(model, criterion, dataset,
             best_val_acc = curr_val_acc
             best_test_acc = curr_test_acc
             is_best = True
-            best_state_dict = copy.deepcopy(model.state_dict())
+            best_state_dict = copy.deepcopy(models['student'].state_dict())
             best_epoch = epoch
         else:
             is_best = False
@@ -194,11 +194,13 @@ def train(model, criterion, dataset,
                 'ub_acc': ub_acc,
                 'avg_acc': avg_acc,
                 'wg_acc': wg_acc,
-                'model': copy.deepcopy(model.state_dict()),
+                'model': copy.deepcopy(models['student'].state_dict()),
                 'best_epoch': best_epoch,
                 'best_val_acc': best_val_acc,
                 'best_test_acc': best_test_acc,
                 'best_model' : best_state_dict,}
+        if args.method == 'SimKD':
+            state['simkd'] = copy.deepcopy(models['simkd'].state_dict())
         save_checkpoint(state, logs_dir = args.logs_dir, is_best=is_best, save_freq=args.save_step, is_last=is_last)
         
         logger.write(f'Current validation acc: {curr_val_acc:.4f}\n')
@@ -219,8 +221,8 @@ def train(model, criterion, dataset,
     
     
 
-def test(model, criterion, dataset, logger, test_csv_logger, args):
-    model = model.cuda()
+def test(models, dataset, logger, test_csv_logger, args):
+    models['student'] = models['student'].cuda()
     # process generalization adjustment stuff
     adjustments = [float(c) for c in args.generalization_adjustment.split(',')]
     assert len(adjustments) in (1, dataset['train_data'].n_groups)
@@ -230,17 +232,15 @@ def test(model, criterion, dataset, logger, test_csv_logger, args):
         adjustments = np.array(adjustments)
 
     optimizer = torch.optim.SGD(
-        filter(lambda p: p.requires_grad, model.parameters()),
+        filter(lambda p: p.requires_grad, models['student'].parameters()),
         lr=args.lr,
         momentum=0.9,
         weight_decay=args.weight_decay)
     logger.write(f'\nTest:\n')
     if dataset['test_data'] is not None:
-        test_loss_computer = LossComputer(
-            criterion,
-            dataset=dataset['test_data'])
+        test_loss_computer = LossComputer(dataset=dataset['test_data'])
         run_epoch(
-            0, model, optimizers,
+            0, models, optimizers,
             dataset['test_loader'],
             test_loss_computer,
             logger, test_csv_logger, args,

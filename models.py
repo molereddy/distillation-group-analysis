@@ -89,39 +89,30 @@ class SimKD(nn.Module):
         return trans_feat_s, trans_feat_t, pred_feat_s
 
 
-def featured_forward(self, x: Tensor, is_feat=False) -> Tensor:
-    if not is_feat: # usual
-        # See note [TorchScript super()]
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
+class FeatResNet(nn.Module):
+    
+    def __init__(self, core_resnet):
+        super(FeatResNet, self).__init__()
+        self.internal = core_resnet
+    
+    def fc_layer(self):
+        return self.internal.fc
+    
+    def forward(self, x: Tensor) -> Tensor:
+        x = self.internal.conv1(x)
+        x = self.internal.bn1(x)
+        x = self.internal.relu(x)
+        x = self.internal.maxpool(x)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.fc(x)
-
-        return x
-    else:
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x = self.internal.layer1(x)
+        x = self.internal.layer2(x)
+        x = self.internal.layer3(x)
+        x = self.internal.layer4(x)
         ft_full = x
 
-        x = self.avgpool(x)
+        x = self.internal.avgpool(x)
         x = torch.flatten(x, 1)
         ft = x
-        x = self.fc(x)
+        x = self.internal.fc(x)
 
         return [ft_full, ft], x

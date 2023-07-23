@@ -5,7 +5,7 @@ import torch, time
 import torch.nn as nn
 import torchvision
 
-from models import model_attributes, featured_forward, SimKD
+from models import model_attributes, FeatResNet, SimKD
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from utils import set_seed, Logger, CSVBatchLogger, log_args
 from train import train
@@ -71,10 +71,12 @@ def main():
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
         args.widx = 2
     elif args.dataset == 'CelebA':
-        args.n_epochs = 60
-        args.lr = 1e-4
+        args.n_epochs = 80
+        args.lr = 5e-5
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 10 # roughly 10240/batch_size
         args.widx = 3
+    
+    if args.method == 'SimKD': args.lr *= 10
     
     args.save_step = args.n_epochs//4
 
@@ -85,6 +87,7 @@ def main():
         model_state_name = args.model + '-pt'
     
     if args.teacher is not None and args.method != 'KD':
+        teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, model_state_name, str(args.seed)]))
     elif args.teacher is not None:
@@ -201,14 +204,14 @@ def main():
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}")
     
     if args.method == 'SimKD':
-        models['teacher'].forward = featured_forward
-        models['student'].forward = featured_forward
+        models['teacher'] = FeatResNet(models['teacher'])
+        models['student'] = FeatResNet(models['student'])
         models['teacher'].eval()
         models['student'].eval()
         
-        data_samples = next(iter(data['train_loader']))[0][:2]
-        t_n = models['teacher'](data_samples, is_feat=True)[0][0].shape[1]
-        s_n = models['student'](data_samples, is_feat=True)[0][0].shape[1]
+        data_samples = next(iter(data['train_loader']))[0][:2].to(device=args.device)
+        t_n = models['teacher'](data_samples)[0][0].shape[1]
+        s_n = models['student'](data_samples)[0][0].shape[1]
         model_simkd = SimKD(s_n=s_n, t_n=t_n, factor=2).to(device=args.device)
         model_simkd.train()
         models['simkd'] = model_simkd

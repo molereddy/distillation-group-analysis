@@ -55,7 +55,7 @@ class LossComputer:
 
         return actual_loss
     
-    def loss_mse(self, yhat, y, tft, sft, group_idx=None, is_training=False):
+    def loss_mse(self, yhat, y, sft, tft, group_idx=None, is_training=False):
         # compute per-sample and per-group losses
         per_sample_losses = torch.mean((sft - tft) ** 2, dim=(1, 2, 3))
         group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)

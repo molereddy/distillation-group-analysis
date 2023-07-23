@@ -47,13 +47,12 @@ def run_epoch(epoch, models, optimizers, loader, loss_computer, logger, csv_logg
                 teacher_logits = models['teacher'](x)
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
             elif args.method == 'SimKD':
-                student_features = models['student'](x)[0][0]
-                teacher_features = models['teacher'](x)[0][0]
-                teacher_features = teacher_features.detach()
-                _, _, outputs = models['simkd'](student_features, teacher_features, 
-                                                models['teacher'].fc)
-                loss_main = loss_computer.mse_loss(outputs, y, 
-                                                   teacher_features, student_features, 
+                sft_base = models['student'](x)[0][0]
+                tft_base = models['teacher'](x)[0][0]
+                tft_base = tft_base.detach()
+                sft, tft, outputs = models['simkd'](sft_base, tft_base, 
+                                                models['teacher'].fc_layer())
+                loss_main = loss_computer.loss_mse(outputs, y, sft, tft, 
                                                    g, is_training)
             else:
                 raise NotImplementedError(args.method)
@@ -100,7 +99,13 @@ def train(models, dataset,
         normalize_loss=args.use_normalized_loss,
         min_var_weight=args.minimum_variational_weight)
 
-    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, models['student'].parameters()),
+    
+    trainable_list = nn.ModuleList([])
+    trainable_list.append(models['student'])
+    if args.method == 'SimKD': trainable_list.append(models['simkd'])
+    
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, 
+                                       trainable_list.parameters()),
        lr=args.lr, momentum=0.9, weight_decay=args.weight_decay)
     optimizers = [optimizer]
     

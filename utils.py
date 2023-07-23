@@ -12,6 +12,7 @@ def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
     ax.plot(range(len(test_wg_accs)), test_wg_accs, label='worst acc')
     ax.set_xlabel('Epochs')
     ax.set_ylabel('Acc')
+    ax.legend()
     
     ax = axes[1]
     avg_ub = [avg_acc-ub_acc for avg_acc, ub_acc in zip(test_avg_accs, test_ub_accs)]
@@ -22,6 +23,7 @@ def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
     ax.plot(range(len(ub_wg)), ub_wg, label='ub - ub')
     ax.set_xlabel('Epochs')
     ax.set_ylabel('Difference in accuracies')
+    ax.legend()
 
     plt.tight_layout()
     plt.savefig(save_at)

@@ -129,7 +129,7 @@ def train(models, dataset,
     is_last = False
     test_wg_accs, test_avg_accs, test_ub_accs = [], [], []
     
-    for epoch in range(epoch_offset, epoch_offset+args.n_epochs):
+    for epoch in tqdm(range(epoch_offset, epoch_offset+args.n_epochs)):
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
         run_epoch(

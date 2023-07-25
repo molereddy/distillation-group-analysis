@@ -56,18 +56,18 @@ class Logger(object):
         self.close()
 
     def write(self, msg):
-        self.console.write(msg)
+        # self.console.write(msg)
         if self.file is not None:
             self.file.write(msg)
 
     def flush(self):
-        self.console.flush()
+        # self.console.flush()
         if self.file is not None:
             self.file.flush()
             os.fsync(self.file.fileno())
 
     def close(self):
-        self.console.close()
+        # self.console.close()
         if self.file is not None:
             self.file.close()
 

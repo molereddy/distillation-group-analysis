@@ -73,10 +73,10 @@ def main():
     elif args.dataset == 'CelebA':
         args.n_epochs = 80
         args.lr = 5e-5
+        if args.method == 'SimKD': args.lr *= 5
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 10 # roughly 10240/batch_size
         args.widx = 3
     
-    if args.method == 'SimKD': args.lr *= 10
     
     args.save_step = args.n_epochs//4
 
@@ -112,7 +112,7 @@ def main():
     ## Initialize logs
     log_file_path = os.path.join(args.logs_dir, 'train.log')
     logger = Logger(log_file_path, mode)
-    print(log_file_path)
+    logger.write(log_file_path + '\n')
     log_args(args, logger)
     set_seed(args.seed)
     

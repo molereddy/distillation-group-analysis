@@ -234,6 +234,8 @@ def main():
     train_csv_logger.close()
     val_csv_logger.close()
     test_csv_logger.close()
+    
+    logger.write("{:.2g}h for running\n".format((time.time()-data_start_time)/3600))
 
 def check_args(args):
     if args.shift_type == 'confounder':

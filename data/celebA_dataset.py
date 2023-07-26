@@ -24,12 +24,12 @@ class CelebADataset(ConfounderDataset):
 
         # Read in attributes
         self.attrs_df = pd.read_csv(
-            os.path.join(root_dir, 'data', 'list_attr_celeba.csv'))
+            os.path.join(root_dir, "data", "list_attr_celeba.csv"))
 
         # Split out filenames and attribute names
-        self.data_dir = os.path.join(self.root_dir, 'data', 'img_align_celeba')
-        self.filename_array = self.attrs_df['image_id'].values
-        self.attrs_df = self.attrs_df.drop(labels='image_id', axis='columns')
+        self.data_dir = os.path.join(self.root_dir, "data", "img_align_celeba")
+        self.filename_array = self.attrs_df["image_id"].values
+        self.attrs_df = self.attrs_df.drop(labels="image_id", axis="columns")
         self.attr_names = self.attrs_df.columns.copy()
 
         # Then cast attributes to numpy array and set them to 0 and 1
@@ -51,21 +51,21 @@ class CelebADataset(ConfounderDataset):
 
         # Map to groups
         self.n_groups = self.n_classes * pow(2, len(self.confounder_idx))
-        self.group_array = (self.y_array*(self.n_groups/2) + self.confounder_array).astype('int')
+        self.group_array = (self.y_array*(self.n_groups/2) + self.confounder_array).astype("int")
 
         # Read in train/val/test splits
         self.split_df = pd.read_csv(
-            os.path.join(root_dir, 'data', 'list_eval_partition.csv'))
-        self.split_array = self.split_df['partition'].values
+            os.path.join(root_dir, "data", "list_eval_partition.csv"))
+        self.split_array = self.split_df["partition"].values
         self.split_dict = {
-            'train': 0,
-            'val': 1,
-            'test': 2
+            "train": 0,
+            "val": 1,
+            "test": 2
         }
 
-        if model_attributes[self.model_type]['feature_type']=='precomputed':
+        if model_attributes[self.model_type]["feature_type"]=="precomputed":
             self.features_mat = torch.from_numpy(np.load(
-                os.path.join(root_dir, 'features', model_attributes[self.model_type]['feature_filename']))).float()
+                os.path.join(root_dir, "features", model_attributes[self.model_type]["feature_filename"]))).float()
             self.train_transform = None
             self.eval_transform = None
         else:
@@ -81,8 +81,8 @@ def get_transform_celebA(model_type, train, augment_data):
     orig_w = 178
     orig_h = 218
     orig_min_dim = min(orig_w, orig_h)
-    if model_attributes[model_type]['target_resolution'] is not None:
-        target_resolution = model_attributes[model_type]['target_resolution']
+    if model_attributes[model_type]["target_resolution"] is not None:
+        target_resolution = model_attributes[model_type]["target_resolution"]
     else:
         target_resolution = (orig_w, orig_h)
 

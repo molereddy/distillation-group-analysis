@@ -26,41 +26,41 @@ class CUBDataset(ConfounderDataset):
 
         self.data_dir = os.path.join(
             self.root_dir,
-            'data',
-            '_'.join([self.target_name] + self.confounder_names))
+            "data",
+            "_".join([self.target_name] + self.confounder_names))
 
         if not os.path.exists(self.data_dir):
             raise ValueError(
-                f'{self.data_dir} does not exist yet. Please generate the dataset first.')
+                f"{self.data_dir} does not exist yet. Please generate the dataset first.")
 
         # Read in metadata
         self.metadata_df = pd.read_csv(
-            os.path.join(self.data_dir, 'metadata.csv'))
+            os.path.join(self.data_dir, "metadata.csv"))
 
         # Get the y values
-        self.y_array = self.metadata_df['y'].values
+        self.y_array = self.metadata_df["y"].values
         self.n_classes = 2
 
         # We only support one confounder for CUB for now
-        self.confounder_array = self.metadata_df['place'].values
+        self.confounder_array = self.metadata_df["place"].values
         self.n_confounders = 1
         # Map to groups
         self.n_groups = pow(2, 2)
-        self.group_array = (self.y_array*(self.n_groups/2) + self.confounder_array).astype('int')
+        self.group_array = (self.y_array*(self.n_groups/2) + self.confounder_array).astype("int")
 
         # Extract filenames and splits
-        self.filename_array = self.metadata_df['img_filename'].values
-        self.split_array = self.metadata_df['split'].values
+        self.filename_array = self.metadata_df["img_filename"].values
+        self.split_array = self.metadata_df["split"].values
         self.split_dict = {
-            'train': 0,
-            'val': 1,
-            'test': 2
+            "train": 0,
+            "val": 1,
+            "test": 2
         }
 
         # Set transform
-        if model_attributes[self.model_type]['feature_type']=='precomputed':
+        if model_attributes[self.model_type]["feature_type"]=="precomputed":
             self.features_mat = torch.from_numpy(np.load(
-                os.path.join(root_dir, 'features', model_attributes[self.model_type]['feature_filename']))).float()
+                os.path.join(root_dir, "features", model_attributes[self.model_type]["feature_filename"]))).float()
             self.train_transform = None
             self.eval_transform = None
         else:
@@ -77,7 +77,7 @@ class CUBDataset(ConfounderDataset):
 
 def get_transform_cub(model_type, train, augment_data):
     scale = 256.0/224.0
-    target_resolution = model_attributes[model_type]['target_resolution']
+    target_resolution = model_attributes[model_type]["target_resolution"]
     assert target_resolution is not None
 
     if (not train) or (not augment_data):

@@ -19,7 +19,7 @@ def main():
     # Settings
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('-d', '--dataset', choices=dataset_attributes.keys(), required=True)
-    parser.add_argument('-s', '--shift_type', choices=shift_types, required=True)
+    parser.add_argument('-s', '--shift_type', choices=shift_types, default='confounder', required=True)
     # Confounders
     parser.add_argument('-t', '--target_name')
     parser.add_argument('-c', '--confounder_names', nargs='+')

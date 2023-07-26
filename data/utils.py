@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from torch.utils.data import Subset
+from data.folds import Subset
 
 # Train val split
 def train_val_split(dataset, val_frac):

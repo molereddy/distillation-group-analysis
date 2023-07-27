@@ -83,6 +83,7 @@ class JigsawDataset(ConfounderDataset):
             self.group_array = (
                 self.y_array * (self.n_groups / 2) + self.confounder_array
             ).astype("int")
+        self.wt_array = np.ones_like(self.group_array, dtype=np.float32)
 
         # Extract splits
         self.split_dict = {"train": 0, "val": 1, "test": 2}
@@ -106,9 +107,13 @@ class JigsawDataset(ConfounderDataset):
     def get_label_array(self):
         return self.y_array
 
+    def get_weight_array(self):
+        return self.wt_array
+
     def __getitem__(self, idx):
         y = self.y_array[idx]
         g = self.group_array[idx]
+        wt = self.wt_array[idx]
 
         text = self.text_array[idx]
         tokens = self.tokenizer(
@@ -124,7 +129,7 @@ class JigsawDataset(ConfounderDataset):
         )
         x = torch.squeeze(x, dim=0)  # First shape dim is always 1
 
-        return x, y, g, idx
+        return x, y, g, idx, wt
 
     def group_str(self, group_idx):
         if self.n_groups == self.n_classes:

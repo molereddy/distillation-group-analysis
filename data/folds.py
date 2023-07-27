@@ -22,6 +22,7 @@ class Subset(torch.utils.data.Dataset):
 
         self.group_array = self.get_group_array(re_evaluate=True)
         self.label_array = self.get_label_array(re_evaluate=True)
+        self.wt_array = self.get_weight_array(re_evaluate=True)
         
 
     def __getitem__(self, idx):
@@ -48,6 +49,14 @@ class Subset(torch.utils.data.Dataset):
         else:
             return self.label_array
 
+    def get_weight_array(self, re_evaluate=True):
+        if re_evaluate:
+            wt_array = self.dataset.get_weight_array()[self.indices]
+            assert len(wt_array) == len(self)
+            return wt_array
+        else:
+            return self.wt_array
+
 
 class ConcatDataset(torch.utils.data.ConcatDataset):
     """
@@ -69,6 +78,11 @@ class ConcatDataset(torch.utils.data.ConcatDataset):
         for dataset in self.datasets:
             label_array += list(np.squeeze(dataset.get_label_array()))
         return label_array
+    def get_weight_array(self):
+        wt_array = []
+        for dataset in self.datasets:
+            wt_array += list(np.squeeze(dataset.get_weight_array()))
+        return wt_array
 
 
 def get_fold(

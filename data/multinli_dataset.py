@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
 from models import model_attributes
-from torch.utils.data import Dataset, Subset
+from torch.utils.data import Dataset
 from data.confounder_dataset import ConfounderDataset
 
 
@@ -72,6 +72,7 @@ class MultiNLIDataset(ConfounderDataset):
         self.n_groups = len(np.unique(self.confounder_array)) * self.n_classes
         self.group_array = (self.y_array * (self.n_groups / self.n_classes) +
                             self.confounder_array).astype("int")
+        self.wt_array = np.ones_like(self.group_array, dtype=np.float32)
 
         # Extract splits
         self.split_array = self.metadata_df["split"].values
@@ -111,7 +112,8 @@ class MultiNLIDataset(ConfounderDataset):
         y = self.y_array[idx]
         g = self.group_array[idx]
         x = self.x_array[idx, ...]
-        return x, y, g, idx
+        wt = self.wt_array[idx]
+        return x, y, g, idx, wt
 
     def group_str(self, group_idx):
         y = group_idx // (self.n_groups / self.n_classes)

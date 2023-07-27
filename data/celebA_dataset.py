@@ -55,6 +55,7 @@ class CelebADataset(ConfounderDataset):
         self.n_groups = self.n_classes * pow(2, len(self.confounder_idx))
         self.group_array = (self.y_array * (self.n_groups / 2) +
                             self.confounder_array).astype("int")
+        self.wt_array = np.ones_like(self.group_array, dtype=np.float32)
 
         # Read in train/val/test splits
         self.split_df = pd.read_csv(

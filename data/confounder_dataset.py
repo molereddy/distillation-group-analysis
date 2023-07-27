@@ -26,12 +26,16 @@ class ConfounderDataset(Dataset):
     def get_label_array(self):
         return self.y_array
 
+    def get_weight_array(self):
+        return self.wt_array
+
     def __len__(self):
         return len(self.filename_array)
 
     def __getitem__(self, idx):
         y = self.y_array[idx]
         g = self.group_array[idx]
+        wt = self.wt_array[idx]
 
         if model_attributes[self.model_type]["feature_type"] == "precomputed":
             x = self.features_mat[idx, :]
@@ -53,7 +57,7 @@ class ConfounderDataset(Dataset):
                 img = img.view(-1)
             x = img
 
-        return x, y, g, idx
+        return x, y, g, idx, wt
 
     def get_splits(self, splits, train_frac=1.0):
         subsets = {}

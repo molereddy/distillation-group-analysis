@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 import torchvision.transforms as transforms
 from models import model_attributes
-from torch.utils.data import Dataset, Subset
+from torch.utils.data import Dataset
 from data.confounder_dataset import ConfounderDataset
 
 class CUBDataset(ConfounderDataset):
@@ -47,6 +47,7 @@ class CUBDataset(ConfounderDataset):
         # Map to groups
         self.n_groups = pow(2, 2)
         self.group_array = (self.y_array*(self.n_groups/2) + self.confounder_array).astype("int")
+        self.wt_array = np.ones_like(self.group_array, dtype=np.float32)
 
         # Extract filenames and splits
         self.filename_array = self.metadata_df["img_filename"].values

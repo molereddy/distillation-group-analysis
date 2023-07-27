@@ -55,7 +55,7 @@ def main():
     # Misc
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--show_progress', default=False, action='store_true')
-    parser.add_argument('--logs_dir', default='./logs')
+    parser.add_argument('--logs_dir', default='./results')
     parser.add_argument('--log_every', default=10, type=int) # number of batches after which to log
     parser.add_argument('--save_step', type=int, default=10)
 

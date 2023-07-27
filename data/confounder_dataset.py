@@ -36,7 +36,6 @@ class ConfounderDataset(Dataset):
         y = self.y_array[idx]
         g = self.group_array[idx]
         wt = self.wt_array[idx]
-        if wt != 1: print("wt updated!")
         if model_attributes[self.model_type]["feature_type"] == "precomputed":
             x = self.features_mat[idx, :]
         else:
@@ -61,6 +60,7 @@ class ConfounderDataset(Dataset):
 
     def update_weights(self, indices, new_weight):
         self.wt_array[indices] = new_weight
+        print("observed")
         
     def get_splits(self, splits, train_frac=1.0):
         subsets = {}

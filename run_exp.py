@@ -74,7 +74,7 @@ def main():
         args.n_epochs = 80
         args.lr = 5e-5
         if args.method == 'SimKD': args.lr *= 5
-        args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 10 # roughly 10240/batch_size
+        args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
         args.widx = 3
     
     
@@ -122,8 +122,11 @@ def main():
     test_data = None
     test_loader = None
     if args.shift_type == 'confounder':
-        # train_data, val_data, test_data = prepare_data(args, train=True, logger=logger)
-        with open(f'./logs/{args.dataset}/dataset_processed_data.pkl', 'rb') as file:
+        # train_data, val_data, test_data = prepare_data(args, train=True)
+        with open(os.path.join(args.logs_dir, args.dataset, 
+                               '_'.join([args.target_name] + list(map(str, args.confounder_names)) + \
+                                   ['dataset', f'{seed}.pkl'])
+                                ), 'rb') as file:
             data = pickle.load(file)
             train_data = data['train_data']
             val_data = data['val_data']

@@ -1,6 +1,6 @@
 import os, csv, pickle
 import argparse
-import pandas as pd
+import pandas as pd, numpy as np
 import torch, time
 import torch.nn as nn
 import torchvision
@@ -29,6 +29,7 @@ def main():
     parser.add_argument('--minority_fraction', type=float)
     parser.add_argument('--imbalance_ratio', type=float)
     # Data
+    parser.add_argument('--model', choices=model_attributes.keys(), default='resnet18')
     parser.add_argument('--fraction', type=float, default=1.0)
     parser.add_argument('--root_dir', default=None)
     parser.add_argument('--augment_data', action='store_true', default=False)
@@ -46,9 +47,11 @@ def main():
         set_seed(seed)
         data_start_time = time.time()
         test_data = None
-        train_data, val_data, test_data = prepare_data(args, train=True, logger=logger)
-        with open(os.path.join(args.logs_dir, args.dataset, 'dataset_processed_data.pkl'), 'wb') as file:
+        train_data, val_data, test_data = prepare_data(args, train=True)
+        with open(os.path.join(args.logs_dir, args.dataset, 
+                               '_'.join([args.target_name] + list(map(str, args.confounder_names)) + ['dataset', f'{seed}.pkl'])), 'wb') as file:
             pickle.dump({'train_data': train_data, 'val_data': val_data, 'test_data': test_data}, file)
+        train_data.update_weights(np.array([1,2,3,6]), 2)
         logger.write("{:.2g} minutes for data processing\n".format((time.time()-data_start_time)/60))
         logger.flush()
     

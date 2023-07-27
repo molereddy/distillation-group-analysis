@@ -17,12 +17,12 @@ class CelebADataset(ConfounderDataset):
 
     def __init__(self, root_dir, target_name, confounder_names, 
                  model_type, augment_data, metadata_csv_name="metadata.csv"):
-        self.root_dir = os.path.join(root_dir, "celebA") #root_dir
+        self.root_dir = os.path.join(root_dir) #root_dir
         self.target_name = target_name
         self.confounder_names = confounder_names
         self.augment_data = augment_data
         self.model_type = model_type
-
+        
         # Read in attributes
         self.attrs_df = pd.read_csv(
             os.path.join(self.root_dir, "data", metadata_csv_name))

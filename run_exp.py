@@ -7,6 +7,7 @@ import torchvision
 
 from models import model_attributes, FeatResNet, SimKD
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
+from data.dro_dataset import get_loader
 from utils import set_seed, Logger, CSVBatchLogger, log_args
 from train import train
 
@@ -43,7 +44,7 @@ def main():
     parser.add_argument('--model_state', choices=['scratch', 'pretrained'], default='scratch')
     parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-ft'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
-    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT'], default='KD')
+    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT'], default='ERM')
 
     # Optimization
     parser.add_argument('--n_epochs', type=int, default=160) # 160 for waterbirds and 75 for celebA
@@ -78,7 +79,7 @@ def main():
         args.widx = 3
     
     
-    args.save_step = args.n_epochs//2
+    args.save_step = args.n_epochs//50
 
     # set model, teacher and log file paths
     if args.model_state == 'scratch':
@@ -123,9 +124,9 @@ def main():
     test_loader = None
     if args.shift_type == 'confounder':
         # train_data, val_data, test_data = prepare_data(args, train=True)
-        with open(os.path.join(args.logs_dir, args.dataset, 
+        with open(os.path.join('./results', args.dataset, 
                                '_'.join([args.target_name] + list(map(str, args.confounder_names)) + \
-                                   ['dataset', f'{seed}.pkl'])
+                                   ['dataset', f'{args.seed}.pkl'])
                                 ), 'rb') as file:
             data = pickle.load(file)
             train_data = data['train_data']
@@ -135,10 +136,10 @@ def main():
         train_data, val_data = prepare_data(args, train=True)
 
     loader_kwargs = {'batch_size':args.batch_size, 'num_workers':4, 'pin_memory':True}
-    train_loader = train_data.get_loader(train=True, **loader_kwargs)
-    val_loader = val_data.get_loader(train=False, **loader_kwargs)
+    train_loader = get_loader(train_data, train=True, **loader_kwargs)
+    val_loader = get_loader(val_data, train=False, **loader_kwargs)
     if test_data is not None:
-        test_loader = test_data.get_loader(train=False, **loader_kwargs)
+        test_loader = get_loader(test_data, train=False, **loader_kwargs)
     
     logger.write("{:.2g} minutes for data processing\n".format((time.time()-data_start_time)/60))
     logger.flush()

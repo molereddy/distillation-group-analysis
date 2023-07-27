@@ -68,7 +68,7 @@ class DRODataset(Dataset):
             return x.size()
 
 
-def get_loader(dataset, train, reweight_groups, **kwargs):
+def get_loader(dataset, train, reweight_groups=None, **kwargs):
     if not train:  # Validation or testing
         assert reweight_groups is None
         shuffle = False

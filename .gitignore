@@ -1,6 +1,6 @@
 *.aux
 *.bbl
-*.ipynb
+# *.ipynb
 *.blg
 *.out
 *.pdf

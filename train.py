@@ -21,6 +21,8 @@ def run_epoch(epoch, models, optimizers, loader, loss_computer, logger, csv_logg
     if is_training:
         models['student'].train()
         if args.method == 'SimKD': models['simkd'].train()
+        if (args.model.startswith("bert") and args.use_bert_params): # or (args.model == "bert"):
+            model.zero_grad()
     else:
         models['student'].eval()
         if args.method == 'SimKD': models['simkd'].eval()
@@ -38,11 +40,10 @@ def run_epoch(epoch, models, optimizers, loader, loss_computer, logger, csv_logg
             x = batch[0]
             y = batch[1]
             g = batch[2]
+            data_idx = batch[3]
+            wt = batch[4]
             
-            if args.teacher is None:
-                outputs = models['student'](x)
-                loss_main = loss_computer.loss(outputs, y, g, is_training)
-            elif args.method == 'KD':
+            if args.method == 'KD':
                 outputs = models['student'](x)
                 teacher_logits = models['teacher'](x)
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
@@ -55,7 +56,8 @@ def run_epoch(epoch, models, optimizers, loader, loss_computer, logger, csv_logg
                 loss_main = loss_computer.loss_mse(outputs, y, sft, tft, 
                                                    g, is_training)
             else:
-                raise NotImplementedError(args.method)
+                outputs = models['student'](x)
+                loss_main = loss_computer.loss(outputs, y, g, is_training)
             if is_training:
                 for optimizer in optimizers:
                     optimizer.zero_grad()

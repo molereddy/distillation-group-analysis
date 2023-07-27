@@ -43,7 +43,7 @@ def main():
     parser.add_argument('--model_state', choices=['scratch', 'pretrained'], default='scratch')
     parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-ft'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
-    parser.add_argument('--method', type=str, choices=['KD', 'SimKD'], default='KD')
+    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT'], default='KD')
 
     # Optimization
     parser.add_argument('--n_epochs', type=int, default=160) # 160 for waterbirds and 75 for celebA
@@ -78,7 +78,7 @@ def main():
         args.widx = 3
     
     
-    args.save_step = args.n_epochs//4
+    args.save_step = args.n_epochs//2
 
     # set model, teacher and log file paths
     if args.model_state == 'scratch':

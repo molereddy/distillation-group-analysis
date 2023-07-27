@@ -9,7 +9,7 @@ class DRODataset(Dataset):
     def __init__(self, dataset, process_item_fn, n_groups, n_classes,
                  group_str_fn):
         self.dataset = dataset
-        self.process_item = process_item_fn
+        self.process_item = process_item_fn # None
         self.n_groups = n_groups
         self.n_classes = n_classes
         self.group_str = group_str_fn
@@ -18,11 +18,9 @@ class DRODataset(Dataset):
 
         group_array = self.get_group_array()
         y_array = self.get_label_array()
-        wt_array = self.get_weight_array()
 
         self._group_array = torch.LongTensor(group_array)
         self._y_array = torch.LongTensor(y_array)
-        self._wt_array = torch.LongTensor(wt_array)
         self._group_counts = ((torch.arange(
             self.n_groups).unsqueeze(1) == self._group_array).sum(1).float())
 
@@ -30,7 +28,7 @@ class DRODataset(Dataset):
             self.n_classes).unsqueeze(1) == self._y_array).sum(1).float()
 
     def __getitem__(self, idx):
-        if self.process_item is None:
+        if self.process_item is None: # always True
             return self.dataset[idx]
         else:
             return self.process_item(self.dataset[idx])
@@ -52,6 +50,9 @@ class DRODataset(Dataset):
             return self.dataset.get_weight_array()
         else:
             raise NotImplementedError
+    
+    def update_weights(self, indices, new_weight):
+        self.dataset.update_weights(indices, new_weight)
 
     def __len__(self):
         return len(self.dataset)

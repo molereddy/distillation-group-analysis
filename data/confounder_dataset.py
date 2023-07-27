@@ -60,7 +60,6 @@ class ConfounderDataset(Dataset):
 
     def update_weights(self, indices, new_weight):
         self.wt_array[indices] = new_weight
-        print("observed")
         
     def get_splits(self, splits, train_frac=1.0):
         subsets = {}

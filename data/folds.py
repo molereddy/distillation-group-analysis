@@ -31,6 +31,9 @@ class Subset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.indices)
 
+    def update_weights(self, indices, new_weight):
+        self.dataset.update_weights(indices, new_weight)
+
     def get_group_array(self, re_evaluate=True):
         """Return an array [g_x1, g_x2, ...]"""
         # setting re_evaluate=False helps us over-write the group array if necessary (2-group DRO)

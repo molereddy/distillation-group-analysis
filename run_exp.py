@@ -58,7 +58,7 @@ def main():
     parser.add_argument('--show_progress', default=False, action='store_true')
     parser.add_argument('--logs_dir', default='./results')
     parser.add_argument('--log_every', default=10, type=int) # number of batches after which to log
-    parser.add_argument('--save_step', type=int, default=10)
+    parser.add_argument('--save_step', type=int)
 
     args = parser.parse_args()
     check_args(args)
@@ -78,8 +78,8 @@ def main():
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
         args.widx = 3
     
-    
-    args.save_step = args.n_epochs//50
+    if args.save_step is None:
+        args.save_step = args.n_epochs//2
 
     # set model, teacher and log file paths
     if args.model_state == 'scratch':

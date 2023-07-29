@@ -8,7 +8,7 @@ import torchvision
 from models import model_attributes, FeatResNet, SimKD
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from data.dro_dataset import get_loader
-from utils import set_seed, Logger, CSVBatchLogger, log_args
+from utils import set_seed, Logger, CSVBatchLogger, log_args, get_model
 from train import train
 
 
@@ -46,7 +46,7 @@ def main():
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT'], default='ERM')
 
     # Optimization
-    parser.add_argument('--n_epochs', type=int, default=160) # 160 for waterbirds and 75 for celebA
+    parser.add_argument('--n_epochs', type=int, default=160)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
     parser.add_argument('--scheduler', action='store_true', default=False)
@@ -95,7 +95,7 @@ def main():
         if args.method == 'ERM':
             args.lr = 1e-4
             args.weight_decay = 1e-4
-            args.save_preds_at = [1, 2, 3]
+            args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
             args.lr = 1e-4
             args.weight_decay = 1e-3
@@ -131,7 +131,7 @@ def main():
     
     ## Initialize logs
     log_file_path = os.path.join(args.logs_dir, 'train.log')
-    logger = Logger(log_file_path, mode)
+    logger = Logger(log_file_path)
     log_args(args, logger)
     set_seed(args.seed)
     
@@ -218,9 +218,9 @@ def main():
 
     epoch_offset=0
     
-    train_csv_logger = CSVBatchLogger(os.path.join(args.logs_dir, 'train.csv'), train_data.n_groups, mode=mode)
-    val_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'val.csv'), train_data.n_groups, mode=mode)
-    test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups, mode=mode)
+    train_csv_logger = CSVBatchLogger(os.path.join(args.logs_dir, 'train.csv'), train_data.n_groups)
+    val_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'val.csv'), train_data.n_groups)
+    test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups)
     
     train(models, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
     

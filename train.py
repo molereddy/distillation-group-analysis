@@ -92,11 +92,11 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
             output_df['wrong_pred'] = wrongness_flags
             output_df['worst_group'] = worst_group_flags
             prec, rec = precision_recall(wrongness_flags, worst_group_flags)
-            output_df.sort_values('index')
+            output_df = output_df.sort_values('index')
             csv_file_path = os.path.join(args.logs_dir, f'epoch-{epoch}_predictions.csv')
             output_df.to_csv(csv_file_path)
-            logger.log('Saved predictions to csv file {}\n'.format(csv_file_path))
-            logger.log('Precision:{:.3f}, Recall:{:.3f}\n'.format(prec, rec))
+            logger.write('Saved predictions to csv file {}\n'.format(csv_file_path))
+            logger.write('Precision:{:.3f}, Recall:{:.3f}\n'.format(prec, rec))
             
         if not is_training:
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))

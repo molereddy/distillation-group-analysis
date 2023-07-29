@@ -1,8 +1,7 @@
-import sys, os, torch, csv
+import sys, os, torch, csv, torchvision
 import numpy as np
+import torch.nn as nn
 from matplotlib import pyplot as plt
-
-import numpy as np
 
 def precision_recall(outputs, targets):
 

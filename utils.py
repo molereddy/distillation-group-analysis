@@ -140,6 +140,41 @@ def accuracy(output, target, topk=(1,)):
     return res
 
 
+def get_model(model, pretrained=True, n_classes=2, dataset='MultiNLI'):
+    weights_dict = {'weights': 'DEFAULT'} if pretrained else {}
+    if model == "resnet50":
+        model = torchvision.models.resnet50(**weights_dict)
+        d = model.fc.in_features
+        model.fc = nn.Linear(d, n_classes)
+    elif model == "resnet18":
+        model = torchvision.models.resnet34(**weights_dict)
+        d = model.fc.in_features
+        model.fc = nn.Linear(d, n_classes)
+    elif model.startswith('bert'):
+        if dataset == "MultiNLI":
+            from pytorch_transformers import BertConfig, BertForSequenceClassification
+            config_class = BertConfig
+            model_class = BertForSequenceClassification
+            config = config_class.from_pretrained("bert-base-uncased",
+                                                num_labels=3,
+                                                finetuning_task="mnli")
+            model = model_class.from_pretrained("bert-base-uncased",
+                                                from_tf=False,
+                                                config=config)
+        elif dataset == "jigsaw":
+            from transformers import BertForSequenceClassification
+            model = BertForSequenceClassification.from_pretrained(
+                model,
+                num_labels=n_classes)
+            print(f'n_classes = {n_classes}')
+        else: 
+            raise NotImplementedError
+    else:
+        raise ValueError(f"{model} Model not recognized.")
+
+    return model
+
+
 def set_seed(seed):
     """Sets seed"""
     if torch.cuda.is_available():

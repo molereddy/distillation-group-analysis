@@ -14,7 +14,7 @@ from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
-def run_epoch(epoch, models, optimizers, loader, loss_computer, logger, csv_logger, args,
+def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logger, args,
               is_training, show_progress=False, log_every=10, scheduler=None,
               target_group_idx=None):
     
@@ -59,11 +59,9 @@ def run_epoch(epoch, models, optimizers, loader, loss_computer, logger, csv_logg
                 outputs = models['student'](x)
                 loss_main = loss_computer.loss(outputs, y, g, is_training)
             if is_training:
-                for optimizer in optimizers:
-                    optimizer.zero_grad()
+                optimizer.zero_grad()
                 loss_main.backward()
-                for optimizer in optimizers:
-                    optimizer.step()
+                optimizer.step()
 
             if is_training and (batch_idx+1) % log_every==0:
                 csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
@@ -109,11 +107,10 @@ def train(models, dataset,
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, 
                                        trainable_list.parameters()),
        lr=args.lr, momentum=0.9, weight_decay=args.weight_decay)
-    optimizers = [optimizer]
     
     if args.scheduler:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizers[0],
+            optimizer,
             'min',
             factor=0.1,
             patience=5,
@@ -135,7 +132,7 @@ def train(models, dataset,
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
         run_epoch(
-            epoch, models, optimizers,
+            epoch, models, optimizer,
             dataset['train_loader'],
             train_loss_computer,
             logger, train_csv_logger, args,
@@ -147,7 +144,7 @@ def train(models, dataset,
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(dataset=dataset['val_data'])
         run_epoch(
-            epoch, models, optimizers,
+            epoch, models, optimizer,
             dataset['val_loader'],
             val_loss_computer,
             logger, val_csv_logger, args,
@@ -158,7 +155,7 @@ def train(models, dataset,
         if dataset['test_data'] is not None:
             test_loss_computer = LossComputer(dataset=dataset['test_data'])
             avg_acc, ub_acc, wg_acc = run_epoch(
-                epoch, models, optimizers,
+                epoch, models, optimizer,
                 dataset['test_loader'],
                 test_loss_computer,
                 logger, test_csv_logger, args,
@@ -171,13 +168,9 @@ def train(models, dataset,
 
         # Inspect learning rates
         if (epoch+1) % 1 == 0:
-            for param_group in optimizers[0].param_groups:
+            for param_group in optimizer.param_groups:
                 curr_lr = param_group['lr']
                 logger.write('Current lr: %f\n' % curr_lr)
-        if epoch == midway:
-            for optimizer in optimizers:
-                for param_group in optimizer.param_groups:
-                    param_group['lr'] /= 10
 
         if args.scheduler:
             val_loss = val_loss_computer.avg_actual_loss
@@ -247,7 +240,7 @@ def test(models, dataset, logger, test_csv_logger, args):
     if dataset['test_data'] is not None:
         test_loss_computer = LossComputer(dataset=dataset['test_data'])
         run_epoch(
-            0, models, optimizers,
+            0, models, optimizer,
             dataset['test_loader'],
             test_loss_computer,
             logger, test_csv_logger, args,

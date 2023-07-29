@@ -61,20 +61,6 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
                 outputs = models['student'](x)
                 loss_main = loss_computer.loss_jtt(outputs, y, wt, g, is_training)
             
-            if batch_idx == 0 and save_preds:
-                wrongness_flags = np.argmax(outputs.detach().cpu().numpy(), axis=1) != y.cpu().numpy()
-                indices = data_idx.numpy()
-                worst_group_flags = g.cpu().numpy() == args.widx
-            elif save_preds:
-                wrongness_flags = np.concatenate([
-                    wrongness_flags,
-                    np.argmax(outputs.detach().cpu().numpy(), axis=1) != y.cpu().numpy()
-                ])
-                indices = np.concatenate([indices, data_idx.numpy()])
-                worst_group_flags = np.concatenate([
-                    worst_group_flags, g.cpu().numpy() == args.widx
-                ])
-            
             if is_training:
                 optimizer.zero_grad()
                 loss_main.backward()
@@ -85,18 +71,37 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
                 csv_logger.flush()
                 loss_computer.log_stats(logger, is_training)
                 loss_computer.reset_stats()
+                
+            
+            if batch_idx == 0 and save_preds:
+                wrongness_flags = np.argmax(outputs.detach().cpu().numpy(), axis=1) != y.cpu().numpy()
+                indices = data_idx.numpy()
+                worst_group_flags = g.cpu().numpy() == args.widx
+                predicted = np.argmax(outputs.detach().cpu().numpy(), axis=1)
+                
+            elif save_preds:
+                wrongness_flags = np.concatenate([
+                    wrongness_flags,
+                    np.argmax(outputs.detach().cpu().numpy(), axis=1) != y.cpu().numpy()
+                ])
+                indices = np.concatenate([indices, data_idx.numpy()])
+                worst_group_flags = np.concatenate([
+                    worst_group_flags, g.cpu().numpy() == args.widx
+                ])
+                predicted = np.concatenate([predicted, np.argmax(outputs.detach().cpu().numpy(), axis=1)])
 
         if save_preds:
             output_df = pd.DataFrame()
             output_df['index'] = indices
             output_df['wrong_pred'] = wrongness_flags
-            output_df['worst_group'] = worst_group_flags
+            output_df[f'worst_group_{args.widx}'] = worst_group_flags
+            output_df['predicted'] = predicted
             prec, rec = precision_recall(wrongness_flags, worst_group_flags)
             output_df = output_df.sort_values('index')
             csv_file_path = os.path.join(args.logs_dir, f'epoch-{epoch}_predictions.csv')
             output_df.to_csv(csv_file_path)
-            logger.write('Saved predictions to csv file {}\n'.format(csv_file_path))
-            logger.write('Precision:{:.3f}, Recall:{:.3f}\n'.format(prec, rec))
+            logger.write('\nSaved predictions to csv file {}\n'.format(csv_file_path))
+            logger.write('Precision:{:.3f}, Recall:{:.3f}\n\n'.format(prec, rec))
             
         if not is_training:
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))

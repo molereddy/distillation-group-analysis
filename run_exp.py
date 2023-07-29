@@ -105,7 +105,7 @@ def main():
         elif args.method == 'JTT':
             args.lr = 1e-5
             args.weight_decay = 1e-1
-            args.id_ckpt = 1
+            args.id_ckpt = 0
             args.upweight = 50
         else: 
             raise NotImplementedError
@@ -122,7 +122,10 @@ def main():
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, args.model, str(args.seed)]))
-    else:
+    elif args.method == 'JTT':
+         args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
+                                 '_'.join([args.model, args.method, str(args.seed)]))
+    elif args.method == 'ERM':
          args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
                                  '_'.join([args.model, str(args.seed)]))
     
@@ -208,8 +211,9 @@ def main():
     
     if args.method == 'JTT':
         saved_preds_df = pd.read_csv(os.path.join('results', args.dataset,
-                                                   '_'.join(args.model, str(args.seed)))
-                                      )
+                                                   '_'.join([args.model, str(args.seed)]),
+                                                   f'epoch-{args.id_ckpt}_predictions.csv')
+                                     )
         wrong_idxs = saved_preds_df.loc[saved_preds_df['wrong_pred'] == 1, 'index'].values
         train_data.update_weights(wrong_idxs, args.upweight)
         

@@ -10,8 +10,8 @@ def precision_recall(outputs, targets):
     TN = np.sum(~outputs & ~targets)
     FN = np.sum(~outputs & targets)
 
-    precision = TP / (TP + FP)
-    recall = TP / (TP + FN)
+    precision = TP / (TP + FP + 1e-9)
+    recall = TP / (TP + FN + 1e-9)
 
     return precision, recall
 

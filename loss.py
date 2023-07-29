@@ -40,11 +40,11 @@ class LossComputer:
 
     def loss_jtt(self, yhat, y, wt, group_idx=None, is_training=False):
         # compute per-sample and per-group losses
-        per_sample_losses = self.criterion(yhat, y)
+        per_sample_losses = self.criterion(yhat, y) * wt
         group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
         group_acc, group_count = self.compute_group_avg((torch.argmax(yhat,1)==y).float(), group_idx)
         # compute overall loss
-        actual_loss = (per_sample_losses * wt).mean()
+        actual_loss = per_sample_losses.mean()
         weights = None
         # update stats
         self.update_stats(actual_loss, group_loss, group_acc, group_count, weights)

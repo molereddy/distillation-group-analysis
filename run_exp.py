@@ -59,9 +59,9 @@ def main():
     parser.add_argument('--log_every', default=10, type=int) # number of batches after which to log
     parser.add_argument('--save_step', type=int)
     
-    parser.add_argument('--save_preds_at', type=list, help='when to save ERM predictions')
+    parser.add_argument('--save_preds_at', type=list, help='when to save ERM predictions', default=[])
     parser.add_argument('--id_ckpt', type=int, default=60, help='which epoch to load id model for DeTT/JTT')
-    parser.add_argument('--upweight', type=int, default=60, help='upweight factor for DeTT/JTT')
+    parser.add_argument('--upweight', type=float, default=60, help='upweight factor for DeTT/JTT')
     
     
 
@@ -205,7 +205,15 @@ def main():
         model_simkd = SimKD(s_n=s_n, t_n=t_n, factor=2).to(device=args.device)
         model_simkd.train()
         models['simkd'] = model_simkd
+    
+    if args.method == 'JTT':
+        saved_preds_df = pd.read_csv(os.path.join('results', args.dataset,
+                                                   '_'.join(args.model, str(args.seed)))
+                                      )
+        wrong_idxs = saved_preds_df.loc[saved_preds_df['wrong_pred'] == 1, 'index'].values
+        train_data.update_weights(wrong_idxs, args.upweight)
         
+    
     logger.flush()
 
     epoch_offset=0
@@ -233,7 +241,9 @@ def check_args(args):
         assert args.imbalance_ratio
     if args.method in ['KD', 'SimKD', 'DeTT']:
         assert args.teacher is not None
-
+    if args.method in ['JTT', 'DeTT']:
+        assert args.upweight is not None
+        assert args.id_ckpt is not None
 
 
 if __name__=='__main__':

@@ -2,6 +2,20 @@ import sys, os, torch, csv
 import numpy as np
 from matplotlib import pyplot as plt
 
+import numpy as np
+
+def precision_recall(outputs, targets):
+
+    TP = np.sum(outputs & targets)
+    FP = np.sum(outputs & ~targets)
+    TN = np.sum(~outputs & ~targets)
+    FN = np.sum(~outputs & targets)
+
+    precision = TP / (TP + FP)
+    recall = TP / (TP + FN)
+
+    return precision, recall
+
 
 def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
     fig, axes = plt.subplots(2, 1, figsize=(10, 6))

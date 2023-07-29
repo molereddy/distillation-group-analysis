@@ -10,6 +10,8 @@ from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from utils import set_seed, Logger, CSVBatchLogger, log_args
 from train import train
 
+# python3 save_datasets.py -s confounder -d CelebA -t Blond_Hair -c Male
+# python3 save_datasets.py -s confounder -d CUB -t waterbird_complete95 -c forest2water2
 
 def main():
     torch.backends.cudnn.enabled = True
@@ -51,7 +53,6 @@ def main():
         with open(os.path.join(args.logs_dir, args.dataset, 
                                '_'.join([args.target_name] + list(map(str, args.confounder_names)) + ['dataset', f'{seed}.pkl'])), 'wb') as file:
             pickle.dump({'train_data': train_data, 'val_data': val_data, 'test_data': test_data}, file)
-        train_data.update_weights(np.array([1,2,3,6]), 2)
         logger.write("{:.2g} minutes for data processing\n".format((time.time()-data_start_time)/60))
         logger.flush()
     

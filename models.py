@@ -94,9 +94,7 @@ class FeatResNet(nn.Module):
     def __init__(self, core_resnet):
         super(FeatResNet, self).__init__()
         self.internal = core_resnet
-    
-    def fc_layer(self):
-        return self.internal.fc
+        self.fc = self.internal.fc
     
     def forward(self, x: Tensor) -> Tensor:
         x = self.internal.conv1(x)

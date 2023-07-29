@@ -7,9 +7,10 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, Subset
 
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
-from utils import AverageMeter, accuracy, save_checkpoint, plot_train_progress
+from utils import AverageMeter, accuracy, save_checkpoint, plot_train_progress, precision_recall
 from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
@@ -32,18 +33,20 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
     else:
         prog_bar_loader = loader
 
+    save_preds = args.method == 'ERM' and is_training and epoch in args.save_preds_at
+    
     with torch.set_grad_enabled(is_training):
         
         for batch_idx, batch in enumerate(prog_bar_loader):
-        
-            batch = tuple(t.cuda() for t in batch)
-            x = batch[0]
-            y = batch[1]
-            g = batch[2]
+            x = batch[0].cuda()
+            y = batch[1].cuda()
+            g = batch[2].cuda()
             data_idx = batch[3]
-            wt = batch[4]
             
-            if args.method == 'KD':
+            if args.method == 'ERM':
+                outputs = models['student'](x)
+                loss_main = loss_computer.loss_erm(outputs, y, g, is_training)
+            elif args.method == 'KD':
                 outputs = models['student'](x)
                 teacher_logits = models['teacher'](x)
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
@@ -51,13 +54,27 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
                 sft_base = models['student'](x)[0][0]
                 tft_base = models['teacher'](x)[0][0]
                 tft_base = tft_base.detach()
-                sft, tft, outputs = models['simkd'](sft_base, tft_base, 
-                                                models['teacher'].fc_layer())
-                loss_main = loss_computer.loss_mse(outputs, y, sft, tft, 
-                                                   g, is_training)
-            else:
+                sft, tft, outputs = models['simkd'](sft_base, tft_base, models['teacher'].fc)
+                loss_main = loss_computer.loss_mse(outputs, y, sft, tft, g, is_training)
+            elif args.method == 'JTT':
+                wt = batch[4].cuda()
                 outputs = models['student'](x)
-                loss_main = loss_computer.loss(outputs, y, g, is_training)
+                loss_main = loss_computer.loss_jtt(outputs, y, wt, g, is_training)
+            
+            if batch_idx == 0 and save_preds:
+                wrongness_flags = np.argmax(outputs.detach().cpu().numpy(), axis=1) != y.cpu().numpy()
+                indices = data_idx.numpy()
+                worst_group_flags = g.cpu().numpy() == args.widx
+            elif save_preds:
+                wrongness_flags = np.concatenate([
+                    wrongness_flags,
+                    np.argmax(outputs.detach().cpu().numpy(), axis=1) != y.cpu().numpy()
+                ])
+                indices = np.concatenate([indices, data_idx.numpy()])
+                worst_group_flags = np.concatenate([
+                    worst_group_flags, g.cpu().numpy() == args.widx
+                ])
+            
             if is_training:
                 optimizer.zero_grad()
                 loss_main.backward()
@@ -69,6 +86,18 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
                 loss_computer.log_stats(logger, is_training)
                 loss_computer.reset_stats()
 
+        if save_preds:
+            output_df = pd.DataFrame()
+            output_df['index'] = indices
+            output_df['wrong_pred'] = wrongness_flags
+            output_df['worst_group'] = worst_group_flags
+            prec, rec = precision_recall(wrongness_flags, worst_group_flags)
+            output_df.sort_values('index')
+            csv_file_path = os.path.join(args.logs_dir, f'epoch-{epoch}_predictions.csv')
+            output_df.to_csv(csv_file_path)
+            logger.log('Saved predictions to csv file {}\n'.format(csv_file_path))
+            logger.log('Precision:{:.3f}, Recall:{:.3f}\n'.format(prec, rec))
+            
         if not is_training:
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
             csv_logger.flush()
@@ -197,8 +226,7 @@ def train(models, dataset,
                 'model': copy.deepcopy(models['student'].state_dict()),
                 'best_epoch': best_epoch,
                 'best_val_acc': best_val_acc,
-                'best_test_acc': best_test_acc,
-                'best_model' : best_state_dict,}
+                'best_test_acc': best_test_acc}
         if args.method == 'SimKD':
             state['simkd'] = copy.deepcopy(models['simkd'].state_dict())
         save_checkpoint(state, logs_dir = args.logs_dir, is_best=is_best, save_freq=args.save_step, is_last=is_last)

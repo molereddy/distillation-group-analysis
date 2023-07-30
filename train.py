@@ -21,12 +21,12 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
     
     if is_training:
         models['student'].train()
-        if args.method == 'SimKD': models['simkd'].train()
+        if args.method in ['SimKD', 'DeTT']: models['simkd'].train()
         if (args.model.startswith("bert") and args.use_bert_params): # or (args.model == "bert"):
             model.zero_grad()
     else:
         models['student'].eval()
-        if args.method == 'SimKD': models['simkd'].eval()
+        if args.method in ['SimKD', 'DeTT']: models['simkd'].eval()
     
     if show_progress:
         prog_bar_loader = tqdm(loader)
@@ -43,23 +43,23 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
             g = batch[2].cuda()
             data_idx = batch[3]
             
-            if args.method == 'ERM':
+            if args.method in ['ERM', 'JTT']:
                 outputs = models['student'](x)
-                loss_main = loss_computer.loss_erm(outputs, y, g, is_training)
+                loss_main = loss_computer.loss_erm(outputs, y, g, is_training, 
+                                                   wt = None if args.method == 'ERM' else batch[4].cuda())
             elif args.method == 'KD':
                 outputs = models['student'](x)
                 teacher_logits = models['teacher'](x)
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
-            elif args.method == 'SimKD':
+            elif args.method in ['SimKD', 'DeTT']:
                 sft_base = models['student'](x)[0][0]
                 tft_base = models['teacher'](x)[0][0]
                 tft_base = tft_base.detach()
                 sft, tft, outputs = models['simkd'](sft_base, tft_base, models['teacher'].fc)
-                loss_main = loss_computer.loss_mse(outputs, y, sft, tft, g, is_training)
-            elif args.method == 'JTT':
-                wt = batch[4].cuda()
-                outputs = models['student'](x)
-                loss_main = loss_computer.loss_jtt(outputs, y, wt, g, is_training)
+                loss_main = loss_computer.loss_mse(outputs, y, sft, tft, g, is_training, 
+                                                   wt = None if args.method == 'SimKD' else batch[4].cuda())
+            else:
+                raise NotImplementedError
             
             if is_training:
                 optimizer.zero_grad()

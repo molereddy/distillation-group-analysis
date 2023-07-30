@@ -84,6 +84,11 @@ def main():
             args.weight_decay = 1
             args.id_ckpt = 60
             args.upweight = 100
+        elif args.method == 'DeTT':
+            args.lr = 1e-4
+            args.weight_decay = 1
+            args.id_ckpt = 60
+            args.upweight = 100
         else: 
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
@@ -103,6 +108,11 @@ def main():
             args.weight_decay = 1e-3
         elif args.method == 'JTT':
             args.lr = 1e-5
+            args.weight_decay = 1
+            args.id_ckpt = 1
+            args.upweight = 50
+        elif args.method == 'DeTT':
+            args.lr = 1e-4
             args.weight_decay = 1
             args.id_ckpt = 1
             args.upweight = 50
@@ -196,7 +206,7 @@ def main():
         models['teacher'] = teacher.to(device=args.device)
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}")
     
-    if args.method == 'SimKD':
+    if args.method in ['SimKD', 'DeTT']:
         models['teacher'] = FeatResNet(models['teacher'])
         models['student'] = FeatResNet(models['student'])
         models['teacher'].eval()
@@ -209,7 +219,7 @@ def main():
         model_simkd.train()
         models['simkd'] = model_simkd
     
-    if args.method == 'JTT':
+    if args.method in ['JTT', 'DeTT']:
         saved_preds_df = pd.read_csv(os.path.join('results', args.dataset,
                                                    '_'.join([args.model, str(args.seed)]),
                                                    f'epoch-{args.id_ckpt}_predictions.csv')

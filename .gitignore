@@ -9,6 +9,7 @@
 *.synctex.gz
 __pycache__/
 results/
+temp/
 logs/.ipynb_checkpoints/
 logs/__pycache__/
 logs/

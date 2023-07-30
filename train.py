@@ -33,7 +33,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
     else:
         prog_bar_loader = loader
 
-    save_preds = args.method == 'ERM' and is_training and epoch in args.save_preds_at
+    save_preds = args.method == 'ERM' and is_training and (epoch in args.save_preds_at)
     
     with torch.set_grad_enabled(is_training):
         
@@ -97,11 +97,12 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
             output_df[f'worst_group_{args.widx}'] = worst_group_flags
             output_df['predicted'] = predicted
             prec, rec = precision_recall(wrongness_flags, worst_group_flags)
+            logger.write('Precision:{:.3f}, Recall:{:.3f}\n\n'.format(prec, rec))
+            # if epoch in args.save_preds_at:
             output_df = output_df.sort_values('index')
             csv_file_path = os.path.join(args.logs_dir, f'epoch-{epoch}_predictions.csv')
             output_df.to_csv(csv_file_path)
             logger.write('\nSaved predictions to csv file {}\n'.format(csv_file_path))
-            logger.write('Precision:{:.3f}, Recall:{:.3f}\n\n'.format(prec, rec))
             
         if not is_training:
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
@@ -116,7 +117,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
 
 def train(models, dataset,
           logger, train_csv_logger, val_csv_logger, test_csv_logger,
-          args, epoch_offset):
+          args):
     models['student'] = models['student'].cuda()
 
     # process generalization adjustment stuff
@@ -156,15 +157,15 @@ def train(models, dataset,
 
     best_val_acc, best_test_acc, best_epoch = 0, 0, 0
     best_state_dict = copy.deepcopy(models['student'].state_dict())
-    midway = 3*args.n_epochs//5
 
     best_acc = 0   
     is_last = False
     test_wg_accs, test_avg_accs, test_ub_accs = [], [], []
     
-    for epoch in tqdm(range(epoch_offset, epoch_offset+args.n_epochs)):
+    for epoch in range(args.n_epochs):
         logger.write('\nEpoch [%d]:\n' % epoch)
         logger.write(f'Training:\n')
+        
         run_epoch(
             epoch, models, optimizer,
             dataset['train_loader'],
@@ -177,12 +178,13 @@ def train(models, dataset,
 
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(dataset=dataset['val_data'])
-        run_epoch(
+        val_accs = run_epoch(
             epoch, models, optimizer,
             dataset['val_loader'],
             val_loss_computer,
             logger, val_csv_logger, args,
-            is_training=False)
+            is_training=False,
+            target_group_idx=args.widx)
 
         # Test set; don't print to avoid peeking
         logger.write(f'\nTest:\n')
@@ -195,7 +197,6 @@ def train(models, dataset,
                 logger, test_csv_logger, args,
                 is_training=False,
                 target_group_idx=args.widx)
-            curr_test_acc = test_loss_computer.avg_acc
             test_avg_accs.append(avg_acc)
             test_ub_accs.append(ub_acc)
             test_wg_accs.append(wg_acc)
@@ -210,7 +211,9 @@ def train(models, dataset,
             val_loss = val_loss_computer.avg_actual_loss
             scheduler.step(val_loss) #scheduler step to update lr at the end of epoch
 
-        curr_val_acc = val_loss_computer.avg_acc
+        val_ub_acc = val_accs[1] # unbiased accuracy
+        curr_val_acc = val_ub_acc
+        curr_test_acc = ub_acc
 
         if curr_val_acc >= best_val_acc or epoch == 0:
             best_val_acc = curr_val_acc

@@ -41,7 +41,7 @@ def main():
 
     # Model
     parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt'], default='resnet18-pt')
-    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt'], help="teacher name")
+    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT'], default='ERM')
 
@@ -66,7 +66,6 @@ def main():
     
 
     args = parser.parse_args()
-    check_args(args)
     
     if args.dataset == "CUB":
         args.n_epochs = 200
@@ -104,16 +103,17 @@ def main():
             args.weight_decay = 1e-3
         elif args.method == 'JTT':
             args.lr = 1e-5
-            args.weight_decay = 1e-1
-            args.id_ckpt = 0
+            args.weight_decay = 1
+            args.id_ckpt = 1
             args.upweight = 50
         else: 
             raise NotImplementedError
-        args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
+        args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 60 # roughly 61440/batch_size
         args.widx = 3
     
     if args.save_step is None:
         args.save_step = args.n_epochs//2
+    check_args(args)
     
     
     
@@ -173,7 +173,7 @@ def main():
     data['test_data'] = test_data
     n_classes = train_data.n_classes
     
-    logger.write("{:.2g} minutes for data processing\n".format((time.time()-data_start_time)/60))
+    logger.write("{:.2g} minutes for data processing\n".format((time.time() - data_start_time)/60))
     logger.flush()
 
     log_data(data, logger)
@@ -184,16 +184,16 @@ def main():
     ## Initialize model
     logger.write("-" * 50 + '\n')
     student = get_model(args.model.replace('-pt', ''), 'pt' in args.model, n_classes)
-    models['student'] = student
+    models['student'] = student.to(device=args.device)
     logger.flush()
 
     # load teacher
     if args.method in ['SimKD', 'KD', 'DeTT']:
-        teacher = get_model(args.teacher.replace('-pt', ''), 'pt' in args.teacher, n_classes)
+        teacher = get_model(args.teacher.split('-pt')[0], 'pt' in args.teacher, n_classes)
         teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
         teacher.load_state_dict(teacher_ckpt['model'])
         teacher.eval()
-        models['teacher'] = teacher
+        models['teacher'] = teacher.to(device=args.device)
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}")
     
     if args.method == 'SimKD':
@@ -219,20 +219,18 @@ def main():
         
     
     logger.flush()
-
-    epoch_offset=0
     
     train_csv_logger = CSVBatchLogger(os.path.join(args.logs_dir, 'train.csv'), train_data.n_groups)
     val_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'val.csv'), train_data.n_groups)
     test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups)
     
-    train(models, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args, epoch_offset=epoch_offset)
+    train(models, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args)
     
     train_csv_logger.close()
     val_csv_logger.close()
     test_csv_logger.close()
     
-    logger.write("{:.2g}h for running\n".format((time.time()-data_start_time)/3600))
+    logger.write("{:.2g}h for running\n".format((time.time() - data_start_time)/3600))
 
 
 

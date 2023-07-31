@@ -43,7 +43,7 @@ def main():
     parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt'], default='resnet18-pt')
     parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
-    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT'], default='ERM')
+    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT'], default='ERM')
 
     # Optimization
     parser.add_argument('--n_epochs', type=int, default=160)
@@ -72,7 +72,7 @@ def main():
         if args.method == 'ERM':
             args.lr = 1e-3
             args.weight_decay = 1e-4
-            args.save_preds_at = [40, 60, 80]
+            args.save_preds_at = [0, 1, 2, 40, 60, 80]
         elif args.method == 'KD':
             args.lr = 1e-3
             args.weight_decay = 1e-3
@@ -82,7 +82,7 @@ def main():
         elif args.method == 'JTT':
             args.lr = 1e-5
             args.weight_decay = 1
-            args.id_ckpt = 60
+            args.id_ckpt = 1
             args.upweight = 100
         elif args.method == 'DeTT':
             args.lr = 1e-4
@@ -95,7 +95,6 @@ def main():
         args.widx = 2
     elif args.dataset == 'CelebA':
         args.n_epochs = 60
-        args.lr = 5e-5
         if args.method == 'ERM':
             args.lr = 1e-4
             args.weight_decay = 1e-4
@@ -108,17 +107,17 @@ def main():
             args.weight_decay = 1e-3
         elif args.method == 'JTT':
             args.lr = 1e-5
-            args.weight_decay = 1
+            args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'DeTT':
             args.lr = 1e-4
-            args.weight_decay = 1
+            args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 50
         else: 
             raise NotImplementedError
-        args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 60 # roughly 61440/batch_size
+        args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
         args.widx = 3
     
     if args.save_step is None:
@@ -225,6 +224,7 @@ def main():
                                                    f'epoch-{args.id_ckpt}_predictions.csv')
                                      )
         wrong_idxs = saved_preds_df.loc[saved_preds_df['wrong_pred'] == 1, 'index'].values
+        logger.write("upweighting {:.2f}% of the dataset".format(100 * len(wrong_idxs)/len(train_data)))
         train_data.update_weights(wrong_idxs, args.upweight)
         
     

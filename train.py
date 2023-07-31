@@ -97,12 +97,12 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
             output_df[f'worst_group_{args.widx}'] = worst_group_flags
             output_df['predicted'] = predicted
             prec, rec = precision_recall(wrongness_flags, worst_group_flags)
-            logger.write('Precision:{:.3f}, Recall:{:.3f}\n\n'.format(prec, rec))
+            logger.write('Precision:{:.3f}, Recall:{:.3f}\n'.format(prec, rec))
             # if epoch in args.save_preds_at:
             output_df = output_df.sort_values('index')
             csv_file_path = os.path.join(args.logs_dir, f'epoch-{epoch}_predictions.csv')
             output_df.to_csv(csv_file_path)
-            logger.write('\nSaved predictions to csv file {}\n'.format(csv_file_path))
+            logger.write('\nSaved predictions to csv file {}\n\n'.format(csv_file_path))
             
         if not is_training:
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
@@ -242,7 +242,7 @@ def train(models, dataset,
         logger.write(f'Current validation acc: {curr_val_acc:.4f}\n')
         logger.write(f'Current {epoch} test avg acc: {avg_acc:.4f}, unbiased acc: {ub_acc:.4f}, worst acc: {wg_acc:.4f}\n')
         if is_best: logger.write(f'New best!\n')
-        logger.write(f'Best epoch {best_epoch} of val acc {best_val_acc:.4f}: avg acc {best_test_acc:.4f}, unbiased acc: {test_ub_accs[best_epoch]:.4f}, worst acc: {test_wg_accs[best_epoch]:.4f}\n')        
+        logger.write(f'Best epoch {best_epoch} of val acc {best_val_acc:.4f}: avg acc {test_avg_accs[best_epoch]:.4f}, unbiased acc: {test_ub_accs[best_epoch]:.4f}, worst acc: {test_wg_accs[best_epoch]:.4f}\n')        
 
         logger.write('\n')
     

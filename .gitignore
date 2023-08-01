@@ -19,3 +19,4 @@ logs/*.pth
 .ipynb_checkpoints/
 run*.sh
 *~
+analysis.py

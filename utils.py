@@ -17,7 +17,7 @@ def precision_recall(outputs, targets):
 
 
 def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
-    fig, axes = plt.subplots(2, 1, figsize=(10, 6))
+    fig, axes = plt.subplots(1, 1, figsize=(10, 4))
     
     ax = axes[0]
     ax.plot(range(len(test_avg_accs)), test_avg_accs, label='avg acc')
@@ -27,18 +27,19 @@ def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
     ax.set_ylabel('Acc')
     ax.legend()
     
-    ax = axes[1]
-    avg_ub = [avg_acc-ub_acc for avg_acc, ub_acc in zip(test_avg_accs, test_ub_accs)]
-    avg_wg = [avg_acc-wg_acc for avg_acc, wg_acc in zip(test_avg_accs, test_wg_accs)]
-    ub_wg = [ub_acc-wg_acc for ub_acc, wg_acc in zip(test_ub_accs, test_wg_accs)]
-    ax.plot(range(len(avg_ub)), avg_ub, label='avg - ub')
-    ax.plot(range(len(avg_wg)), avg_wg, label='avg - wg')
-    ax.plot(range(len(ub_wg)), ub_wg, label='ub - ub')
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel('Difference in accuracies')
-    ax.legend()
+    # ax = axes[1]
+    # avg_ub = [avg_acc-ub_acc for avg_acc, ub_acc in zip(test_avg_accs, test_ub_accs)]
+    # avg_wg = [avg_acc-wg_acc for avg_acc, wg_acc in zip(test_avg_accs, test_wg_accs)]
+    # ub_wg = [ub_acc-wg_acc for ub_acc, wg_acc in zip(test_ub_accs, test_wg_accs)]
+    # ax.plot(range(len(avg_ub)), avg_ub, label='avg - ub')
+    # ax.plot(range(len(avg_wg)), avg_wg, label='avg - wg')
+    # ax.plot(range(len(ub_wg)), ub_wg, label='ub - ub')
+    # ax.set_xlabel('Epochs')
+    # ax.set_ylabel('Difference in accuracies')
+    # ax.legend()
 
     plt.tight_layout()
+    plt.grid(True, linestyle='--', alpha=0.7)
     plt.savefig(save_at)
     plt.close()
 

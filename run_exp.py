@@ -46,7 +46,7 @@ def main():
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT'], default='ERM')
 
     # Optimization
-    parser.add_argument('--n_epochs', type=int, default=160)
+    parser.add_argument('--n_epochs', type=int)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
     parser.add_argument('--scheduler', action='store_true', default=False)
@@ -60,15 +60,15 @@ def main():
     parser.add_argument('--save_step', type=int)
     
     parser.add_argument('--save_preds_at', type=list, help='when to save ERM predictions', default=[])
-    parser.add_argument('--id_ckpt', type=int, default=60, help='which epoch to load id model for DeTT/JTT')
-    parser.add_argument('--upweight', type=float, default=60, help='upweight factor for DeTT/JTT')
+    parser.add_argument('--id_ckpt', type=int, help='which epoch to load id model for DeTT/JTT')
+    parser.add_argument('--upweight', type=float, help='upweight factor for DeTT/JTT')
     
     
 
     args = parser.parse_args()
     
     if args.dataset == "CUB":
-        args.n_epochs = 200
+        if args.n_epochs is None: args.n_epochs = 200
         if args.method == 'ERM':
             args.lr = 1e-3
             args.weight_decay = 1e-4
@@ -87,7 +87,7 @@ def main():
         elif args.method == 'DeTT':
             args.lr = 1e-4
             args.weight_decay = 1
-            args.id_ckpt = 60
+            args.id_ckpt = 1
             args.upweight = 100
         else: 
             raise NotImplementedError
@@ -121,7 +121,7 @@ def main():
         args.widx = 3
     
     if args.save_step is None:
-        args.save_step = args.n_epochs//2
+        args.save_step = args.n_epochs//10
     check_args(args)
     
     
@@ -203,7 +203,7 @@ def main():
         teacher.load_state_dict(teacher_ckpt['model'])
         teacher.eval()
         models['teacher'] = teacher.to(device=args.device)
-        logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}")
+        logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}\n")
     
     if args.method in ['SimKD', 'DeTT']:
         models['teacher'] = FeatResNet(models['teacher'])

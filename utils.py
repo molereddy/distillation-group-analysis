@@ -19,7 +19,7 @@ def precision_recall(outputs, targets):
 def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
     fig, axes = plt.subplots(1, 1, figsize=(10, 4))
     
-    ax = axes[0]
+    ax = axes # [0]
     ax.plot(range(len(test_avg_accs)), test_avg_accs, label='avg acc')
     ax.plot(range(len(test_ub_accs)), test_ub_accs, label='unbiased acc')
     ax.plot(range(len(test_wg_accs)), test_wg_accs, label='worst acc')

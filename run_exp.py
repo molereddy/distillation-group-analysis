@@ -94,7 +94,7 @@ def main():
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
         args.widx = 2
     elif args.dataset == 'CelebA':
-        args.n_epochs = 60
+        if args.n_epochs is None: args.n_epochs = 60
         if args.method == 'ERM':
             args.lr = 1e-4
             args.weight_decay = 1e-4

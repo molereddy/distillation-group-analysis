@@ -202,6 +202,18 @@ class Projector(nn.Module):
         self.block = conv_block
         self.fc = nn.Linear(d, 2)
 
+    def init_weights(self):
+        # Initialize the model weights with scratch weights
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                # Reinitialize Conv2d and Linear layers with scratch weights
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+    def refresh(self):
+        self.init_weights()
+
     def forward(self, x):
         if self.block != None:
             x = self.block(x)

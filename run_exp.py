@@ -5,7 +5,7 @@ import torch, time
 import torch.nn as nn
 import torchvision
 
-from models import model_attributes, FeatResNet, SimKD, SemiResNet
+from models import model_attributes, FeatResNet, SimKD, SemiResNet, Projector
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from data.dro_dataset import get_loader
 from utils import set_seed, Logger, CSVBatchLogger, log_args, get_model
@@ -65,6 +65,8 @@ def main():
     
     parser.add_argument('--reweigh_at', type=int, default=20, help='when to reweight samples using aux')
     parser.add_argument('--retrain_aux', type=int, default=20, help='when to reweight samples using aux')
+    parser.add_argument('--alpha', type=int, default=4, help='when to reweight samples using aux')
+    parser.add_argument('--beta', type=int, default=5, help='when to reweight samples using aux')
     
     
     
@@ -94,10 +96,12 @@ def main():
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'aux_wt':
-            args.lr = 1e-3
+            args.lr = 1e-4
             args.weight_decay = 1e-3
             args.reweigh_at = 5
             args.retrain_aux = 10
+            args.alpha = 5
+            args.beta = 2
         else: 
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
@@ -194,7 +198,7 @@ def main():
     
     
     # set directory for storing results
-    if args.method in ['KD', 'SimKD', 'DeTT', 'aux_wt']:
+    if args.method in ['KD', 'SimKD', 'DeTT']:
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, args.model, str(args.seed)]))
@@ -204,6 +208,12 @@ def main():
     elif args.method == 'ERM':
          args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
                                  '_'.join([args.model, str(args.seed)]))
+    elif args.method == 'aux_wt':
+        teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
+        args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
+                                     '_'.join([args.teacher, args.method, args.alpha, args.beta, 
+                                               args.model, str(args.seed)]))
+        
     
     if not os.path.exists(args.logs_dir):
         os.makedirs(args.logs_dir, exist_ok=True)

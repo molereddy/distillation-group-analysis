@@ -18,9 +18,9 @@ from pytorch_transformers import AdamW, WarmupLinearSchedule
 def train_aux(models, loader, logger, args):
     num_aux_epochs = 1
     criterion = nn.CrossEntropyLoss(reduction='none')
-    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, projector.parameters()), 
-                            lr=args.lr, momentum=0.9, weight_decay=args.wd)
     projector, aux_net = models['projector'], models['aux_net']
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, projector.parameters()), 
+                            lr=args.lr, momentum=0.9, weight_decay=args.weight_decay)
     for _, param in models['aux_net'].named_parameters():
         param.requires_grad = False
     projector.refresh()
@@ -43,7 +43,7 @@ def train_aux(models, loader, logger, args):
     
     logger.write(f"Train accuracy of aux layer:{100 * corr/total:.2f}\n")
 
-def reweigh_aux(models, loader, logger):
+def reweigh_aux(models, loader, logger, args):
     projector, aux_net = models['projector'], models['aux_net']
     projector.eval()
     aux_net.eval()
@@ -67,7 +67,7 @@ def reweigh_aux(models, loader, logger):
 
     new_weights = 4*np.exp(5 * margins[outputs != targets])-3
     edited_indices = indices[outputs != targets]
-    logger.write("re-weighting {:.2f}% of the dataset".format(100 * len(new_weights)/len(targets)))
+    logger.write("re-weighting {:.2f}% of the dataset\n".format(100 * len(new_weights)/len(targets)))
     return edited_indices, new_weights
 
 
@@ -101,8 +101,8 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
             
             if early_aux_train and batch_idx/n >= 0.1:
                 early_aux_train = False
-                reweigh_aux(models, loader, logger)
-                indxs, wts = train_aux(models, loader, logger, args)
+                train_aux(models, loader, logger, args)
+                indxs, wts = reweigh_aux(models, loader, logger, args)
                 train_dataset.update_weights(indxs, wts)
             
             x = batch[0].cuda()
@@ -319,8 +319,8 @@ def train(models, dataset,
             if epoch % args.retrain_aux == 0:
                 train_aux(models, dataset['train_loader'], logger, args)
             if epoch % args.reweigh_at == 0:
-                indxs, wts = reweigh_aux(models, dataset['train_loader'], logger)
-                train_dataset.update_weights(indxs, wts)
+                indxs, wts = reweigh_aux(models, dataset['train_loader'], logger, args)
+                dataset['train_data'].update_weights(indxs, wts)
         
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(dataset=dataset['val_data'])

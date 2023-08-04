@@ -65,7 +65,7 @@ def reweigh_aux(models, loader, logger, args):
     indices = np.concatenate(indices, axis=0)
     margins = np.concatenate(margins, axis=0)
 
-    new_weights = 4*np.exp(5 * margins[outputs != targets])-3
+    new_weights = args.alpha * (np.exp(args.beta * margins[outputs != targets])-1) + 1
     edited_indices = indices[outputs != targets]
     logger.write("re-weighting {:.2f}% of the dataset\n".format(100 * len(new_weights)/len(targets)))
     return edited_indices, new_weights

@@ -64,9 +64,9 @@ def main():
     parser.add_argument('--upweight', type=float, help='upweight factor for DeTT/JTT')
     
     parser.add_argument('--reweigh_at', type=int, default=20, help='when to reweight samples using aux')
-    parser.add_argument('--retrain_aux', type=int, default=20, help='when to reweight samples using aux')
-    parser.add_argument('--alpha', type=int, default=4, help='when to reweight samples using aux')
-    parser.add_argument('--beta', type=int, default=5, help='when to reweight samples using aux')
+    parser.add_argument('--retrain_aux', type=int, default=20, help='when to retrain aux layer')
+    parser.add_argument('--alpha', type=int, default=4, help='')
+    parser.add_argument('--beta', type=int, default=5, help='')
     
     
     
@@ -211,8 +211,8 @@ def main():
     elif args.method == 'aux_wt':
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
-                                     '_'.join([args.teacher, args.method, args.alpha, args.beta, 
-                                               args.model, str(args.seed)]))
+                                     '_'.join([args.teacher, args.method, str(args.alpha), 
+                                               str(args.beta), args.model, str(args.seed)]))
         
     
     if not os.path.exists(args.logs_dir):

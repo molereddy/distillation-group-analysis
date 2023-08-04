@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, Subset
-from models import SemiResNet, Projector
+from models import FeatResNet, Projector
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -15,48 +15,44 @@ from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
-def train_aux_and_reweigh(epoch, models, loader, train_dataset, logger, args):
-    feature_level, basic_block = 1, False
-    if args.dataset == 'CUB':
-        num_aux_epochs = 4
-    else:
-        num_aux_epochs = 1
-    for _, param in models['student'].named_parameters():
-        param.requires_grad = False
-    aux_net = SemiResNet(models['student'], level=feature_level)
-    sample_inputs = next(iter(loader))[0].to(device=args.device)
-    if basic_block:
-        converter = BasicBlock(32 * 2**feature_level, 64 * 2**feature_level, stride=1).to(device='cuda')
-        features = converter(aux_net(sample_inputs))
-        d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
-        projector = Projector(d, converter).to(device='cuda')
-    else:
-        features = aux_net(sample_inputs)
-        d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
-        projector = Projector(d).to(device='cuda')
-    projector.train()
-    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, projector.parameters()), 
-                                lr=args.lr, momentum=0.9, weight_decay=args.wd)
+def train_aux(models, loader, logger, args):
+    num_aux_epochs = 1
     criterion = nn.CrossEntropyLoss(reduction='none')
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, projector.parameters()), 
+                            lr=args.lr, momentum=0.9, weight_decay=args.wd)
+    projector, aux_net = models['projector'], models['aux_net']
+    for _, param in models['aux_net'].named_parameters():
+        param.requires_grad = False
+    projector.refresh()
+    projector.train()
+    
+    total, corr = 0, 0
     for _ in range(num_aux_epochs):
         for batch in loader:
             x, y = batch[0].to(device=args.device), batch[1].to(device=args.device)
             yhat = projector(aux_net(x))
+            
+            _, predicted_labels = torch.max(yhat, 1)
+            total += y.size(0)
+            corr += (predicted_labels == y).sum().item()
+            
             loss = criterion(yhat, y)
             optimizer.zero_grad()
-            loss.backward()
+            loss.mean().backward()
             optimizer.step()
     
+    logger.write(f"Train accuracy of aux layer:{100 * corr/total:.2f}\n")
+
+def reweigh_aux(models, loader, logger):
+    projector, aux_net = models['projector'], models['aux_net']
     projector.eval()
-    outputs = []
-    targets = []
-    indices = []
-    margins = []
+    aux_net.eval()
+    outputs, targets, indices, margins = [], [], [], []
     
     with torch.no_grad():
         for batch_idx, batch in enumerate(loader):
             x, y, _, ind = batch[0].to(device='cuda'), batch[1], batch[2], batch[3]
-            yhat = torch.softmax(projector(model(x)), dim=1).to(device='cpu')
+            yhat = torch.softmax(projector(aux_net(x)), dim=1).to(device='cpu')
             output = torch.argmax(yhat, dim=1)
             
             outputs.append(output)
@@ -69,16 +65,17 @@ def train_aux_and_reweigh(epoch, models, loader, train_dataset, logger, args):
     indices = np.concatenate(indices, axis=0)
     margins = np.concatenate(margins, axis=0)
 
-    new_weights = 3*np.exp(5 * margins[outputs != targets])-2
+    new_weights = 4*np.exp(5 * margins[outputs != targets])-3
     edited_indices = indices[outputs != targets]
     logger.write("re-weighting {:.2f}% of the dataset".format(100 * len(new_weights)/len(targets)))
-    train_dataset.update_weights(edited_indices, new_weights)
+    return edited_indices, new_weights
 
 
 def run_epoch(epoch, models, optimizer, loader, loss_computer, \
               logger, csv_logger, args,
               is_training, show_progress=False, log_every=10, \
-              scheduler=None,target_group_idx=None):
+              scheduler=None, target_group_idx=None,
+              train_dataset=None):
     
     if is_training:
         models['student'].train()
@@ -95,10 +92,19 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
         prog_bar_loader = loader
 
     save_preds = args.method == 'ERM' and is_training and (epoch in args.save_preds_at)
+    early_aux_train = args.method == 'aux_wt' and is_training and epoch == 0
     
     with torch.set_grad_enabled(is_training):
+        n = len(prog_bar_loader)
         
         for batch_idx, batch in enumerate(prog_bar_loader):
+            
+            if early_aux_train and batch_idx/n >= 0.1:
+                early_aux_train = False
+                reweigh_aux(models, loader, logger)
+                indxs, wts = train_aux(models, loader, logger, args)
+                train_dataset.update_weights(indxs, wts)
+            
             x = batch[0].cuda()
             y = batch[1].cuda()
             g = batch[2].cuda()
@@ -306,11 +312,15 @@ def train(models, dataset,
             is_training=True,
             show_progress=args.show_progress,
             log_every=args.log_every,
-            scheduler=scheduler)
+            scheduler=scheduler,
+            train_dataset=dataset['train_data'] if args.method == 'aux_wt' else None)
 
-        if args.method == 'aux_wt' and epoch % args.wt_interval == 1:
-            train_aux_and_reweigh(epoch, models, dataset['train_loader'], 
-                                dataset['train_data'], logger, args)
+        if args.method == 'aux_wt':
+            if epoch % args.retrain_aux == 0:
+                train_aux(models, dataset['train_loader'], logger, args)
+            if epoch % args.reweigh_at == 0:
+                indxs, wts = reweigh_aux(models, dataset['train_loader'], logger)
+                train_dataset.update_weights(indxs, wts)
         
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(dataset=dataset['val_data'])

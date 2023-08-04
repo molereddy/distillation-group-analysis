@@ -180,34 +180,20 @@ class BasicBlock(nn.Module):
 
 class SemiResNet(nn.Module):
     
-    def __init__(self, core_resnet, level):
+    def __init__(self, core_resnet):
         super(SemiResNet, self).__init__()
-        self.internal = core_resnet
-        self.level = level
+        self.conv1 = core_resnet.conv1
+        self.bn1 = core_resnet.bn1
+        self.relu = core_resnet.relu
+        self.maxpool = core_resnet.maxpool
+        self.layer1 = core_resnet.layer1
     
     def forward(self, x: Tensor) -> Tensor:
-        x = self.internal.conv1(x)
-        x = self.internal.bn1(x)
-        x = self.internal.relu(x)
-        x = self.internal.maxpool(x)
-
-        x = self.internal.layer1(x)
-        if self.level == 1: return x
-        
-        x = self.internal.layer2(x)
-        if self.level == 2: return x
-        
-        x = self.internal.layer3(x)
-        if self.level == 3: return x
-        
-        x = self.internal.layer4(x)
-        if self.level == 4: return x
-
-        x = self.internal.avgpool(x)
-        x = torch.flatten(x, 1)
-        ft = x
-        x = self.internal.fc(x)
-
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        x = self.layer1(x)
         return x
 
 class Projector(nn.Module):

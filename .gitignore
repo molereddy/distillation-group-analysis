@@ -20,3 +20,5 @@ logs/*.pth
 run*.sh
 *~
 analysis.py
+sample_commands.sh
+.vscode/launch.json

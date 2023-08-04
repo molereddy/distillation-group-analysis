@@ -38,6 +38,8 @@ def main():
     parser.add_argument('--val_fraction', type=float, default=0.1)
     parser.add_argument('--logs_dir', default='./results')
 
+    parser.add_argument('--batch_size', type=int, default=24)
+
     args = parser.parse_args()
     check_args(args)
     log_file_path = os.path.join(args.logs_dir, args.dataset, 'data_proc.log')

@@ -15,15 +15,16 @@ from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
-def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logger, args,
-              is_training, show_progress=False, log_every=10, scheduler=None,
-              target_group_idx=None):
+def run_epoch(epoch, models, optimizer, loader, loss_computer, \
+              logger, csv_logger, args,
+              is_training, show_progress=False, log_every=10, \
+              scheduler=None,target_group_idx=None):
     
     if is_training:
         models['student'].train()
         if args.method in ['SimKD', 'DeTT']: models['simkd'].train()
         if (args.model.startswith("bert") and args.use_bert_params): # or (args.model == "bert"):
-            model.zero_grad()
+             models['student'].zero_grad()
     else:
         models['student'].eval()
         if args.method in ['SimKD', 'DeTT']: models['simkd'].eval()
@@ -44,13 +45,45 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
             data_idx = batch[3]
             
             if args.method in ['ERM', 'JTT']:
-                outputs = models['student'](x)
+                if args.model.startswith("bert"):
+                    input_ids = x[:, :, 0]
+                    input_masks = x[:, :, 1]
+                    segment_ids = x[:, :, 2]
+                    outputs = models['student'](
+                        input_ids=input_ids,
+                        attention_mask=input_masks,
+                        token_type_ids=segment_ids,
+                        labels=y,
+                    )[1] 
+                else:
+                    outputs = models['student'](x)
+                
                 loss_main = loss_computer.loss_erm(outputs, y, g, is_training, 
-                                                   wt = None if args.method == 'ERM' else batch[4].cuda())
+                                                    wt = None if args.method == 'ERM' else batch[4].cuda())
+                    
             elif args.method == 'KD':
-                outputs = models['student'](x)
-                teacher_logits = models['teacher'](x)
+                if args.model.startswith("bert"):
+                    input_ids = x[:, :, 0]
+                    input_masks = x[:, :, 1]
+                    segment_ids = x[:, :, 2]
+                    outputs = models['student'](
+                        input_ids=input_ids,
+                        attention_mask=input_masks,
+                        token_type_ids=segment_ids,
+                        labels=y,
+                    )[1] 
+                    teacher_logits = models['teacher'](
+                        input_ids=input_ids,
+                        attention_mask=input_masks,
+                        token_type_ids=segment_ids,
+                        labels=y,
+                    )[1] 
+                else:
+                    outputs = models['student'](x)
+                    teacher_logits = models['teacher'](x)
+                
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
+            
             elif args.method in ['SimKD', 'DeTT']:
                 sft_base = models['student'](x)[0][0]
                 tft_base = models['teacher'](x)[0][0]
@@ -62,9 +95,17 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
                 raise NotImplementedError
             
             if is_training:
-                optimizer.zero_grad()
-                loss_main.backward()
-                optimizer.step()
+                if (args.model.startswith("bert") and args.use_bert_params): 
+                    loss_main.backward()
+                    torch.nn.utils.clip_grad_norm_(models['student'].parameters(),
+                                                   args.max_grad_norm)
+                    scheduler.step()
+                    optimizer.step()
+                    models['student'].zero_grad()
+                else:
+                    optimizer.zero_grad()
+                    loss_main.backward()
+                    optimizer.step()
 
             if is_training and (batch_idx+1) % log_every==0:
                 csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
@@ -138,22 +179,52 @@ def train(models, dataset,
     trainable_list = nn.ModuleList([])
     trainable_list.append(models['student'])
     if args.method == 'SimKD': trainable_list.append(models['simkd'])
+
+    if (args.model.startswith("bert") and args.use_bert_params): 
+        no_decay = ["bias", "LayerNorm.weight"]
+        optimizer_grouped_parameters = [
+            {
+                "params": [
+                    p for n, p in trainable_list.named_parameters()
+                    if not any(nd in n for nd in no_decay)
+                ],
+                "weight_decay":
+                args.weight_decay,
+            },
+            {
+                "params": [
+                    p for n, p in trainable_list.named_parameters()
+                    if any(nd in n for nd in no_decay)
+                ],
+                "weight_decay":
+                0.0,
+            },
+        ]
+        optimizer = AdamW(optimizer_grouped_parameters,
+                          lr=args.lr,
+                          eps=args.adam_epsilon)
+        t_total = len(dataset["train_loader"]) * args.n_epochs
+        print(f"\nt_total is {t_total}\n")
+        scheduler = WarmupLinearSchedule(optimizer,
+                                         warmup_steps=args.warmup_steps,
+                                         t_total=t_total)
     
-    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, 
-                                       trainable_list.parameters()),
-       lr=args.lr, momentum=0.9, weight_decay=args.weight_decay)
-    
-    if args.scheduler:
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            'min',
-            factor=0.1,
-            patience=5,
-            threshold=0.0001,
-            min_lr=0,
-            eps=1e-08)
     else:
-        scheduler = None
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, 
+                                        trainable_list.parameters()),
+        lr=args.lr, momentum=0.9, weight_decay=args.weight_decay)
+        
+        if args.scheduler:
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                'min',
+                factor=0.1,
+                patience=5,
+                threshold=0.0001,
+                min_lr=0,
+                eps=1e-08)
+        else:
+            scheduler = None
 
     best_val_acc, best_test_acc, best_epoch = 0, 0, 0
     best_state_dict = copy.deepcopy(models['student'].state_dict())

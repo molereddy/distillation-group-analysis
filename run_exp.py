@@ -40,7 +40,7 @@ def main():
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
 
     # Model
-    parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt'], default='resnet18-pt')
+    parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt',"bert","bert-base-uncased"], default='resnet18-pt')
     parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT'], default='ERM')
@@ -57,8 +57,8 @@ def main():
     parser.add_argument('--show_progress', default=False, action='store_true')
     parser.add_argument('--logs_dir', default='./results')
     parser.add_argument('--log_every', default=10, type=int) # number of batches after which to log
-    parser.add_argument('--save_step', type=int)
-    
+    parser.add_argument('--save_step', type=int,default=1)
+    parser.add_argument("--use_bert_params", type=int, default=1)
     parser.add_argument('--save_preds_at', type=list, help='when to save ERM predictions', default=[])
     parser.add_argument('--id_ckpt', type=int, help='which epoch to load id model for DeTT/JTT')
     parser.add_argument('--upweight', type=float, help='upweight factor for DeTT/JTT')
@@ -119,6 +119,57 @@ def main():
             raise NotImplementedError
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
         args.widx = 3
+
+    elif args.dataset == 'MultiNLI':
+        args.n_epochs = 5
+        if args.method == 'ERM':
+            args.lr = 0.00002
+            args.weight_decay = 0
+        elif args.method == 'KD':
+            args.lr = 0.00002
+            args.weight_decay = 0
+        elif args.method == 'JTT':
+            args.lr = 0.00001
+            args.weight_decay = 1e-1
+            args.id_ckpt = 2
+            args.upweight = 6
+        else: 
+            raise NotImplementedError
+        
+        args.log_every = 2000
+        args.widx = 5
+
+    
+    elif args.dataset == 'jigsaw' :
+        args.n_epochs = 3
+        if args.method == 'ERM':
+            args.lr = 0.00002
+            args.weight_decay = 0
+        elif args.method == 'KD':
+            args.lr = 0.00002
+            args.weight_decay = 0
+        elif args.method == 'JTT':
+            args.lr = 0.00001
+            args.weight_decay = 1e-1
+            args.id_ckpt = 2
+            args.upweight = 6
+        else: 
+            raise NotImplementedError
+        args.log_every = 2000
+        args.widx = 3
+        
+        
+    if (args.model.startswith("bert") and args.use_bert_params): 
+        args.max_grad_norm = 1.0
+        args.adam_epsilon = 1e-8
+        args.warmup_steps = 0
+
+    if args.model.startswith("bert"): # and args.model != "bert": 
+        if args.use_bert_params:
+            print("\n"*5, f"Using bert params", "\n"*5)
+        else: 
+            print("\n"*5, f"WARNING, Using {args.model} without using BERT HYPER-PARAMS", "\n"*5)
+
     
     if args.save_step is None:
         args.save_step = args.n_epochs//10
@@ -126,7 +177,7 @@ def main():
     
     
     
-    # set directory for storing results
+    # set directorys for storing results
     if args.method in ['KD', 'SimKD', 'DeTT']:
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 

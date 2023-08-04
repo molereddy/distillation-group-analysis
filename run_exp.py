@@ -188,13 +188,8 @@ def main():
     
     
     
-<<<<<<< HEAD
     # set directory for storing results
     if args.method in ['KD', 'SimKD', 'DeTT', 'aux_wt']:
-=======
-    # set directorys for storing results
-    if args.method in ['KD', 'SimKD', 'DeTT']:
->>>>>>> 42b070e979862d1019afcdd0b48f7b1b2fe16fe3
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, args.model, str(args.seed)]))

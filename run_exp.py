@@ -43,7 +43,7 @@ def main():
     parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt'], default='resnet18-pt')
     parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
-    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT'], default='ERM')
+    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'aux_wt'], default='ERM')
 
     # Optimization
     parser.add_argument('--n_epochs', type=int)
@@ -62,6 +62,9 @@ def main():
     parser.add_argument('--save_preds_at', type=list, help='when to save ERM predictions', default=[])
     parser.add_argument('--id_ckpt', type=int, help='which epoch to load id model for DeTT/JTT')
     parser.add_argument('--upweight', type=float, help='upweight factor for DeTT/JTT')
+    
+    parser.add_argument('--wt_interval', type=int, default=20, help='upweight factor for DeTT/JTT')
+    
     
     
 
@@ -89,6 +92,10 @@ def main():
             args.weight_decay = 1
             args.id_ckpt = 1
             args.upweight = 100
+        elif args.method == 'aux_wt':
+            args.lr = 1e-3
+            args.weight_decay = 1e-3
+            args.wt_interval = 30
         else: 
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
@@ -115,6 +122,10 @@ def main():
             args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 50
+        elif args.method == 'aux_wt':
+            args.lr = 1e-4
+            args.weight_decay = 1e-3
+            args.wt_interval = 10
         else: 
             raise NotImplementedError
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
@@ -127,7 +138,7 @@ def main():
     
     
     # set directory for storing results
-    if args.method in ['KD', 'SimKD', 'DeTT']:
+    if args.method in ['KD', 'SimKD', 'DeTT', 'aux_wt']:
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, args.model, str(args.seed)]))
@@ -197,7 +208,7 @@ def main():
     logger.flush()
 
     # load teacher
-    if args.method in ['SimKD', 'KD', 'DeTT']:
+    if args.method in ['SimKD', 'KD', 'DeTT', 'aux_wt']:
         teacher = get_model(args.teacher.split('-pt')[0], 'pt' in args.teacher, n_classes)
         teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
         teacher.load_state_dict(teacher_ckpt['model'])
@@ -251,7 +262,7 @@ def check_args(args):
     elif args.shift_type.startswith('label_shift'):
         assert args.minority_fraction
         assert args.imbalance_ratio
-    if args.method in ['KD', 'SimKD', 'DeTT']:
+    if args.method in ['KD', 'SimKD', 'DeTT', 'aux_wt']:
         assert args.teacher is not None
     if args.method in ['JTT', 'DeTT']:
         assert args.upweight is not None

@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, Subset
-
+from models import SemiResNet, Projector
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -14,6 +14,65 @@ from utils import AverageMeter, accuracy, save_checkpoint, plot_train_progress, 
 from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
+
+def train_aux_and_reweigh(epoch, models, loader, train_dataset, logger, args):
+    feature_level, basic_block = 1, False
+    if args.dataset == 'CUB':
+        num_aux_epochs = 4
+    else:
+        num_aux_epochs = 1
+    for _, param in models['student'].named_parameters():
+        param.requires_grad = False
+    aux_net = SemiResNet(models['student'], level=feature_level)
+    sample_inputs = next(iter(loader))[0].to(device=args.device)
+    if basic_block:
+        converter = BasicBlock(32 * 2**feature_level, 64 * 2**feature_level, stride=1).to(device='cuda')
+        features = converter(aux_net(sample_inputs))
+        d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
+        projector = Projector(d, converter).to(device='cuda')
+    else:
+        features = aux_net(sample_inputs)
+        d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
+        projector = Projector(d).to(device='cuda')
+    projector.train()
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, projector.parameters()), 
+                                lr=args.lr, momentum=0.9, weight_decay=args.wd)
+    criterion = nn.CrossEntropyLoss(reduction='none')
+    for _ in range(num_aux_epochs):
+        for batch in loader:
+            x, y = batch[0].to(device=args.device), batch[1].to(device=args.device)
+            yhat = projector(aux_net(x))
+            loss = criterion(yhat, y)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+    
+    projector.eval()
+    outputs = []
+    targets = []
+    indices = []
+    margins = []
+    
+    with torch.no_grad():
+        for batch_idx, batch in enumerate(loader):
+            x, y, _, ind = batch[0].to(device='cuda'), batch[1], batch[2], batch[3]
+            yhat = torch.softmax(projector(model(x)), dim=1).to(device='cpu')
+            output = torch.argmax(yhat, dim=1)
+            
+            outputs.append(output)
+            targets.append(y)
+            indices.append(ind)
+            margins.append(torch.abs(yhat[:, 0] - yhat[:, 1]))
+    
+    outputs = np.concatenate(outputs, axis=0)
+    targets = np.concatenate(targets, axis=0)
+    indices = np.concatenate(indices, axis=0)
+    margins = np.concatenate(margins, axis=0)
+
+    new_weights = 3*np.exp(5 * margins[outputs != targets])-2
+    edited_indices = indices[outputs != targets]
+    logger.write("re-weighting {:.2f}% of the dataset".format(100 * len(new_weights)/len(targets)))
+    train_dataset.update_weights(edited_indices, new_weights)
 
 def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logger, args,
               is_training, show_progress=False, log_every=10, scheduler=None,
@@ -47,10 +106,11 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, logger, csv_logge
                 outputs = models['student'](x)
                 loss_main = loss_computer.loss_erm(outputs, y, g, is_training, 
                                                    wt = None if args.method == 'ERM' else batch[4].cuda())
-            elif args.method == 'KD':
+            elif args.method in ['KD', 'aux_wt']:
                 outputs = models['student'](x)
                 teacher_logits = models['teacher'](x)
-                loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training)
+                loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training, 
+                                                  wt = None if args.method == 'KD' else batch[4].cuda())
             elif args.method in ['SimKD', 'DeTT']:
                 sft_base = models['student'](x)[0][0]
                 tft_base = models['teacher'](x)[0][0]
@@ -176,6 +236,10 @@ def train(models, dataset,
             log_every=args.log_every,
             scheduler=scheduler)
 
+        if args.method == 'aux_wt' and epoch % args.wt_interval == 1:
+            train_aux_and_reweigh(epoch, models, dataset['train_loader'], 
+                                dataset['train_data'], logger, args)
+        
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(dataset=dataset['val_data'])
         val_accs = run_epoch(
@@ -211,6 +275,7 @@ def train(models, dataset,
             val_loss = val_loss_computer.avg_actual_loss
             scheduler.step(val_loss) #scheduler step to update lr at the end of epoch
 
+        
         val_ub_acc = val_accs[1] # unbiased accuracy
         curr_val_acc = val_ub_acc
         curr_test_acc = ub_acc

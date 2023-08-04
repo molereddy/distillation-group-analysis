@@ -1,6 +1,6 @@
+analysis.ipynb
 *.aux
 *.bbl
-# *.ipynb
 *.blg
 *.out
 *.pdf
@@ -19,4 +19,3 @@ logs/*.pth
 .ipynb_checkpoints/
 run*.sh
 *~
-analysis.ipynb

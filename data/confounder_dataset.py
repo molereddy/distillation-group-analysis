@@ -58,8 +58,8 @@ class ConfounderDataset(Dataset):
 
         return x, y, g, idx, wt
 
-    def update_weights(self, indices, new_weight):
-        self.wt_array[indices] = new_weight
+    def update_weights(self, indices, new_weights):
+        self.wt_array[indices] = new_weights
         
     def get_splits(self, splits, train_frac=1.0):
         subsets = {}

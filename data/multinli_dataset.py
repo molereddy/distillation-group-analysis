@@ -29,7 +29,7 @@ class MultiNLIDataset(ConfounderDataset):
         model_type=None,
         metadata_csv_name="metadata.csv",
     ):
-        self.root_dir = './' 
+        self.root_dir = '/home/anmolreddy/projects/datasets/' 
         
         self.target_name = target_name
         self.confounder_names = confounder_names
@@ -57,7 +57,7 @@ class MultiNLIDataset(ConfounderDataset):
         # Read in metadata
         type_of_split = target_name.split("_")[-1]
         self.metadata_df = pd.read_csv(os.path.join(
-            self.data_dir, metadata_csv_name),
+            self.data_dir, metadata_csv_name), 
                                        index_col=0)
 
         # Get the y values

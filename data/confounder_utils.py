@@ -8,8 +8,8 @@ from models import model_attributes
 from data.celebA_dataset import CelebADataset
 from data.cub_dataset import CUBDataset
 from data.dro_dataset import DRODataset
-# from data.multinli_dataset import MultiNLIDataset
-# from data.jigsaw_dataset import JigsawDataset
+from data.multinli_dataset import MultiNLIDataset
+from data.jigsaw_dataset import JigsawDataset
 
 ########################
 ####### SETTINGS #######
@@ -22,12 +22,12 @@ confounder_settings = {
     "CUB": {
         "constructor": CUBDataset
     },
-    # "MultiNLI": {
-    #     "constructor": MultiNLIDataset
-    # },
-    # 'jigsaw':{
-    #     'constructor': JigsawDataset
-    # },
+    "MultiNLI": {
+        "constructor": MultiNLIDataset
+    },
+    'jigsaw':{
+        'constructor': JigsawDataset
+    },
 }
 
 
@@ -41,7 +41,8 @@ def prepare_confounder_data(args, train, return_full_dataset=False):
             target_name=args.target_name,
             confounder_names=args.confounder_names,
             model_type=args.model,
-            augment_data=args.augment_data
+            augment_data=args.augment_data,
+            metadata_csv_name="metadata.csv", #args.metadata_csv_name if (args.metadata_csv_name is not None) else "metadata.csv"
         )
     else: 
         full_dataset = confounder_settings[args.dataset]["constructor"](
@@ -50,7 +51,7 @@ def prepare_confounder_data(args, train, return_full_dataset=False):
             confounder_names=args.confounder_names,
             model_type=args.model,
             augment_data=args.augment_data,
-            metadata_csv_name="metadata.csv",
+            metadata_csv_name="metadata.csv", #args.metadata_csv_name if (args.metadata_csv_name is not None) else "metadata.csv",
             batch_size=args.batch_size
         )
     

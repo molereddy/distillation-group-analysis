@@ -18,4 +18,12 @@ logs/*.txt
 logs/*.pth
 .ipynb_checkpoints/
 run*.sh
+<<<<<<< HEAD
 *~
+=======
+*~
+analysis.py
+sample_commands.sh
+.vscode/launch.json
+analysis.ipynb
+>>>>>>> 42b070e979862d1019afcdd0b48f7b1b2fe16fe3

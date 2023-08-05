@@ -41,7 +41,8 @@ def main():
 
     # Model
     parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt',"bert","bert-base-uncased"], default='resnet18-pt')
-    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT'], help="teacher name")
+    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', \
+        'resnet50-pt_JTT', 'resnet50-pt_group_DRO'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'aux_wt'], default='ERM')
 
@@ -80,7 +81,7 @@ def main():
             args.weight_decay = 1e-4
             args.save_preds_at = [0, 1, 2, 40, 60, 80]
         elif args.method == 'KD':
-            args.lr = 1e-4
+            args.lr = 5e-4
             args.weight_decay = 1e-3
         elif args.method == 'SimKD':
             args.lr = 1e-4
@@ -101,8 +102,8 @@ def main():
             args.reweigh_at = 1
             args.retrain_aux = 1
             if args.alpha is None:
-                args.alpha = 6
-                args.beta = 3
+                args.alpha = 4
+                args.beta = 5
         else: 
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
@@ -114,10 +115,10 @@ def main():
             args.weight_decay = 1e-4
             args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
-            args.lr = 1e-4
+            args.lr = 1e-5
             args.weight_decay = 1e-3
         elif args.method == 'SimKD':
-            args.lr = 5e-4
+            args.lr = 5e-5
             args.weight_decay = 1e-3
         elif args.method == 'JTT':
             args.lr = 1e-5
@@ -130,10 +131,10 @@ def main():
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'aux_wt':
-            args.lr = 1e-4
+            args.lr = 1e-5
             args.weight_decay = 1e-3
             args.reweigh_at = 5
-            args.retrain_aux = 1
+            args.retrain_aux = 5
             args.alpha = 6
             args.beta = 3
         else: 
@@ -202,7 +203,11 @@ def main():
     
     # set directory for storing results
     if args.method in ['KD', 'SimKD', 'DeTT']:
-        teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
+        if 'group_DRO' in args.teacher:
+            teacher_logs_dir = os.path.join('/home/anmolreddy/projects/group_DRO/logs/',
+                                            args.dataset, 'resnet50')
+        else:
+            teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, args.model, str(args.seed)]))
     elif args.method == 'JTT':
@@ -278,9 +283,13 @@ def main():
 
     # load teacher
     if args.method in ['SimKD', 'KD', 'DeTT', 'aux_wt']:
-        teacher = get_model(args.teacher.split('-pt')[0], 'pt' in args.teacher, n_classes)
-        teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
-        teacher.load_state_dict(teacher_ckpt['model'])
+        if 'group_DRO' in args.teacher:
+            teacher = torch.load(os.path.join('/home/anmolreddy/projects/group_DRO/logs/',
+                                              args.dataset, 'resnet50', 'best_model.pth'))
+        else:
+            teacher = get_model(args.teacher.split('-pt')[0], 'pt' in args.teacher, n_classes)
+            teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
+            teacher.load_state_dict(teacher_ckpt['model'])
         teacher.eval()
         models['teacher'] = teacher.to(device=args.device)
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}\n")

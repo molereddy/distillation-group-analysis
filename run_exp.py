@@ -65,8 +65,8 @@ def main():
     
     parser.add_argument('--reweigh_at', type=int, default=20, help='when to reweight samples using aux')
     parser.add_argument('--retrain_aux', type=int, default=20, help='when to retrain aux layer')
-    parser.add_argument('--alpha', type=int, default=4, help='')
-    parser.add_argument('--beta', type=int, default=5, help='')
+    parser.add_argument('--alpha', type=int, help='')
+    parser.add_argument('--beta', type=int, help='')
     
     
     
@@ -98,10 +98,11 @@ def main():
         elif args.method == 'aux_wt':
             args.lr = 1e-4
             args.weight_decay = 1e-3
-            args.reweigh_at = 5
-            args.retrain_aux = 10
-            args.alpha = 5
-            args.beta = 2
+            args.reweigh_at = 1
+            args.retrain_aux = 1
+            if args.alpha is None:
+                args.alpha = 6
+                args.beta = 3
         else: 
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
@@ -131,8 +132,10 @@ def main():
         elif args.method == 'aux_wt':
             args.lr = 1e-4
             args.weight_decay = 1e-3
-            args.reweigh_at = 2
-            args.retrain_aux = 4
+            args.reweigh_at = 5
+            args.retrain_aux = 1
+            args.alpha = 6
+            args.beta = 3
         else: 
             raise NotImplementedError
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size

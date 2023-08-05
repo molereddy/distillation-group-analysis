@@ -392,7 +392,8 @@ def train(models, dataset,
         logger.write(f'Best epoch {best_epoch} of val acc {best_val_acc:.4f}: avg acc {test_avg_accs[best_epoch]:.4f}, unbiased acc: {test_ub_accs[best_epoch]:.4f}, worst acc: {test_wg_accs[best_epoch]:.4f}\n')        
 
         logger.write('\n')
-    
+    with open(os.path.join(args.logs_dir, f'{100*test_avg_accs[best_epoch]:.2f}_{100*test_wg_accs[best_epoch]:.2f}.result'), 'w'):
+        pass
     with open(os.path.join(args.logs_dir, 'train_history.pkl'), 'wb') as file:
         pickle.dump({'test_avg_accs': test_avg_accs,
                      'test_ub_accs': test_ub_accs,

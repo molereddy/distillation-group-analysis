@@ -23,3 +23,6 @@ python3 run_exp.py --method ERM -s confounder -d jigsaw -t toxicity -c identity_
 python3 run_exp.py --method KD -s confounder -d MultiNLI -t gold_label_random -c sentence2_has_negation --teacher bert --model distilbert --batch_size 32 
 
 python3 run_exp.py --method KD -s confounder -d jigsaw -t toxicity -c identity_any --teacher bert-base-uncased --model distilbert-base-uncased --batch_size 24
+
+#aux_wt
+TZ=IST-5:30 date; python3 run_exp.py --method aux_wt -s confounder -d CUB -t waterbird_complete95 -c forest2water2 --model resnet18-pt --teacher resnet50-pt_group_DRO --batch_size 64 --alpha 6 --beta 3 --n_epochs 20; TZ=IST-5:30 date; 

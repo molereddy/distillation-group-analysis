@@ -5,7 +5,7 @@ import torch, time
 import torch.nn as nn
 import torchvision
 
-from models import model_attributes, FeatResNet, SimKD
+from models import model_attributes, FeatResNet, SimKD, SemiResNet, Projector
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from data.dro_dataset import get_loader
 from utils import set_seed, Logger, CSVBatchLogger, log_args, get_model
@@ -40,11 +40,12 @@ def main():
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
 
     # Model
-    parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt',"bert",\
-                        "bert-base-uncased","distilbert","distilbert-base-uncased"],default='resnet18-pt')
-    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT',"bert","bert-base-uncased"], help="teacher name")
+    parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt',"bert","bert-base-uncased"\
+                        "distilbert","distilbert-base-uncased"], default='resnet18-pt')
+    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT','resnet50-pt_group_DRO',\
+                        "bert","bert-base-uncased"], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
-    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT'], default='ERM')
+    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'aux_wt'], default='ERM')
 
     # Optimization
     parser.add_argument('--n_epochs', type=int)
@@ -58,11 +59,17 @@ def main():
     parser.add_argument('--show_progress', default=False, action='store_true')
     parser.add_argument('--logs_dir', default='./results')
     parser.add_argument('--log_every', default=10, type=int) # number of batches after which to log
-    parser.add_argument('--save_step', type=int,default=1)
+    parser.add_argument('--save_step', type=int)
     parser.add_argument("--use_bert_params", type=int, default=1)
     parser.add_argument('--save_preds_at', type=list, help='when to save ERM predictions', default=[])
     parser.add_argument('--id_ckpt', type=int, help='which epoch to load id model for DeTT/JTT')
     parser.add_argument('--upweight', type=float, help='upweight factor for DeTT/JTT')
+    
+    parser.add_argument('--reweigh_at', type=int, default=20, help='when to reweight samples using aux')
+    parser.add_argument('--retrain_aux', type=int, default=20, help='when to retrain aux layer')
+    parser.add_argument('--alpha', type=int, help='')
+    parser.add_argument('--beta', type=int, help='')
+    
     
     
 
@@ -75,21 +82,29 @@ def main():
             args.weight_decay = 1e-4
             args.save_preds_at = [0, 1, 2, 40, 60, 80]
         elif args.method == 'KD':
-            args.lr = 1e-3
+            args.lr = 5e-4
             args.weight_decay = 1e-3
         elif args.method == 'SimKD':
-            args.lr = 1e-3
+            args.lr = 1e-4
             args.weight_decay = 1e-3
         elif args.method == 'JTT':
             args.lr = 1e-5
             args.weight_decay = 1
             args.id_ckpt = 1
-            args.upweight = 100
+            args.upweight = 50
         elif args.method == 'DeTT':
-            args.lr = 1e-4
-            args.weight_decay = 1
+            args.lr = 1e-5
+            args.weight_decay = 1e-1
             args.id_ckpt = 1
-            args.upweight = 100
+            args.upweight = 50
+        elif args.method == 'aux_wt':
+            args.lr = 1e-4
+            args.weight_decay = 1e-3
+            args.reweigh_at = 1
+            args.retrain_aux = 1
+            if args.alpha is None:
+                args.alpha = 4
+                args.beta = 5
         else: 
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
@@ -101,10 +116,10 @@ def main():
             args.weight_decay = 1e-4
             args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
-            args.lr = 1e-4
+            args.lr = 1e-5
             args.weight_decay = 1e-3
         elif args.method == 'SimKD':
-            args.lr = 5e-4
+            args.lr = 5e-5
             args.weight_decay = 1e-3
         elif args.method == 'JTT':
             args.lr = 1e-5
@@ -112,16 +127,24 @@ def main():
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'DeTT':
-            args.lr = 1e-4
+            args.lr = 1e-5
             args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 50
+        elif args.method == 'aux_wt':
+            args.lr = 1e-5
+            args.weight_decay = 1e-3
+            args.reweigh_at = 5
+            args.retrain_aux = 5
+            args.alpha = 6
+            args.beta = 3
         else: 
             raise NotImplementedError
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
         args.widx = 3
 
     elif args.dataset == 'MultiNLI':
+        args.save_step = 1
         args.n_epochs = 5
         if args.method == 'ERM':
             args.lr = 0.00002
@@ -143,6 +166,7 @@ def main():
 
     
     elif args.dataset == 'jigsaw' :
+        args.save_step = 1
         args.n_epochs = 3
         if args.method == 'ERM':
             args.lr = 0.00002
@@ -180,10 +204,9 @@ def main():
     
     
     
-    # set directorys for storing results
+    # set directory for storing results
     if args.method in ['KD', 'SimKD', 'DeTT']:
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
-        print("Teacher loaded from ",teacher_logs_dir)
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, args.model, str(args.seed)]))
     elif args.method == 'JTT':
@@ -192,6 +215,12 @@ def main():
     elif args.method == 'ERM':
          args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
                                  '_'.join([args.model, str(args.seed)]))
+    elif args.method == 'aux_wt':
+        teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
+        args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
+                                     '_'.join([args.teacher, args.method, str(args.alpha), 
+                                               str(args.beta), args.model, str(args.seed)]))
+        
     
     if not os.path.exists(args.logs_dir):
         os.makedirs(args.logs_dir, exist_ok=True)
@@ -252,10 +281,14 @@ def main():
     logger.flush()
 
     # load teacher
-    if args.method in ['SimKD', 'KD', 'DeTT']:
-        teacher = get_model(args.teacher.split('-pt')[0], 'pt' in args.teacher, n_classes)
-        teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
-        teacher.load_state_dict(teacher_ckpt['model'])
+    if args.method in ['SimKD', 'KD', 'DeTT', 'aux_wt']:
+        if 'group_DRO' in args.teacher:
+            teacher = torch.load(os.path.join('/home/anmolreddy/projects/group_DRO/logs/',
+                                              args.dataset, 'resnet50', 'best_model.pth'))
+        else:
+            teacher = get_model(args.teacher.split('-pt')[0], 'pt' in args.teacher, n_classes)
+            teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
+            teacher.load_state_dict(teacher_ckpt['model'])
         teacher.eval()
         models['teacher'] = teacher.to(device=args.device)
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}\n")
@@ -283,9 +316,24 @@ def main():
                                                    f'epoch-{args.id_ckpt}_predictions.csv')
                                      )
         wrong_idxs = saved_preds_df.loc[saved_preds_df['wrong_pred'] == 1, 'index'].values
-        logger.write("upweighting {:.2f}% of the dataset".format(100 * len(wrong_idxs)/len(train_data)))
+        logger.write("upweighting {:.2f}% of the dataset from epoch-{}".format(100 * len(wrong_idxs)/len(train_data), args.id_ckpt))
         train_data.update_weights(wrong_idxs, args.upweight)
-        
+    
+    if args.method == 'aux_wt':
+        basic_block = False
+        aux_net = SemiResNet(models['student'])
+        sample_inputs = next(iter(data['train_loader']))[0].to(device=args.device)
+        if basic_block:
+            converter = BasicBlock(32 * 2**feature_level, 64 * 2**feature_level, stride=1).to(device='cuda')
+            features = converter(aux_net(sample_inputs))
+            d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
+            projector = Projector(d, converter).to(device='cuda')
+        else:
+            features = aux_net(sample_inputs)
+            d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
+            projector = Projector(d).to(device='cuda')
+        models['aux_net'] = aux_net
+        models['projector'] = projector
     
     logger.flush()
     
@@ -310,7 +358,7 @@ def check_args(args):
     elif args.shift_type.startswith('label_shift'):
         assert args.minority_fraction
         assert args.imbalance_ratio
-    if args.method in ['KD', 'SimKD', 'DeTT']:
+    if args.method in ['KD', 'SimKD', 'DeTT', 'aux_wt']:
         assert args.teacher is not None
     if args.method in ['JTT', 'DeTT']:
         assert args.upweight is not None

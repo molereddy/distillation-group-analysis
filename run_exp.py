@@ -40,8 +40,9 @@ def main():
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
 
     # Model
-    parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt',"bert","bert-base-uncased"], default='resnet18-pt')
-    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT'], help="teacher name")
+    parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt',"bert",\
+                        "bert-base-uncased","distilbert","distilbert-base-uncased"],default='resnet18-pt')
+    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT',"bert","bert-base-uncased"], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT'], default='ERM')
 
@@ -125,13 +126,14 @@ def main():
         if args.method == 'ERM':
             args.lr = 0.00002
             args.weight_decay = 0
+            args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
             args.lr = 0.00002
             args.weight_decay = 0
         elif args.method == 'JTT':
             args.lr = 0.00001
             args.weight_decay = 1e-1
-            args.id_ckpt = 2
+            args.id_ckpt = 1
             args.upweight = 6
         else: 
             raise NotImplementedError
@@ -145,13 +147,14 @@ def main():
         if args.method == 'ERM':
             args.lr = 0.00002
             args.weight_decay = 0
+            args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
             args.lr = 0.00002
             args.weight_decay = 0
         elif args.method == 'JTT':
             args.lr = 0.00001
             args.weight_decay = 1e-1
-            args.id_ckpt = 2
+            args.id_ckpt = 1
             args.upweight = 6
         else: 
             raise NotImplementedError
@@ -159,12 +162,12 @@ def main():
         args.widx = 3
         
         
-    if (args.model.startswith("bert") and args.use_bert_params): 
+    if ((args.model.startswith("bert") or args.model.startswith("distilbert")) and args.use_bert_params): 
         args.max_grad_norm = 1.0
         args.adam_epsilon = 1e-8
         args.warmup_steps = 0
 
-    if args.model.startswith("bert"): # and args.model != "bert": 
+    if args.model.startswith("bert") or args.model.startswith("distilbert"): # and args.model != "bert": 
         if args.use_bert_params:
             print("\n"*5, f"Using bert params", "\n"*5)
         else: 
@@ -180,6 +183,7 @@ def main():
     # set directorys for storing results
     if args.method in ['KD', 'SimKD', 'DeTT']:
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
+        print("Teacher loaded from ",teacher_logs_dir)
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, args.model, str(args.seed)]))
     elif args.method == 'JTT':
@@ -257,8 +261,12 @@ def main():
         logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}\n")
     
     if args.method in ['SimKD', 'DeTT']:
-        models['teacher'] = FeatResNet(models['teacher'])
-        models['student'] = FeatResNet(models['student'])
+        if args.model.startswith("bert") or args.model.startswith("distilbert"):
+            models['teacher'] = FeatBert(models['teacher'])
+            models['student'] = FeatBert(models['student'])
+        else:
+            models['teacher'] = FeatResNet(models['teacher'])
+            models['student'] = FeatResNet(models['student'])
         models['teacher'].eval()
         models['student'].eval()
         

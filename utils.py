@@ -183,6 +183,25 @@ def get_model(model, pretrained=True, n_classes=2, dataset='MultiNLI'):
             print(f'n_classes = {n_classes}')
         else: 
             raise NotImplementedError
+    elif model.startswith('distilbert'):
+        if dataset == "MultiNLI":
+            from pytorch_transformers import DistilBertConfig, DistilBertForSequenceClassification
+            config_class = DistilBertConfig
+            model_class = DistilBertForSequenceClassification
+            config = config_class.from_pretrained("distilbert-base-uncased",
+                                                num_labels=3,
+                                                finetuning_task="mnli")
+            model = model_class.from_pretrained("distilbert-base-uncased",
+                                                from_tf=False,
+                                                config=config)
+        elif dataset == "jigsaw":
+            from transformers import DistilBertForSequenceClassification
+            model = DistilBertForSequenceClassification.from_pretrained(
+                model,
+                num_labels=n_classes)
+            print(f'n_classes = {n_classes}')
+        else: 
+            raise NotImplementedError
     else:
         raise ValueError(f"{model} Model not recognized.")
 

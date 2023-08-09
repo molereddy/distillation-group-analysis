@@ -23,7 +23,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
     if is_training:
         models['student'].train()
         if args.method in ['SimKD', 'DeTT']: models['simkd'].train()
-        if (args.model.startswith("bert") and args.use_bert_params): # or (args.model == "bert"):
+        if ((args.model.startswith("bert") or args.model.startswith("distilbert"))and args.use_bert_params): # or (args.model == "bert"):
              models['student'].zero_grad()
     else:
         models['student'].eval()
@@ -45,7 +45,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
             data_idx = batch[3]
             
             if args.method in ['ERM', 'JTT']:
-                if args.model.startswith("bert"):
+                if args.model.startswith("bert") :
                     input_ids = x[:, :, 0]
                     input_masks = x[:, :, 1]
                     segment_ids = x[:, :, 2]
@@ -55,6 +55,15 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                         token_type_ids=segment_ids,
                         labels=y,
                     )[1] 
+                elif args.model.startswith("distilbert"):
+                    input_ids = x[:, :, 0]
+                    input_masks = x[:, :, 1]
+                    segment_ids = x[:, :, 2]
+                    outputs = models['student'](
+                        input_ids=input_ids,
+                        attention_mask=input_masks,
+                        labels=y,
+                    )[1] 
                 else:
                     outputs = models['student'](x)
                 
@@ -62,7 +71,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                                                     wt = None if args.method == 'ERM' else batch[4].cuda())
                     
             elif args.method == 'KD':
-                if args.model.startswith("bert"):
+                if args.model.startswith("bert") :
                     input_ids = x[:, :, 0]
                     input_masks = x[:, :, 1]
                     segment_ids = x[:, :, 2]
@@ -70,6 +79,21 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                         input_ids=input_ids,
                         attention_mask=input_masks,
                         token_type_ids=segment_ids,
+                        labels=y,
+                    )[1] 
+                    teacher_logits = models['teacher'](
+                        input_ids=input_ids,
+                        attention_mask=input_masks,
+                        token_type_ids=segment_ids,
+                        labels=y,
+                    )[1] 
+                elif args.model.startswith("distilbert"):
+                    input_ids = x[:, :, 0]
+                    input_masks = x[:, :, 1]
+                    segment_ids = x[:, :, 2]
+                    outputs = models['student'](
+                        input_ids=input_ids,
+                        attention_mask=input_masks,
                         labels=y,
                     )[1] 
                     teacher_logits = models['teacher'](
@@ -95,7 +119,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                 raise NotImplementedError
             
             if is_training:
-                if (args.model.startswith("bert") and args.use_bert_params): 
+                if ((args.model.startswith("bert") or args.model.startswith("distilbert")) and args.use_bert_params): 
                     loss_main.backward()
                     torch.nn.utils.clip_grad_norm_(models['student'].parameters(),
                                                    args.max_grad_norm)
@@ -180,7 +204,7 @@ def train(models, dataset,
     trainable_list.append(models['student'])
     if args.method == 'SimKD': trainable_list.append(models['simkd'])
 
-    if (args.model.startswith("bert") and args.use_bert_params): 
+    if ((args.model.startswith("bert") or args.model.startswith("distilbert")) and args.use_bert_params): 
         no_decay = ["bias", "LayerNorm.weight"]
         optimizer_grouped_parameters = [
             {

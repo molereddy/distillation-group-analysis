@@ -18,3 +18,8 @@ python3 save_datasets.py -s confounder -d jigsaw -t toxicity -c identity_any --m
 python3 run_exp.py --method ERM -s confounder -d MultiNLI -t gold_label_random -c sentence2_has_negation --model bert --batch_size 32 
 
 python3 run_exp.py --method ERM -s confounder -d jigsaw -t toxicity -c identity_any --model bert-base-uncased --batch_size 24
+
+#KD
+python3 run_exp.py --method KD -s confounder -d MultiNLI -t gold_label_random -c sentence2_has_negation --teacher bert --model distilbert --batch_size 32 
+
+python3 run_exp.py --method KD -s confounder -d jigsaw -t toxicity -c identity_any --teacher bert-base-uncased --model distilbert-base-uncased --batch_size 24

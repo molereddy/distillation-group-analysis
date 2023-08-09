@@ -9,6 +9,9 @@ model_attributes = {
     "bert": {
         "feature_type": "text"
     },
+    "distilbert": {
+        "feature_type": "text"
+    },
     'inception_v3': {
         'feature_type': 'image',
         'target_resolution': (299, 299),
@@ -41,7 +44,10 @@ model_attributes = {
     },
     "bert-base-uncased": {
         'feature_type': 'text'
-    }
+    },
+    "distilbert-base-uncased": {
+        'feature_type': 'text'
+    },
 }
 
 class SimKD(nn.Module):

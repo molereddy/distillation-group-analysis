@@ -6,7 +6,7 @@ from models import model_attributes
 from torch.utils.data import Dataset
 from data.confounder_dataset import ConfounderDataset
 
-from transformers import AutoTokenizer, BertTokenizer
+from transformers import  BertTokenizer,DistilBertTokenizer #Auto,
 
 
 class JigsawDataset(ConfounderDataset):
@@ -97,6 +97,10 @@ class JigsawDataset(ConfounderDataset):
         # Extract text
         self.text_array = list(self.metadata_df["comment_text"])
         self.tokenizer = BertTokenizer.from_pretrained(self.model)
+        # if self.model.startswith('bert'):
+        #     self.tokenizer = BertTokenizer.from_pretrained(self.model)
+        # else:
+        #     self.tokenizer = DistilBertTokenizer.from_pretrained(self.model)
 
     def __len__(self):
         return len(self.y_array)

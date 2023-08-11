@@ -40,8 +40,8 @@ def main():
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
 
     # Model
-    parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt',"bert","bert-base-uncased"], default='resnet18-pt')
-    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', \
+    parser.add_argument('--model', choices=['resnet18-pt', 'resnet50-pt',"bert","bert-base-uncased"], default='resnet18-pt')
+    parser.add_argument("--teacher", type=str, choices=['resnet50-pt', \
         'resnet50-pt_JTT', 'resnet50-pt_group_DRO'], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'aux_wt'], default='ERM')
@@ -75,7 +75,9 @@ def main():
     args = parser.parse_args()
     
     if args.dataset == "CUB":
-        if args.n_epochs is None: args.n_epochs = 200
+        args.target_name = "waterbird_complete95"
+        args.confounder_names = "forest2water2"
+        if args.n_epochs is None: args.n_epochs = 250
         if args.method == 'ERM':
             args.lr = 1e-3
             args.weight_decay = 1e-4
@@ -108,7 +110,10 @@ def main():
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
         args.widx = 2
+    
     elif args.dataset == 'CelebA':
+        args.target_name = "Blond_Hair"
+        args.confounder_names = "Male"
         if args.n_epochs is None: args.n_epochs = 60
         if args.method == 'ERM':
             args.lr = 1e-4
@@ -143,6 +148,8 @@ def main():
         args.widx = 3
 
     elif args.dataset == 'MultiNLI':
+        args.target_name = "gold_label_random"
+        args.confounder_names = "sentence2_has_negation"
         args.save_step = 1
         args.n_epochs = 5
         if args.method == 'ERM':
@@ -163,7 +170,9 @@ def main():
         args.widx = 5
 
     
-    elif args.dataset == 'jigsaw' :
+    elif args.dataset == 'jigsaw':
+        args.target_name = "toxicity"
+        args.confounder_names = "identity_any"
         args.save_step = 1
         args.n_epochs = 3
         if args.method == 'ERM':
@@ -317,7 +326,7 @@ def main():
         train_data.update_weights(wrong_idxs, args.upweight)
     
     if args.method == 'aux_wt':
-        basic_block = False
+        basic_block = True
         aux_net = SemiResNet(models['student'])
         sample_inputs = next(iter(data['train_loader']))[0].to(device=args.device)
         if basic_block:

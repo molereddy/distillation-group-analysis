@@ -161,7 +161,7 @@ def get_model(model, pretrained=True, n_classes=2, dataset='MultiNLI'):
         d = model.fc.in_features
         model.fc = nn.Linear(d, n_classes)
     elif model == "resnet18":
-        model = torchvision.models.resnet34(**weights_dict)
+        model = torchvision.models.resnet18(**weights_dict)
         d = model.fc.in_features
         model.fc = nn.Linear(d, n_classes)
     elif model.startswith('bert'):

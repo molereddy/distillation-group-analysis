@@ -46,7 +46,7 @@ class LossComputer:
                                                               F.softmax(teacher_yhat/3, dim=1))
         per_sample_kd_losses = torch.sum(per_sample_kd_losses, dim=1)
         if wt is not None: per_sample_kd_losses *= wt
-        per_sample_losses = 0.9*per_sample_kd_losses + 0.1*per_sample_ce_losses
+        per_sample_losses = per_sample_kd_losses + per_sample_ce_losses
         group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
         group_acc, group_count = self.compute_group_avg((torch.argmax(yhat,1)==y).float(), group_idx)
         # compute overall loss

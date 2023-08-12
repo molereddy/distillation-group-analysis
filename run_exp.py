@@ -20,7 +20,7 @@ def main():
     # Settings
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('-d', '--dataset', choices=dataset_attributes.keys(), required=True)
-    parser.add_argument('-s', '--shift_type', choices=shift_types, default='confounder', required=True)
+    parser.add_argument('-s', '--shift_type', choices=shift_types, default='confounder')
     # Confounders
     parser.add_argument('-t', '--target_name')
     parser.add_argument('-c', '--confounder_names', nargs='+')
@@ -77,7 +77,7 @@ def main():
     
     if args.dataset == "CUB":
         args.target_name = "waterbird_complete95"
-        args.confounder_names = "forest2water2"
+        args.confounder_names = ["forest2water2"]
         if args.n_epochs is None: args.n_epochs = 250
         if args.method == 'ERM':
             args.lr = 1e-3
@@ -85,10 +85,10 @@ def main():
             args.save_preds_at = [0, 1, 2, 40, 60, 80]
         elif args.method == 'KD':
             args.lr = 5e-4
-            args.weight_decay = 1e-3
+            args.weight_decay = 1e-1
         elif args.method == 'SimKD':
             args.lr = 1e-4
-            args.weight_decay = 1e-3
+            args.weight_decay = 1e-1
         elif args.method == 'JTT':
             args.lr = 1e-5
             args.weight_decay = 1
@@ -96,7 +96,7 @@ def main():
             args.upweight = 50
         elif args.method == 'DeTT':
             args.lr = 1e-5
-            args.weight_decay = 1e-1
+            args.weight_decay = 1
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'aux_wt':
@@ -114,7 +114,7 @@ def main():
     
     elif args.dataset == 'CelebA':
         args.target_name = "Blond_Hair"
-        args.confounder_names = "Male"
+        args.confounder_names = ["Male"]
         if args.n_epochs is None: args.n_epochs = 60
         if args.method == 'ERM':
             args.lr = 1e-4
@@ -122,10 +122,10 @@ def main():
             args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
             args.lr = 1e-5
-            args.weight_decay = 1e-3
+            args.weight_decay = 1e-1
         elif args.method == 'SimKD':
             args.lr = 5e-5
-            args.weight_decay = 1e-3
+            args.weight_decay = 1e-1
         elif args.method == 'JTT':
             args.lr = 1e-5
             args.weight_decay = 1e-1
@@ -150,7 +150,7 @@ def main():
 
     elif args.dataset == 'MultiNLI':
         args.target_name = "gold_label_random"
-        args.confounder_names = "sentence2_has_negation"
+        args.confounder_names = ["sentence2_has_negation"]
         args.save_step = 1
         args.n_epochs = 5
         if args.method == 'ERM':
@@ -174,7 +174,7 @@ def main():
     
     elif args.dataset == 'jigsaw':
         args.target_name = "toxicity"
-        args.confounder_names = "identity_any"
+        args.confounder_names = ["identity_any"]
         args.save_step = 1
         args.n_epochs = 3
         if args.method == 'ERM':
@@ -206,7 +206,8 @@ def main():
         else: 
             print("\n"*5, f"WARNING, Using {args.model} without using BERT HYPER-PARAMS", "\n"*5)
 
-    
+    if args.teacher is not None:
+        args.batch_size = 64
     if args.save_step is None:
         args.save_step = args.n_epochs//10
     check_args(args)

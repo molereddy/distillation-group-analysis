@@ -45,7 +45,7 @@ def plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, save_at):
 
 
 def save_checkpoint(state, logs_dir, is_best=False, is_last=False, save_freq=20):
-    if state['epoch']%save_freq==0:
+    if state['epoch']%save_freq==0 or state['epoch'] in [0, 1]:
         torch.save(state, os.path.join(logs_dir, f'{state["epoch"]}_ckpt.pth.tar'))
     if is_best:
         torch.save(state, os.path.join(logs_dir, 'best_ckpt.pth.tar'))

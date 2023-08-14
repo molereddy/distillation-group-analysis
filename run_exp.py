@@ -46,6 +46,7 @@ def main():
                         "bert","bert-base-uncased"], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'aux_wt'], default='ERM')
+    parser.add_argument('--kd_alpha', type=float, default=1)
 
     # Optimization
     parser.add_argument('--n_epochs', type=int)
@@ -218,7 +219,7 @@ def main():
     if args.method in ['KD', 'SimKD', 'DeTT']:
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
-                                     '_'.join([args.teacher, args.method, args.model, str(args.seed)]))
+                                     '_'.join([args.teacher, args.method, arg.kd_alpha, args.model, str(args.seed)]))
     elif args.method == 'JTT':
          args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
                                  '_'.join([args.model, args.method, str(args.seed)]))

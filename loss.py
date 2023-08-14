@@ -5,7 +5,8 @@ import torch.nn.functional as F
 import numpy as np
 
 class LossComputer:
-    def __init__(self, dataset, adj=None, min_var_weight=0,normalize_loss=False):
+    def __init__(self, dataset, adj=None, min_var_weight=0, 
+                 normalize_loss=False, args=None):
         self.criterion = torch.nn.CrossEntropyLoss(reduction='none')
         self.min_var_weight = min_var_weight
         self.normalize_loss = normalize_loss
@@ -19,7 +20,8 @@ class LossComputer:
             self.adj = torch.from_numpy(adj).float().cuda()
         else:
             self.adj = torch.zeros(self.n_groups).float().cuda()
-
+        self.alpha = args.kd_alpha if args is not None else 1
+        
         # quantities maintained throughout training
         self.adv_probs = torch.ones(self.n_groups).cuda()/self.n_groups
 
@@ -28,7 +30,8 @@ class LossComputer:
     def loss_erm(self, yhat, y, group_idx=None, is_training=False, wt=None):
         # compute per-sample and per-group losses
         per_sample_losses = self.criterion(yhat, y)
-        if wt is not None: per_sample_losses *= wt
+        if wt is not None: 
+            per_sample_losses *= wt
         group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
         group_acc, group_count = self.compute_group_avg((torch.argmax(yhat,1)==y).float(), group_idx)
         # compute overall loss
@@ -45,8 +48,10 @@ class LossComputer:
         per_sample_kd_losses = 3*3*nn.KLDivLoss(reduction='none')(F.log_softmax(yhat/3, dim=1),
                                                               F.softmax(teacher_yhat/3, dim=1))
         per_sample_kd_losses = torch.sum(per_sample_kd_losses, dim=1)
-        if wt is not None: per_sample_kd_losses *= wt
-        per_sample_losses = per_sample_kd_losses + per_sample_ce_losses
+        if wt is not None: 
+            per_sample_kd_losses *= wt
+            per_sample_ce_losses *= wt
+        per_sample_losses = self.alpha * per_sample_kd_losses + (1-self.alpha) * per_sample_ce_losses
         group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
         group_acc, group_count = self.compute_group_avg((torch.argmax(yhat,1)==y).float(), group_idx)
         # compute overall loss
@@ -59,8 +64,12 @@ class LossComputer:
     
     def loss_mse(self, yhat, y, sft, tft, group_idx=None, is_training=False, wt=None):
         # compute per-sample and per-group losses
-        per_sample_losses = torch.mean((sft - tft) ** 2, dim=(1, 2, 3))
-        if wt is not None: per_sample_losses *= wt
+        per_sample_ce_losses = self.criterion(yhat, y)
+        per_sample_kd_losses = torch.mean((sft - tft) ** 2, dim=(1, 2, 3))
+        if wt is not None: 
+            per_sample_kd_losses *= wt
+            per_sample_ce_losses *= wt
+        per_sample_losses = self.alpha * per_sample_kd_losses + (1-self.alpha) * per_sample_ce_losses
         group_loss, group_count = self.compute_group_avg(per_sample_losses, group_idx)
         group_acc, group_count = self.compute_group_avg((torch.argmax(yhat, 1) == y).float(), group_idx)
         # compute overall loss

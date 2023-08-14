@@ -264,7 +264,8 @@ def train(models, dataset,
         dataset=dataset['train_data'],
         adj=adjustments,
         normalize_loss=args.use_normalized_loss,
-        min_var_weight=args.minimum_variational_weight)
+        min_var_weight=args.minimum_variational_weight,
+        args=args)
 
     
     trainable_list = nn.ModuleList([])
@@ -347,7 +348,7 @@ def train(models, dataset,
                 dataset['train_data'].update_weights(indxs, wts)
         
         logger.write(f'\nValidation:\n')
-        val_loss_computer = LossComputer(dataset=dataset['val_data'])
+        val_loss_computer = LossComputer(dataset=dataset['val_data'], args=args)
         val_accs = run_epoch(
             epoch, models, optimizer,
             dataset['val_loader'],
@@ -359,7 +360,7 @@ def train(models, dataset,
         # Test set; don't print to avoid peeking
         logger.write(f'\nTest:\n')
         if dataset['test_data'] is not None:
-            test_loss_computer = LossComputer(dataset=dataset['test_data'])
+            test_loss_computer = LossComputer(dataset=dataset['test_data'], args=args)
             avg_acc, ub_acc, wg_acc = run_epoch(
                 epoch, models, optimizer,
                 dataset['test_loader'],
@@ -446,7 +447,7 @@ def test(models, dataset, logger, test_csv_logger, args):
         weight_decay=args.weight_decay)
     logger.write(f'\nTest:\n')
     if dataset['test_data'] is not None:
-        test_loss_computer = LossComputer(dataset=dataset['test_data'])
+        test_loss_computer = LossComputer(dataset=dataset['test_data'], args=args)
         run_epoch(
             0, models, optimizer,
             dataset['test_loader'],

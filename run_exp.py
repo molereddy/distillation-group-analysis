@@ -97,7 +97,7 @@ def main():
             args.upweight = 50
         elif args.method == 'DeTT':
             args.lr = 1e-5
-            args.weight_decay = 1
+            args.weight_decay = 1e-3
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'aux_wt':
@@ -134,7 +134,7 @@ def main():
             args.upweight = 50
         elif args.method == 'DeTT':
             args.lr = 1e-5
-            args.weight_decay = 1e-1
+            args.weight_decay = 1e-3
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'aux_wt':

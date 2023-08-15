@@ -17,7 +17,8 @@ class CUBDataset(ConfounderDataset):
     def __init__(self, root_dir,
                  target_name, confounder_names,
                  augment_data=False,
-                 model_type=None):
+                 model_type=None,
+                 metadata_csv_name=None):
         self.root_dir = root_dir
         self.target_name = target_name
         self.confounder_names = confounder_names

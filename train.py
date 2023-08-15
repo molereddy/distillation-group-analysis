@@ -427,30 +427,3 @@ def train(models, dataset,
                     file)
         
     plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, os.path.join(args.logs_dir, 'training_curves.png'))
-    
-    
-
-def test(models, dataset, logger, test_csv_logger, args):
-    models['student'] = models['student'].cuda()
-    # process generalization adjustment stuff
-    adjustments = [float(c) for c in args.generalization_adjustment.split(',')]
-    assert len(adjustments) in (1, dataset['train_data'].n_groups)
-    if len(adjustments)==1:
-        adjustments = np.array(adjustments* dataset['train_data'].n_groups)
-    else:
-        adjustments = np.array(adjustments)
-
-    optimizer = torch.optim.SGD(
-        filter(lambda p: p.requires_grad, models['student'].parameters()),
-        lr=args.lr,
-        momentum=0.9,
-        weight_decay=args.weight_decay)
-    logger.write(f'\nTest:\n')
-    if dataset['test_data'] is not None:
-        test_loss_computer = LossComputer(dataset=dataset['test_data'], args=args)
-        run_epoch(
-            0, models, optimizer,
-            dataset['test_loader'],
-            test_loss_computer,
-            logger, test_csv_logger, args,
-            is_training=False)

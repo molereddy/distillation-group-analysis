@@ -66,8 +66,7 @@ def main():
     parser.add_argument('--id_ckpt', type=int, help='which epoch to load id model for DeTT/JTT')
     parser.add_argument('--upweight', type=float, help='upweight factor for DeTT/JTT')
     
-    parser.add_argument('--reweigh_at', type=int, default=20, help='when to reweight samples using aux')
-    parser.add_argument('--retrain_aux', type=int, default=20, help='when to retrain aux layer')
+    parser.add_argument('--reweigh_at', type=int, default=1, help='when to reweight samples using aux')
     parser.add_argument('--alpha', type=int, help='')
     parser.add_argument('--beta', type=int, help='')
     
@@ -101,13 +100,11 @@ def main():
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'aux_wt':
-            args.lr = 1e-4
-            args.weight_decay = 1e-3
-            args.reweigh_at = 1
-            args.retrain_aux = 1
+            args.lr = 5e-4
+            args.weight_decay = 1e-1
             if args.alpha is None:
-                args.alpha = 4
-                args.beta = 5
+                args.alpha = 0.05
+                args.beta = 4
         else: 
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
@@ -138,12 +135,10 @@ def main():
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'aux_wt':
-            args.lr = 1e-5
-            args.weight_decay = 1e-3
-            args.reweigh_at = 5
-            args.retrain_aux = 5
-            args.alpha = 6
-            args.beta = 3
+            args.lr = 5e-4
+            args.weight_decay = 1e-2
+            args.alpha = 0.1
+            args.beta = 3.5
         else: 
             raise NotImplementedError
         args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
@@ -166,6 +161,11 @@ def main():
             args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 6
+        elif args.method == 'aux_wt':
+            args.lr = 2e-5
+            args.weight_decay = 1e-2
+            args.alpha = 0.2
+            args.beta = 3
         else: 
             raise NotImplementedError
         
@@ -190,6 +190,11 @@ def main():
             args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 6
+        elif args.method == 'aux_wt':
+            args.lr = 2e-5
+            args.weight_decay = 1e-2
+            args.alpha = 0.05
+            args.beta = 3
         else: 
             raise NotImplementedError
         args.log_every = 2000
@@ -242,24 +247,29 @@ def main():
     log_args(args, logger)
     set_seed(args.seed)
     
-    
-    
     # Data
     # Test data for label_shift_step is not implemented yet
     data_start_time = time.time()
     test_data = None
     test_loader = None
     if args.shift_type == 'confounder':
-        # train_data, val_data, test_data = prepare_data(args, train=True)
-        with open(os.path.join('./results', args.dataset, 
-                               '_'.join([args.target_name] + list(map(str, args.confounder_names)) + \
-                                   ['dataset', f'{args.seed}.pkl'])
-                                ), 'rb') as file:
-            data = pickle.load(file)
-            train_data = data['train_data']
-            val_data = data['val_data']
-            test_data = data['test_data']
-    elif args.shift_type == 'label_shift_step':
+        file_path = os.path.join('./results', args.dataset, 
+                                 '_'.join([args.target_name] + list(map(str, args.confounder_names)) + 
+                                          ['dataset', f'{args.seed}.pkl']))
+
+        train_data, val_data, test_data = prepare_data(args, train=True)
+        with open(file_path, 'wb') as file:
+            data_to_save = {'train_data': train_data, 'val_data': val_data, 'test_data': test_data}
+            pickle.dump(data_to_save, file)
+
+        # load from a .pkl file (to make it faster) - comment out in general
+        # with open(file_path, 'rb') as file:
+        #     data = pickle.load(file)
+        #     train_data = data['train_data']
+        #     val_data = data['val_data']
+        #     test_data = data['test_data']
+    
+    elif args.shift_type == 'label_shift_step': # never used
         train_data, val_data = prepare_data(args, train=True)
 
     loader_kwargs = {'batch_size':args.batch_size, 'num_workers':4, 'pin_memory':True}
@@ -335,14 +345,14 @@ def main():
         aux_net = SemiResNet(models['student'])
         sample_inputs = next(iter(data['train_loader']))[0].to(device=args.device)
         if basic_block:
-            converter = BasicBlock(32 * 2**feature_level, 64 * 2**feature_level, stride=1).to(device='cuda')
+            converter = BasicBlock(32 * 2**feature_level, 64 * 2**feature_level, stride=1).to(device=args.device)
             features = converter(aux_net(sample_inputs))
             d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
-            projector = Projector(d, converter).to(device='cuda')
+            projector = Projector(d, converter).to(device=args.device)
         else:
             features = aux_net(sample_inputs)
             d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
-            projector = Projector(d).to(device='cuda')
+            projector = Projector(d).to(device=args.device)
         models['aux_net'] = aux_net
         models['projector'] = projector
     

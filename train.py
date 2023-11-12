@@ -15,8 +15,7 @@ from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
-def train_aux(models, loader, logger, args):
-    num_aux_epochs = 1
+def train_aux(models, loader, logger, args, num_aux_epochs=1):
     criterion = nn.CrossEntropyLoss(reduction='none')
     projector, aux_net = models['projector'], models['aux_net']
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, projector.parameters()), 
@@ -51,7 +50,7 @@ def reweigh_aux(models, loader, logger, args):
     
     with torch.no_grad():
         for batch_idx, batch in enumerate(loader):
-            x, y, _, ind = batch[0].to(device='cuda'), batch[1], batch[2], batch[3]
+            x, y, _, ind = batch[0].to(device=args.device), batch[1], batch[2], batch[3]
             yhat = torch.softmax(projector(aux_net(x)), dim=1).to(device='cpu')
             output = torch.argmax(yhat, dim=1)
             
@@ -65,7 +64,7 @@ def reweigh_aux(models, loader, logger, args):
     indices = np.concatenate(indices, axis=0)
     margins = np.concatenate(margins, axis=0)
 
-    new_weights = args.alpha * (np.exp(args.beta * margins[outputs != targets])-1) + 1
+    new_weights = np.exp(args.beta * margins[outputs != targets]**args.alpha)
     edited_indices = indices[outputs != targets]
     logger.write("re-weighting {:.2f}% of the dataset\n".format(100 * len(new_weights)/len(targets)))
     return edited_indices, new_weights
@@ -92,18 +91,11 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
         prog_bar_loader = loader
 
     save_preds = args.method == 'ERM' and is_training and (epoch in args.save_preds_at)
-    early_aux_train = args.method == 'aux_wt' and is_training and epoch == 0
     
     with torch.set_grad_enabled(is_training):
         n = len(prog_bar_loader)
         
         for batch_idx, batch in enumerate(prog_bar_loader):
-            
-            if early_aux_train and batch_idx/n >= 0.1:
-                early_aux_train = False
-                train_aux(models, loader, logger, args)
-                indxs, wts = reweigh_aux(models, loader, logger, args)
-                train_dataset.update_weights(indxs, wts)
             
             x = batch[0].cuda()
             y = batch[1].cuda()
@@ -115,59 +107,30 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                     input_ids = x[:, :, 0]
                     input_masks = x[:, :, 1]
                     segment_ids = x[:, :, 2]
-                    outputs = models['student'](
-                        input_ids=input_ids,
-                        attention_mask=input_masks,
-                        token_type_ids=segment_ids,
-                        labels=y,
-                    )[1] 
+                    outputs = models['student'](input_ids=input_ids,attention_mask=input_masks,token_type_ids=segment_ids,labels=y)[1] 
                 elif args.model.startswith("distilbert"):
                     input_ids = x[:, :, 0]
                     input_masks = x[:, :, 1]
                     segment_ids = x[:, :, 2]
-                    outputs = models['student'](
-                        input_ids=input_ids,
-                        attention_mask=input_masks,
-                        labels=y,
-                    )[1] 
+                    outputs = models['student'](input_ids=input_ids,attention_mask=input_masks,labels=y)[1] 
                 else:
                     outputs = models['student'](x)
                 
-                loss_main = loss_computer.loss_erm(outputs, y, g, is_training, 
-                                                   wt = None if args.method == 'ERM' else batch[4].cuda())
+                loss_main = loss_computer.loss_erm(outputs, y, g, is_training, wt = None if args.method == 'ERM' else batch[4].cuda())
                     
             elif args.method in ['KD', 'aux_wt']:
                 if args.model.startswith("bert"):
                     input_ids = x[:, :, 0]
                     input_masks = x[:, :, 1]
                     segment_ids = x[:, :, 2]
-                    outputs = models['student'](
-                        input_ids=input_ids,
-                        attention_mask=input_masks,
-                        token_type_ids=segment_ids,
-                        labels=y,
-                    )[1] 
-                    teacher_logits = models['teacher'](
-                        input_ids=input_ids,
-                        attention_mask=input_masks,
-                        token_type_ids=segment_ids,
-                        labels=y,
-                    )[1] 
+                    outputs = models['student'](input_ids=input_ids,attention_mask=input_masks,token_type_ids=segment_ids,labels=y)[1] 
+                    teacher_logits = models['teacher'](input_ids=input_ids,attention_mask=input_masks,token_type_ids=segment_ids,labels=y)[1] 
                 elif args.model.startswith("distilbert"):
                     input_ids = x[:, :, 0]
                     input_masks = x[:, :, 1]
                     segment_ids = x[:, :, 2]
-                    outputs = models['student'](
-                        input_ids=input_ids,
-                        attention_mask=input_masks,
-                        labels=y,
-                    )[1] 
-                    teacher_logits = models['teacher'](
-                        input_ids=input_ids,
-                        attention_mask=input_masks,
-                        token_type_ids=segment_ids,
-                        labels=y,
-                    )[1] 
+                    outputs = models['student'](input_ids=input_ids,attention_mask=input_masks,labels=y)[1] 
+                    teacher_logits = models['teacher'](input_ids=input_ids,attention_mask=input_masks,token_type_ids=segment_ids,labels=y,)[1] 
                 else:
                     outputs = models['student'](x)
                     teacher_logits = models['teacher'](x)
@@ -275,46 +238,21 @@ def train(models, dataset,
     if ((args.model.startswith("bert") or args.model.startswith("distilbert")) and args.use_bert_params): 
         no_decay = ["bias", "LayerNorm.weight"]
         optimizer_grouped_parameters = [
-            {
-                "params": [
-                    p for n, p in trainable_list.named_parameters()
-                    if not any(nd in n for nd in no_decay)
-                ],
-                "weight_decay":
-                args.weight_decay,
-            },
-            {
-                "params": [
-                    p for n, p in trainable_list.named_parameters()
-                    if any(nd in n for nd in no_decay)
-                ],
-                "weight_decay":
-                0.0,
-            },
+            {"params": [p for n, p in trainable_list.named_parameters() if not any(nd in n for nd in no_decay)], "weight_decay": args.weight_decay,},
+            {"params": [p for n, p in trainable_list.named_parameters() if any(nd in n for nd in no_decay)], "weight_decay":0.0,},
         ]
-        optimizer = AdamW(optimizer_grouped_parameters,
-                          lr=args.lr,
-                          eps=args.adam_epsilon)
+        optimizer = AdamW(optimizer_grouped_parameters, lr=args.lr, eps=args.adam_epsilon)
         t_total = len(dataset["train_loader"]) * args.n_epochs
         print(f"\nt_total is {t_total}\n")
-        scheduler = WarmupLinearSchedule(optimizer,
-                                         warmup_steps=args.warmup_steps,
-                                         t_total=t_total)
+        scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps,  t_total=t_total)
     
     else:
         optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, 
                                         trainable_list.parameters()),
         lr=args.lr, momentum=0.9, weight_decay=args.weight_decay)
         
-        if args.scheduler:
-            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer,
-                'min',
-                factor=0.1,
-                patience=5,
-                threshold=0.0001,
-                min_lr=0,
-                eps=1e-08)
+        if args.scheduler: # not used finally
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,'min',factor=0.1,patience=5,threshold=0.0001,min_lr=0,eps=1e-08)
         else:
             scheduler = None
 
@@ -340,12 +278,10 @@ def train(models, dataset,
             scheduler=scheduler,
             train_dataset=dataset['train_data'] if args.method == 'aux_wt' else None)
 
-        if args.method == 'aux_wt':
-            if epoch % args.retrain_aux == 0:
-                train_aux(models, dataset['train_loader'], logger, args)
-            if epoch % args.reweigh_at == 0:
-                indxs, wts = reweigh_aux(models, dataset['train_loader'], logger, args)
-                dataset['train_data'].update_weights(indxs, wts)
+        if args.method == 'aux_wt' and epoch % args.reweigh_at == 0:
+            train_aux(models, dataset['train_loader'], logger, args)
+            indxs, wts = reweigh_aux(models, dataset['train_loader'], logger, args)
+            dataset['train_data'].update_weights(indxs, wts)
         
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(dataset=dataset['val_data'], args=args)
@@ -373,14 +309,14 @@ def train(models, dataset,
             test_wg_accs.append(wg_acc)
 
         # Inspect learning rates
-        if (epoch+1) % 1 == 0:
-            for param_group in optimizer.param_groups:
-                curr_lr = param_group['lr']
-                logger.write('Current lr: %f\n' % curr_lr)
+        # if (epoch+1) % 1 == 0:
+        #     for param_group in optimizer.param_groups:
+        #         curr_lr = param_group['lr']
+        #         logger.write('Current lr: %f\n' % curr_lr)
 
-        if args.scheduler:
-            val_loss = val_loss_computer.avg_actual_loss
-            scheduler.step(val_loss) #scheduler step to update lr at the end of epoch
+        # if args.scheduler:
+        #     val_loss = val_loss_computer.avg_actual_loss
+        #     scheduler.step(val_loss) #scheduler step to update lr at the end of epoch
 
         
         val_ub_acc = val_accs[1] # unbiased accuracy
@@ -397,16 +333,10 @@ def train(models, dataset,
             is_best = False
         if epoch == args.n_epochs-1:
             is_last = True
-        state = {'epoch': epoch,
-                'val_acc': curr_val_acc,
-                'test_acc': curr_test_acc,
-                'ub_acc': ub_acc,
-                'avg_acc': avg_acc,
-                'wg_acc': wg_acc,
+        state = {'epoch': epoch, 'val_acc': curr_val_acc, 'test_acc': curr_test_acc, 
+                'ub_acc': ub_acc, 'avg_acc': avg_acc, 'wg_acc': wg_acc,
                 'model': copy.deepcopy(models['student'].state_dict()),
-                'best_epoch': best_epoch,
-                'best_val_acc': best_val_acc,
-                'best_test_acc': best_test_acc}
+                'best_epoch': best_epoch, 'best_val_acc': best_val_acc, 'best_test_acc': best_test_acc}
         if args.method == 'SimKD':
             state['simkd'] = copy.deepcopy(models['simkd'].state_dict())
         save_checkpoint(state, logs_dir = args.logs_dir, is_best=is_best, save_freq=args.save_step, is_last=is_last)
@@ -420,10 +350,6 @@ def train(models, dataset,
     with open(os.path.join(args.logs_dir, f'{100*test_avg_accs[best_epoch]:.2f}_{100*test_wg_accs[best_epoch]:.2f}.result'), 'w'):
         pass
     with open(os.path.join(args.logs_dir, 'train_history.pkl'), 'wb') as file:
-        pickle.dump({'test_avg_accs': test_avg_accs,
-                     'test_ub_accs': test_ub_accs,
-                     'test_wg_accs': test_wg_accs
-                    },
-                    file)
+        pickle.dump({'test_avg_accs': test_avg_accs,'test_ub_accs': test_ub_accs, 'test_wg_accs': test_wg_accs}, file)
         
     plot_train_progress(test_avg_accs, test_ub_accs, test_wg_accs, os.path.join(args.logs_dir, 'training_curves.png'))

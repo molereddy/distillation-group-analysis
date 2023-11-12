@@ -150,14 +150,14 @@ def main():
         args.save_step = 1
         args.n_epochs = 5
         if args.method == 'ERM':
-            args.lr = 0.00002
+            args.lr = 2e-5
             args.weight_decay = 0
             args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
-            args.lr = 0.00002
+            args.lr = 2e-5
             args.weight_decay = 0
         elif args.method == 'JTT':
-            args.lr = 0.00001
+            args.lr = 1e-5
             args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 6
@@ -179,14 +179,14 @@ def main():
         args.save_step = 1
         args.n_epochs = 3
         if args.method == 'ERM':
-            args.lr = 0.00002
+            args.lr = 2e-5
             args.weight_decay = 0
             args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
-            args.lr = 0.00002
+            args.lr = 2e-5
             args.weight_decay = 0
         elif args.method == 'JTT':
-            args.lr = 0.00001
+            args.lr = 1e-5
             args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 6

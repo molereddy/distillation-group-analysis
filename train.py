@@ -192,7 +192,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
             output_df[f'worst_group_{args.widx}'] = worst_group_flags
             output_df['predicted'] = predicted
             prec, rec = precision_recall(wrongness_flags, worst_group_flags)
-            logger.write('Precision:{:.3f}, Recall:{:.3f}\n'.format(prec, rec))
+            logger.write('Worst group prediction: precision:{:.3f}, pecall:{:.3f}\n'.format(prec, rec))
             # if epoch in args.save_preds_at:
             output_df = output_df.sort_values('index')
             csv_file_path = os.path.join(args.logs_dir, f'epoch-{epoch}_predictions.csv')
@@ -202,7 +202,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
         if not is_training:
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
             csv_logger.flush()
-            return loss_computer.log_stats(logger, is_training, target_group_idx=args.widx)
+            return loss_computer.log_stats(logger, is_training, target_group_idx=-1)
         
         elif loss_computer.batch_count > 0:
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
@@ -290,8 +290,7 @@ def train(models, dataset,
             dataset['val_loader'],
             val_loss_computer,
             logger, val_csv_logger, args,
-            is_training=False,
-            target_group_idx=args.widx)
+            is_training=False)
 
         # Test set; don't print to avoid peeking
         logger.write(f'\nTest:\n')
@@ -302,8 +301,7 @@ def train(models, dataset,
                 dataset['test_loader'],
                 test_loss_computer,
                 logger, test_csv_logger, args,
-                is_training=False,
-                target_group_idx=args.widx)
+                is_training=False)
             test_avg_accs.append(avg_acc)
             test_ub_accs.append(ub_acc)
             test_wg_accs.append(wg_acc)

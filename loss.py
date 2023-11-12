@@ -153,7 +153,7 @@ class LossComputer:
 
         return stats_dict
 
-    def log_stats(self, logger, is_training, target_group_idx=-1):
+    def log_stats(self, logger, is_training, target_group_idx=None):
         if logger is None:
             return
         logger.write(f'Average incurred loss: {self.avg_per_sample_loss.item():.3f}, Average sample loss: {self.avg_actual_loss.item():.3f}, Average acc: {self.avg_acc.item():.3f}\n')
@@ -163,10 +163,16 @@ class LossComputer:
                 f'[n = {int(self.processed_data_counts[group_idx])}]:\t'
                 f'loss = {self.avg_group_loss[group_idx]:.3f}\t'
                 f'acc = {self.avg_group_acc[group_idx]:.3f}\n')
-        if not is_training and target_group_idx != -1: # i.e. when test/val epoch requests these metrics
+        if not is_training and target_group_idx is not None: # i.e. when test/val epoch requests these metrics
             avg_acc = self.avg_acc.item()
             unbiased_acc = np.average([self.avg_group_acc[group_idx].item() for group_idx in range(self.n_groups)])
-            target_group_acc = self.avg_group_acc[target_group_idx].item()
+            if target_group_idx != -1:
+                target_group_acc = self.avg_group_acc[target_group_idx].item()
+            else:
+                target_group_acc = 0
+                for group_idx in range(self.n_groups):
+                    target_group_acc = min(target_group_acc, avg_group_acc[group_idx])
             return avg_acc, unbiased_acc, target_group_acc
+        
         logger.flush()
         

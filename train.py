@@ -1,5 +1,4 @@
-import os, copy, pickle
-import types
+import os, copy, pickle, types
 
 import torch
 import torch.nn as nn

@@ -7,8 +7,8 @@ import pandas as pd
 
 ################ Paths and other configs - Set these #################################
 
-data_dir = '/home/anmolreddy/projects/datasets/multinli/data'
-glue_dir = '/home/anmolreddy/projects/datasets/multinli/glue_data/MNLI'
+data_dir = '../../data/multinli/data'
+glue_dir = '../../data/multinli/glue_data/MNLI'
 
 type_of_split = 'random'
 assert type_of_split in ['preset', 'random']

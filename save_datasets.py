@@ -42,12 +42,15 @@ def main():
 
     args = parser.parse_args()
     check_args(args)
-    log_file_path = os.path.join(args.logs_dir, args.dataset, 'data_proc.log')
+    dataset_path = os.path.join(args.logs_dir, args.dataset)
+    if not os.path.exists(dataset_path):
+        os.makedirs(dataset_path, exist_ok=True)
+    log_file_path = os.path.join(dataset_path, 'data_proc.log')
     logger = Logger(log_file_path, 'w')
     logger.write(log_file_path + '\n')
     log_args(args, logger)
     
-    for seed in range(3):
+    for seed in range(1):
         set_seed(seed)
         data_start_time = time.time()
         test_data = None

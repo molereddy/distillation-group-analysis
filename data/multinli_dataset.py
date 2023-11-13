@@ -29,8 +29,10 @@ class MultiNLIDataset(ConfounderDataset):
         model_type=None,
         metadata_csv_name="metadata.csv",
     ):
-        self.root_dir = '/home/anmolreddy/projects/datasets/' 
+        if root_dir is None:
+            root_dir = '../../data/multinli' 
         
+        self.root_dir = root_dir
         self.target_name = target_name
         self.confounder_names = confounder_names
         self.model_type = model_type
@@ -42,8 +44,8 @@ class MultiNLIDataset(ConfounderDataset):
         assert augment_data == False
         assert model_type == "bert"
 
-        self.data_dir = os.path.join(self.root_dir, "multinli", "data")
-        self.glue_dir = os.path.join(self.root_dir, "multinli", "glue_data",
+        self.data_dir = os.path.join(self.root_dir, "data")
+        self.glue_dir = os.path.join(self.root_dir, "glue_data",
                                      "MNLI")
         if not os.path.exists(self.data_dir):
             raise ValueError(

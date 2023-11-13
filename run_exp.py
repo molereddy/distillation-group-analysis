@@ -257,17 +257,18 @@ def main():
                                  '_'.join([args.target_name] + list(map(str, args.confounder_names)) + 
                                           ['dataset', f'{args.seed}.pkl']))
 
-        train_data, val_data, test_data = prepare_data(args, train=True)
-        with open(file_path, 'wb') as file:
-            data_to_save = {'train_data': train_data, 'val_data': val_data, 'test_data': test_data}
-            pickle.dump(data_to_save, file)
+        # train_data, val_data, test_data = prepare_data(args, train=True)
+        # with open(file_path, 'wb') as file:
+        #     data_to_save = {'train_data': train_data, 'val_data': val_data, 'test_data': test_data}
+        #     pickle.dump(data_to_save, file)
 
-        # load from a .pkl file (to make it faster) - comment out in general
-        # with open(file_path, 'rb') as file:
-        #     data = pickle.load(file)
-        #     train_data = data['train_data']
-        #     val_data = data['val_data']
-        #     test_data = data['test_data']
+        # load from a .pkl file (to make it faster) 
+        # comment out below block and uncomment above
+        with open(file_path, 'rb') as file:
+            data = pickle.load(file)
+            train_data = data['train_data']
+            val_data = data['val_data']
+            test_data = data['test_data']
     
     elif args.shift_type == 'label_shift_step': # never used
         train_data, val_data = prepare_data(args, train=True)

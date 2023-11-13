@@ -45,7 +45,7 @@ def main():
     parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT','resnet50-pt_group_DRO',\
                         "bert","bert-base-uncased"], help="teacher name")
     parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
-    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'aux_wt'], default='ERM')
+    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'dedier'], default='ERM')
     parser.add_argument('--kd_alpha', type=float, default=1)
 
     # Optimization
@@ -99,7 +99,7 @@ def main():
             args.weight_decay = 1e-3
             args.id_ckpt = 1
             args.upweight = 50
-        elif args.method == 'aux_wt':
+        elif args.method == 'dedier':
             args.lr = 5e-4
             args.weight_decay = 1e-1
             if args.alpha is None:
@@ -134,7 +134,7 @@ def main():
             args.weight_decay = 1e-3
             args.id_ckpt = 1
             args.upweight = 50
-        elif args.method == 'aux_wt':
+        elif args.method == 'dedier':
             args.lr = 5e-4
             args.weight_decay = 1e-2
             args.alpha = 0.1
@@ -161,7 +161,7 @@ def main():
             args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 6
-        elif args.method == 'aux_wt':
+        elif args.method == 'dedier':
             args.lr = 2e-5
             args.weight_decay = 1e-2
             args.alpha = 0.2
@@ -190,7 +190,7 @@ def main():
             args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 6
-        elif args.method == 'aux_wt':
+        elif args.method == 'dedier':
             args.lr = 2e-5
             args.weight_decay = 1e-2
             args.alpha = 0.05
@@ -231,7 +231,7 @@ def main():
     elif args.method == 'ERM':
          args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
                                  '_'.join([args.model, str(args.seed)]))
-    elif args.method == 'aux_wt':
+    elif args.method == 'dedier':
         teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
                                      '_'.join([args.teacher, args.method, str(args.alpha), 
@@ -303,7 +303,7 @@ def main():
     logger.flush()
 
     # load teacher
-    if args.method in ['SimKD', 'KD', 'DeTT', 'aux_wt']:
+    if args.method in ['SimKD', 'KD', 'DeTT', 'dedier']:
         if 'group_DRO' in args.teacher:
             teacher = torch.load(os.path.join('/home/anmolreddy/projects/group_DRO/logs/',
                                               args.dataset, 'resnet50', 'best_model.pth'))
@@ -341,7 +341,7 @@ def main():
         logger.write("upweighting {:.2f}% of the dataset from epoch-{}".format(100 * len(wrong_idxs)/len(train_data), args.id_ckpt))
         train_data.update_weights(wrong_idxs, args.upweight)
     
-    if args.method == 'aux_wt':
+    if args.method == 'dedier':
         basic_block = True
         aux_net = SemiResNet(models['student'])
         sample_inputs = next(iter(data['train_loader']))[0].to(device=args.device)
@@ -380,7 +380,7 @@ def check_args(args):
     elif args.shift_type.startswith('label_shift'):
         assert args.minority_fraction
         assert args.imbalance_ratio
-    if args.method in ['KD', 'SimKD', 'DeTT', 'aux_wt']:
+    if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
         assert args.teacher is not None
     if args.method in ['JTT', 'DeTT']:
         assert args.upweight is not None

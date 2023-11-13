@@ -117,7 +117,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                 
                 loss_main = loss_computer.loss_erm(outputs, y, g, is_training, wt = None if args.method == 'ERM' else batch[4].cuda())
                     
-            elif args.method in ['KD', 'aux_wt']:
+            elif args.method in ['KD', 'dedier']:
                 if args.model.startswith("bert"):
                     input_ids = x[:, :, 0]
                     input_masks = x[:, :, 1]
@@ -275,9 +275,9 @@ def train(models, dataset,
             show_progress=args.show_progress,
             log_every=args.log_every,
             scheduler=scheduler,
-            train_dataset=dataset['train_data'] if args.method == 'aux_wt' else None)
+            train_dataset=dataset['train_data'] if args.method == 'dedier' else None)
 
-        if args.method == 'aux_wt' and epoch % args.reweigh_at == 0:
+        if args.method == 'dedier' and epoch % args.reweigh_at == 0:
             train_aux(models, dataset['train_loader'], logger, args)
             indxs, wts = reweigh_aux(models, dataset['train_loader'], logger, args)
             dataset['train_data'].update_weights(indxs, wts)

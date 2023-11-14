@@ -40,7 +40,7 @@ def prepare_confounder_data(args, train, return_full_dataset=False):
             root_dir=args.root_dir,
             target_name=args.target_name,
             confounder_names=args.confounder_names,
-            model_type=args.model,
+            model_type=args.model_type,
             augment_data=args.augment_data,
             metadata_csv_name="metadata.csv", #args.metadata_csv_name if (args.metadata_csv_name is not None) else "metadata.csv"
         )
@@ -49,7 +49,7 @@ def prepare_confounder_data(args, train, return_full_dataset=False):
             root_dir=args.root_dir,
             target_name=args.target_name,
             confounder_names=args.confounder_names,
-            model_type=args.model,
+            model_type=args.model_type,
             augment_data=args.augment_data,
             metadata_csv_name="metadata.csv", #args.metadata_csv_name if (args.metadata_csv_name is not None) else "metadata.csv",
             batch_size=args.batch_size

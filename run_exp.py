@@ -40,11 +40,10 @@ def main():
     parser.add_argument('--use_normalized_loss', default=False, action='store_true')
 
     # Model
-    parser.add_argument('--model', choices=['resnet18', 'resnet18-pt', 'resnet50', 'resnet50-pt',"bert","bert-base-uncased"\
-                        "distilbert","distilbert-base-uncased"], default='resnet18-pt')
-    parser.add_argument("--teacher", type=str, choices=['resnet50', 'resnet50-pt', 'resnet50-pt_JTT','resnet50-pt_group_DRO',\
-                        "bert","bert-base-uncased"], help="teacher name")
-    parser.add_argument('--teacher_type', choices=['best', 'last'], default='best')
+    parser.add_argument('--model_type', choices=['resnet18', 'resnet50', "bert", "bert-base-uncased"\
+                        "distilbert", "distilbert-base-uncased"], default='resnet18', help="model type name")
+    parser.add_argument('--teacher_type', type=str, choices=['resnet50',  "bert", "bert-base-uncased"], help="teacher type name")
+    parser.add_argument('--teacher_fname', default=None)
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'dedier'], default='ERM')
     parser.add_argument('--kd_alpha', type=float, default=1)
 
@@ -201,19 +200,19 @@ def main():
         args.widx = 3
         
         
-    if ((args.model.startswith("bert") or args.model.startswith("distilbert")) and args.use_bert_params): 
+    if ((args.model_type.startswith("bert") or args.model_type.startswith("distilbert")) and args.use_bert_params): 
         args.max_grad_norm = 1.0
         args.adam_epsilon = 1e-8
         args.warmup_steps = 0
 
-    if args.model.startswith("bert") or args.model.startswith("distilbert"): # and args.model != "bert": 
+    if args.model_type.startswith("bert") or args.model_type.startswith("distilbert"): # and args.model_type != "bert": 
         if args.use_bert_params:
             print("\n"*5, f"Using bert params", "\n"*5)
         else: 
-            print("\n"*5, f"WARNING, Using {args.model} without using BERT HYPER-PARAMS", "\n"*5)
+            print("\n"*5, f"WARNING, Using {args.model_type} without using BERT HYPER-PARAMS", "\n"*5)
 
-    if args.teacher is not None:
-        args.batch_size = 64
+    # if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
+        # args.batch_size = 64
     if args.save_step is None:
         args.save_step = args.n_epochs//10
     check_args(args)
@@ -221,21 +220,25 @@ def main():
     
     
     # set directory for storing results
-    if args.method in ['KD', 'SimKD', 'DeTT']:
-        teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
-        args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
-                                     '_'.join([args.teacher, args.method, arg.kd_alpha, args.model, str(args.seed)]))
-    elif args.method == 'JTT':
-         args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
-                                 '_'.join([args.model, args.method, str(args.seed)]))
-    elif args.method == 'ERM':
-         args.logs_dir = os.path.join(args.logs_dir, args.dataset,  
-                                 '_'.join([args.model, str(args.seed)]))
+    if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
+        if args.teacher_fname is None:
+            teacher_name = args.teacher_type
+            teacher_extension = '.pth.tar'
+            teacher_ckpt_dir = os.path.join(args.logs_dir, args.dataset, args.teacher_type, 'ERM')
+            teacher_path = os.path.join(teacher_ckpt_dir, 'best_ckpt.pth.tar')
+        else:
+            teacher_name, teacher_extension = os.path.splitext(os.path.basename(args.teacher_fname))
+            teacher_ckpt_dir = os.path.join(args.logs_dir, args.dataset, args.teacher_type)
+            teacher_path = os.path.join(teacher_ckpt_dir, os.path.basename(args.teacher_fname))
+        args.logs_dir = os.path.join(args.logs_dir, args.dataset, args.model_type,
+                                     '_'.join([args.method, teacher_name]))
+    elif args.method in ['JTT', 'ERM']:
+         args.logs_dir = os.path.join(args.logs_dir, args.dataset, args.model_type, args.method)
     elif args.method == 'dedier':
-        teacher_logs_dir = os.path.join(args.logs_dir, args.dataset, args.teacher+'_'+str(args.seed))
-        args.logs_dir = os.path.join(args.logs_dir, args.dataset, 
-                                     '_'.join([args.teacher, args.method, str(args.alpha), 
-                                               str(args.beta), args.model, str(args.seed)]))
+        teacher_ckpt_dir = os.path.join(args.logs_dir, args.dataset, args.teacher_type)
+        args.logs_dir = os.path.join(args.logs_dir, args.dataset, args.model_type,
+                                     '_'.join([args.method, teacher_name, str(args.alpha), 
+                                               str(args.beta)]))
         
     
     if not os.path.exists(args.logs_dir):
@@ -288,7 +291,7 @@ def main():
     data['test_data'] = test_data
     n_classes = train_data.n_classes
     
-    logger.write("{:.2g} minutes for data processing\n".format((time.time() - data_start_time)/60))
+    # logger.write("{:.2g} minutes for data processing\n".format((time.time() - data_start_time)/60))
     logger.flush()
 
     log_data(data, logger)
@@ -298,25 +301,26 @@ def main():
     models = {}
     ## Initialize model
     logger.write("-" * 50 + '\n')
-    student = get_model(args.model.replace('-pt', ''), 'pt' in args.model, n_classes)
+    student = get_model(args.model_type.replace('-pt', ''), 'pt' in args.model_type, n_classes)
     models['student'] = student.to(device=args.device)
     logger.flush()
 
     # load teacher
+    # default way is for there to be a ckpt with method name in the teacher model_type directory
+    # if not we go to the nearest ERM and get the best_ckpt
     if args.method in ['SimKD', 'KD', 'DeTT', 'dedier']:
-        if 'group_DRO' in args.teacher:
-            teacher = torch.load(os.path.join('/home/anmolreddy/projects/group_DRO/logs/',
-                                              args.dataset, 'resnet50', 'best_model.pth'))
+        if teacher_extension == '.pth': # group DRO models might be stored like this
+            teacher = torch.load(teacher_path)
         else:
-            teacher = get_model(args.teacher.split('-pt')[0], 'pt' in args.teacher, n_classes)
-            teacher_ckpt = torch.load(os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar'))
+            teacher = get_model(args.teacher_type, n_classes=n_classes)
+            teacher_ckpt = torch.load(teacher_path)
             teacher.load_state_dict(teacher_ckpt['model'])
         teacher.eval()
         models['teacher'] = teacher.to(device=args.device)
-        logger.write(f"teacher loaded: {os.path.join(teacher_logs_dir, f'{args.teacher_type}_ckpt.pth.tar')}\n")
+        logger.write(f"teacher loaded: {teacher_path}\n")
     
     if args.method in ['SimKD', 'DeTT']:
-        if args.model.startswith("bert") or args.model.startswith("distilbert"):
+        if args.model_type.startswith("bert") or args.model_type.startswith("distilbert"):
             models['teacher'] = FeatBert(models['teacher'])
             models['student'] = FeatBert(models['student'])
         else:
@@ -332,9 +336,8 @@ def main():
         model_simkd.train()
         models['simkd'] = model_simkd
     
-    if args.method in ['JTT', 'DeTT']:
-        saved_preds_df = pd.read_csv(os.path.join('results', args.dataset,
-                                                   '_'.join([args.model, str(args.seed)]),
+    if args.method in ['JTT', 'DeTT']: # path is the ERM model's log_dir
+        saved_preds_df = pd.read_csv(os.path.join('results', args.dataset, args.model_type, 'ERM',
                                                    f'epoch-{args.id_ckpt}_predictions.csv')
                                      )
         wrong_idxs = saved_preds_df.loc[saved_preds_df['wrong_pred'] == 1, 'index'].values
@@ -381,7 +384,7 @@ def check_args(args):
         assert args.minority_fraction
         assert args.imbalance_ratio
     if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
-        assert args.teacher is not None
+        assert args.teacher_type is not None
     if args.method in ['JTT', 'DeTT']:
         assert args.upweight is not None
         assert args.id_ckpt is not None

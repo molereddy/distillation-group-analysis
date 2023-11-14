@@ -18,7 +18,7 @@ def load_CIFAR10(args, train):
 def get_transform_CIFAR10(args, train):
     transform_list = []
     # resize if needed
-    target_resolution = model_attributes[args.model]['target_resolution']
+    target_resolution = model_attributes[args.model_type]['target_resolution']
     if target_resolution is not None:
         transform_list.append(transforms.Resize(target_resolution))
     transform_list += [transforms.ToTensor(),

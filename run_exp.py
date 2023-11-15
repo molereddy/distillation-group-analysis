@@ -18,7 +18,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Settings
-    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--device', type=int, default=0)
     parser.add_argument('-d', '--dataset', choices=dataset_attributes.keys(), required=True)
     parser.add_argument('-s', '--shift_type', choices=shift_types, default='confounder')
     # Confounders
@@ -68,11 +68,12 @@ def main():
     parser.add_argument('--reweigh_at', type=int, default=1, help='when to reweight samples using aux')
     parser.add_argument('--alpha', type=int, help='')
     parser.add_argument('--beta', type=int, help='')
-    
-    
-    
-
     args = parser.parse_args()
+    
+    if args.device in [0, 1, 2, 3]:
+        args.device = f'cuda:{args.device}'
+    else:
+        args.device = 'cpu'
     
     if args.dataset == "CUB":
         args.target_name = "waterbird_complete95"

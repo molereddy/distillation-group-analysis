@@ -169,9 +169,9 @@ class LossComputer:
             if target_group_idx != -1:
                 target_group_acc = self.avg_group_acc[target_group_idx].item()
             else:
-                target_group_acc = 0
+                target_group_acc = 1
                 for group_idx in range(self.n_groups):
-                    target_group_acc = min(target_group_acc, avg_group_acc[group_idx])
+                    target_group_acc = min(target_group_acc, self.avg_group_acc[group_idx])
             return avg_acc, unbiased_acc, target_group_acc
         
         logger.flush()

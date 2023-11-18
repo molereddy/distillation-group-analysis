@@ -96,9 +96,9 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
         
         for batch_idx, batch in enumerate(prog_bar_loader):
             
-            x = batch[0].cuda()
-            y = batch[1].cuda()
-            g = batch[2].cuda()
+            x = batch[0].to(device=args.device)
+            y = batch[1].to(device=args.device)
+            g = batch[2].to(device=args.device)
             data_idx = batch[3]
             
             if args.method in ['ERM', 'JTT']:
@@ -115,7 +115,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                 else:
                     outputs = models['student'](x)
                 
-                loss_main = loss_computer.loss_erm(outputs, y, g, is_training, wt = None if args.method == 'ERM' else batch[4].cuda())
+                loss_main = loss_computer.loss_erm(outputs, y, g, is_training, wt = None if args.method == 'ERM' else batch[4].to(device=args.device))
                     
             elif args.method in ['KD', 'dedier']:
                 if args.model_type.startswith("bert"):
@@ -135,7 +135,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                     teacher_logits = models['teacher'](x)
                 
                 loss_main = loss_computer.loss_kd(outputs, y, teacher_logits, g, is_training, 
-                                                  wt = None if args.method == 'KD' else batch[4].cuda())
+                                                  wt = None if args.method == 'KD' else batch[4].to(device=args.device))
             
             elif args.method in ['SimKD', 'DeTT']:
                 sft_base = models['student'](x)[0][0]
@@ -143,7 +143,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                 tft_base = tft_base.detach()
                 sft, tft, outputs = models['simkd'](sft_base, tft_base, models['teacher'].fc)
                 loss_main = loss_computer.loss_mse(outputs, y, sft, tft, g, is_training, 
-                                                   wt = None if args.method == 'SimKD' else batch[4].cuda())
+                                                   wt = None if args.method == 'SimKD' else batch[4].to(device=args.device))
             else:
                 raise NotImplementedError
             
@@ -191,7 +191,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
             output_df[f'worst_group_{args.widx}'] = worst_group_flags
             output_df['predicted'] = predicted
             prec, rec = precision_recall(wrongness_flags, worst_group_flags)
-            logger.write('Worst group prediction: precision:{:.3f}, pecall:{:.3f}\n'.format(prec, rec))
+            logger.write('Worst group prediction: precision:{:.3f}, recall:{:.3f}\n'.format(prec, rec))
             # if epoch in args.save_preds_at:
             output_df = output_df.sort_values('index')
             csv_file_path = os.path.join(args.logs_dir, f'epoch-{epoch}_predictions.csv')
@@ -212,7 +212,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
 def train(models, dataset,
           logger, train_csv_logger, val_csv_logger, test_csv_logger,
           args):
-    models['student'] = models['student'].cuda()
+    models['student'] = models['student'].to(device=args.device)
 
     # process generalization adjustment stuff
     adjustments = [float(c) for c in args.generalization_adjustment.split(',')]

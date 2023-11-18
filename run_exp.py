@@ -82,7 +82,7 @@ def main():
         if args.method == 'ERM':
             args.lr = 1e-3
             args.weight_decay = 1e-4
-            args.save_preds_at = [0, 1, 2, 40, 60, 80]
+            args.save_preds_at = [0, 1, 2, 40, 60]
         elif args.method == 'KD':
             args.lr = 5e-4
             args.weight_decay = 1e-1

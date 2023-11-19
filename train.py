@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from utils import AverageMeter, accuracy, save_checkpoint, plot_train_progress, precision_recall
+from utils import AverageMeter, save_checkpoint, plot_train_progress, precision_recall
 from loss import LossComputer
 
 from pytorch_transformers import AdamW, WarmupLinearSchedule

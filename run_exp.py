@@ -27,6 +27,7 @@ def main():
     parser.add_argument('-widx', '--worst_group_idx', type=int, default=2)
     # Resume?
     parser.add_argument('--resume', default=False, action='store_true')
+    parser.add_argument('--hyperparams', default=False, action='store_true')
     # Label shifts
     parser.add_argument('--minority_fraction', type=float)
     parser.add_argument('--imbalance_ratio', type=float)
@@ -78,36 +79,36 @@ def main():
     if args.dataset == "CUB":
         args.target_name = "waterbird_complete95"
         args.confounder_names = ["forest2water2"]
-        if args.n_epochs is None: args.n_epochs = 250
+        if args.n_epochs is None: args.n_epochs = 300
         if args.method == 'ERM':
-            args.lr = 1e-3
-            args.weight_decay = 1e-4
+            if args.lr is None: args.lr = 1e-3
+            if args.weight_decay is None: args.weight_decay = 1e-4
             args.save_preds_at = [0, 1, 2, 40, 60]
         elif args.method == 'KD':
-            args.lr = 5e-4
-            args.weight_decay = 1e-1
+            if args.lr is None: args.lr = 5e-4
+            if args.weight_decay is None: args.weight_decay = 1e-1
         elif args.method == 'SimKD':
-            args.lr = 1e-4
-            args.weight_decay = 1e-1
+            if args.lr is None: args.lr = 1e-4
+            if args.weight_decay is None: args.weight_decay = 1e-1
         elif args.method == 'JTT':
-            args.lr = 1e-5
-            args.weight_decay = 1
+            if args.lr is None: args.lr = 1e-5
+            if args.weight_decay is None: args.weight_decay = 1
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'DeTT':
-            args.lr = 1e-5
-            args.weight_decay = 1e-3
+            if args.lr is None: args.lr = 1e-5
+            if args.weight_decay is None: args.weight_decay = 1e-3
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'dedier':
-            args.lr = 5e-4
-            args.weight_decay = 1e-1
+            if args.lr is None: args.lr = 5e-4
+            if args.weight_decay is None: args.weight_decay = 1e-1
             if args.alpha is None:
                 args.alpha = 0.05
                 args.beta = 4
         else: 
             raise NotImplementedError
-        args.log_every = (int(10 * 128 / args.batch_size)//10+1) * 10 # roughly 1280/batch_size
+        args.log_every = (int(10 * 128 / args.batch_size)//4+1) * 10
         args.widx = 2
     
     elif args.dataset == 'CelebA':
@@ -115,34 +116,36 @@ def main():
         args.confounder_names = ["Male"]
         if args.n_epochs is None: args.n_epochs = 60
         if args.method == 'ERM':
-            args.lr = 1e-4
-            args.weight_decay = 1e-4
+            if args.lr is None: args.lr = 1e-4
+            if args.weight_decay is None: args.weight_decay = 1e-4
             args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
-            args.lr = 1e-5
-            args.weight_decay = 1e-1
+            if args.lr is None: args.lr = 1e-5
+            if args.weight_decay is None: args.weight_decay = 1e-1
         elif args.method == 'SimKD':
-            args.lr = 5e-5
-            args.weight_decay = 1e-1
+            if args.lr is None: args.lr = 5e-5
+            if args.weight_decay is None: args.weight_decay = 1e-1
         elif args.method == 'JTT':
-            args.lr = 1e-5
-            args.weight_decay = 1e-1
+            if args.lr is None: args.lr = 1e-5
+            if args.weight_decay is None: args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'DeTT':
-            args.lr = 1e-5
-            args.weight_decay = 1e-3
+            if args.lr is None: args.lr = 1e-5
+            if args.weight_decay is None: args.weight_decay = 1e-3
             args.id_ckpt = 1
             args.upweight = 50
         elif args.method == 'dedier':
-            args.lr = 5e-4
-            args.weight_decay = 1e-2
-            args.alpha = 0.1
-            args.beta = 3.5
+            if args.lr is None: args.lr = 5e-4
+            if args.weight_decay is None: args.weight_decay = 1e-2
+            if args.alpha is None:
+                args.alpha = 0.1
+                args.beta = 3.5
         else: 
             raise NotImplementedError
-        args.log_every = (int(80 * 128 / args.batch_size)//10+1) * 30 # roughly 30720/batch_size
+        args.log_every = (int(80 * 128 / args.batch_size)//4+1) * 30
         args.widx = 3
+
 
     elif args.dataset == 'MultiNLI':
         args.target_name = "gold_label_random"
@@ -150,20 +153,20 @@ def main():
         args.save_step = 1
         args.n_epochs = 5
         if args.method == 'ERM':
-            args.lr = 2e-5
-            args.weight_decay = 0
+            if args.lr is None: args.lr = 2e-5
+            if args.weight_decay is None: args.weight_decay = 0
             args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
-            args.lr = 2e-5
-            args.weight_decay = 0
+            if args.lr is None: args.lr = 2e-5
+            if args.weight_decay is None: args.weight_decay = 0
         elif args.method == 'JTT':
-            args.lr = 1e-5
-            args.weight_decay = 1e-1
+            if args.lr is None: args.lr = 1e-5
+            if args.weight_decay is None: args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 6
         elif args.method == 'dedier':
-            args.lr = 2e-5
-            args.weight_decay = 1e-2
+            if args.lr is None: args.lr = 2e-5
+            if args.weight_decay is None: args.weight_decay = 1e-2
             args.alpha = 0.2
             args.beta = 3
         else: 
@@ -179,20 +182,20 @@ def main():
         args.save_step = 1
         args.n_epochs = 3
         if args.method == 'ERM':
-            args.lr = 2e-5
-            args.weight_decay = 0
+            if args.lr is None: args.lr = 2e-5
+            if args.weight_decay is None: args.weight_decay = 0
             args.save_preds_at = [0, 1, 2]
         elif args.method == 'KD':
-            args.lr = 2e-5
-            args.weight_decay = 0
+            if args.lr is None: args.lr = 2e-5
+            if args.weight_decay is None: args.weight_decay = 0
         elif args.method == 'JTT':
-            args.lr = 1e-5
-            args.weight_decay = 1e-1
+            if args.lr is None: args.lr = 1e-5
+            if args.weight_decay is None: args.weight_decay = 1e-1
             args.id_ckpt = 1
             args.upweight = 6
         elif args.method == 'dedier':
-            args.lr = 2e-5
-            args.weight_decay = 1e-2
+            if args.lr is None: args.lr = 2e-5
+            if args.weight_decay is None: args.weight_decay = 1e-2
             args.alpha = 0.05
             args.beta = 3
         else: 
@@ -218,8 +221,6 @@ def main():
         args.save_step = args.n_epochs//10
     check_args(args)
     
-    
-    
     # set directory for storing results
     if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
         if args.teacher_fname is None:
@@ -235,11 +236,12 @@ def main():
                                      '_'.join([args.method, teacher_name]))
     elif args.method in ['JTT', 'ERM']:
          args.logs_dir = os.path.join(args.logs_dir, args.dataset, args.model_type, args.method)
-    elif args.method == 'dedier':
-        teacher_ckpt_dir = os.path.join(args.logs_dir, args.dataset, args.teacher_type)
-        args.logs_dir = os.path.join(args.logs_dir, args.dataset, args.model_type,
-                                     '_'.join([args.method, teacher_name, str(args.alpha), 
-                                               str(args.beta)]))
+    
+    if args.hyperparams:
+        hyperparam_details = f"{args.lr}-{args.weight_decay}"
+        if args.method == 'dedier':
+            hyperparam_details += "_" + '_'.join([str(args.alpha), str(args.beta)])
+        args.logs_dir = os.path.join(args.logs_dir, hyperparam_details)
         
     
     if not os.path.exists(args.logs_dir):

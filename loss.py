@@ -10,7 +10,11 @@ class LossComputer:
         self.criterion = torch.nn.CrossEntropyLoss(reduction='none')
         self.min_var_weight = min_var_weight
         self.normalize_loss = normalize_loss
-        self.device = args.device
+        self.alpha = 1
+        
+        if args is not None:
+            self.device = args.device
+            self.alpha = args.kd_alpha
         
         self.n_groups = dataset.n_groups
         self.group_counts = dataset.group_counts().to(device=self.device)
@@ -21,7 +25,6 @@ class LossComputer:
             self.adj = torch.from_numpy(adj).float().to(device=self.device)
         else:
             self.adj = torch.zeros(self.n_groups).float().to(device=self.device)
-        self.alpha = args.kd_alpha if args is not None else 1
         
         # quantities maintained throughout training
         self.adv_probs = torch.ones(self.n_groups).to(device=self.device)/self.n_groups
@@ -155,15 +158,15 @@ class LossComputer:
         return stats_dict
 
     def log_stats(self, logger, is_training, target_group_idx=None):
-        if logger is None:
-            return
-        logger.write(f'Average incurred loss: {self.avg_per_sample_loss.item():.3f}, Average sample loss: {self.avg_actual_loss.item():.3f}, Average acc: {self.avg_acc.item():.3f}\n')
-        for group_idx in range(self.n_groups):
-            logger.write(
-                f'\t{self.group_str(group_idx)}\t'
-                f'[n = {int(self.processed_data_counts[group_idx])}]:\t'
-                f'loss = {self.avg_group_loss[group_idx]:.3f}\t'
-                f'acc = {self.avg_group_acc[group_idx]:.3f}\n')
+        if logger is not None:
+            logger.write(f'Average incurred loss: {self.avg_per_sample_loss.item():.3f}, Average sample loss: {self.avg_actual_loss.item():.3f}, Average acc: {self.avg_acc.item():.3f}\n')
+            for group_idx in range(self.n_groups):
+                logger.write(
+                    f'\t{self.group_str(group_idx)}\t'
+                    f'[n = {int(self.processed_data_counts[group_idx])}]:\t'
+                    f'loss = {self.avg_group_loss[group_idx]:.3f}\t'
+                    f'acc = {self.avg_group_acc[group_idx]:.3f}\n')
+            logger.flush()
         if not is_training and target_group_idx is not None: # i.e. when test/val epoch requests these metrics
             avg_acc = self.avg_acc.item()
             unbiased_acc = np.average([self.avg_group_acc[group_idx].item() for group_idx in range(self.n_groups)])
@@ -175,5 +178,4 @@ class LossComputer:
                     target_group_acc = min(target_group_acc, self.avg_group_acc[group_idx].item())
             return avg_acc, unbiased_acc, target_group_acc
         
-        logger.flush()
         

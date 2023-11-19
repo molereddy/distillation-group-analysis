@@ -108,7 +108,7 @@ def main():
                 args.beta = 4
         else: 
             raise NotImplementedError
-        args.log_every = (int(10 * 128 / args.batch_size)//4+1) * 10
+        args.log_every = (int(10 * 128 / args.batch_size)//4+1) * 12
         args.widx = 2
     
     elif args.dataset == 'CelebA':
@@ -143,7 +143,7 @@ def main():
                 args.beta = 3.5
         else: 
             raise NotImplementedError
-        args.log_every = (int(80 * 128 / args.batch_size)//4+1) * 30
+        args.log_every = (int(90 * 128 / args.batch_size)+1) * 30
         args.widx = 3
 
 

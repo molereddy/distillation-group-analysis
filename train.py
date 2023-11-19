@@ -197,15 +197,15 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
             csv_file_path = os.path.join(args.logs_dir, f'epoch-{epoch}_predictions.csv')
             output_df.to_csv(csv_file_path)
             logger.write('\nSaved predictions to csv file {}\n\n'.format(csv_file_path))
-            
-        if not is_training:
+
+        if csv_logger is not None and (not is_training or loss_computer.batch_count>0):
             csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
             csv_logger.flush()
+            
+        if not is_training:
             return loss_computer.log_stats(logger, is_training, target_group_idx=-1)
         
         elif loss_computer.batch_count > 0:
-            csv_logger.log(epoch, batch_idx, loss_computer.get_stats(models['student'], args))
-            csv_logger.flush()
             loss_computer.log_stats(logger, is_training)
             loss_computer.reset_stats()
 

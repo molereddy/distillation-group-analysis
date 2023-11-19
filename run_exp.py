@@ -1,15 +1,16 @@
-import os, csv, pickle, time
-import argparse
+import os, csv, pickle, time, copy, argparse
 import pandas as pd
+
 import torch
 import torch.nn as nn
 import torchvision
 
-from local_models import model_attributes, FeatResNet, SimKD, SemiResNet, Projector
+from local_models import model_attributes, FeatResNet, SimKD, SemiResNet, Projector, BasicBlock
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from data.dro_dataset import get_loader
 from utils import set_seed, Logger, CSVBatchLogger, log_args, get_model
 from train import train, run_epoch
+from loss import LossComputer
 
 
 def main():
@@ -47,6 +48,7 @@ def main():
     parser.add_argument('--teacher_fname', default=None)
     parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'dedier'], default='ERM')
     parser.add_argument('--kd_alpha', type=float, default=1)
+    parser.add_argument('--feature_level', type=int)
 
     # Optimization
     parser.add_argument('--n_epochs', type=int)
@@ -106,6 +108,7 @@ def main():
             if args.alpha is None:
                 args.alpha = 0.05
                 args.beta = 4
+                args.feature_level = 1
         else: 
             raise NotImplementedError
         args.log_every = (int(10 * 128 / args.batch_size)//4+1) * 12
@@ -141,6 +144,7 @@ def main():
             if args.alpha is None:
                 args.alpha = 0.1
                 args.beta = 3.5
+                args.feature_level = 1
         else: 
             raise NotImplementedError
         args.log_every = (int(90 * 128 / args.batch_size)+1) * 30
@@ -167,8 +171,10 @@ def main():
         elif args.method == 'dedier':
             if args.lr is None: args.lr = 2e-5
             if args.weight_decay is None: args.weight_decay = 1e-2
-            args.alpha = 0.2
-            args.beta = 3
+            if args.alpha is None:
+                args.alpha = 0.2
+                args.beta = 3
+                args.feature_level = 2
         else: 
             raise NotImplementedError
         
@@ -196,8 +202,10 @@ def main():
         elif args.method == 'dedier':
             if args.lr is None: args.lr = 2e-5
             if args.weight_decay is None: args.weight_decay = 1e-2
-            args.alpha = 0.05
-            args.beta = 3
+            if args.alpha is None:
+                args.alpha = 0.05
+                args.beta = 3
+                args.feature_level = 1
         else: 
             raise NotImplementedError
         args.log_every = 2000
@@ -346,20 +354,13 @@ def main():
         wrong_idxs = saved_preds_df.loc[saved_preds_df['wrong_pred'] == 1, 'index'].values
         logger.write("upweighting {:.2f}% of the dataset from epoch-{}".format(100 * len(wrong_idxs)/len(train_data), args.id_ckpt))
         train_data.update_weights(wrong_idxs, args.upweight)
-    
-    if args.method == 'dedier':
-        basic_block = True
+    elif args.method == 'dedier':
         aux_net = SemiResNet(models['student'])
         sample_inputs = next(iter(data['train_loader']))[0].to(device=args.device)
-        if basic_block:
-            converter = BasicBlock(32 * 2**feature_level, 64 * 2**feature_level, stride=1).to(device=args.device)
-            features = converter(aux_net(sample_inputs))
-            d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
-            projector = Projector(d, converter).to(device=args.device)
-        else:
-            features = aux_net(sample_inputs)
-            d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
-            projector = Projector(d).to(device=args.device)
+        converter = BasicBlock(32 * 2**args.feature_level, 64 * 2**args.feature_level, stride=1).to(device=args.device)
+        features = converter(aux_net(sample_inputs))
+        d = torch.flatten(nn.AdaptiveAvgPool2d((1, 1))(features), 1).shape[1]
+        projector = Projector(d, converter).to(device=args.device)
         models['aux_net'] = aux_net
         models['projector'] = projector
     
@@ -370,12 +371,14 @@ def main():
     test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups)
     
     if 'teacher' in models:
-        test_loss_computer = LossComputer(dataset=data['test_data'], args=args)
+        args_copy = copy.deepcopy(args)
+        args_copy.method = 'ERM'
+        test_loss_computer = LossComputer(dataset=data['test_data'], args=args_copy)
         avg_acc, ub_acc, wg_acc = run_epoch(
             epoch=0, models={'student':models['teacher']}, optimizer=None,
             loader=data['test_loader'],
             loss_computer=test_loss_computer,
-            logger=None, csv_logger=None, args=args,
+            logger=None, csv_logger=None, args=args_copy,
             is_training=False)
         logger.write("Teacher model evaluation: ")
         logger.write(f"Average accuracy:{100*avg_acc:.2f}\t"\

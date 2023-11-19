@@ -147,7 +147,7 @@ def main():
                 args.feature_level = 1
         else: 
             raise NotImplementedError
-        args.log_every = (int(90 * 128 / args.batch_size)+1) * 30
+        args.log_every = (int(90 * 128 / args.batch_size)+1) * 10
         args.widx = 3
 
 
@@ -238,7 +238,7 @@ def main():
             teacher_path = os.path.join(teacher_ckpt_dir, 'best_ckpt.pth.tar')
         else:
             teacher_name, teacher_extension = os.path.splitext(os.path.basename(args.teacher_fname))
-            teacher_ckpt_dir = os.path.join(args.logs_dir, args.dataset, args.teacher_type)
+            teacher_ckpt_dir = os.path.join(args.logs_dir, args.dataset)
             teacher_path = os.path.join(teacher_ckpt_dir, os.path.basename(args.teacher_fname))
         args.logs_dir = os.path.join(args.logs_dir, args.dataset, args.model_type,
                                      '_'.join([args.method, teacher_name]))

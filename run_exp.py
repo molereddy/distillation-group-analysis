@@ -9,7 +9,7 @@ from local_models import model_attributes, FeatResNet, SimKD, SemiResNet, Projec
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from data.dro_dataset import get_loader
 from utils import set_seed, Logger, CSVBatchLogger, log_args, get_model
-from train import train
+from train import train, run_epoch
 
 
 def main():
@@ -368,6 +368,19 @@ def main():
     train_csv_logger = CSVBatchLogger(os.path.join(args.logs_dir, 'train.csv'), train_data.n_groups)
     val_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'val.csv'), train_data.n_groups)
     test_csv_logger =  CSVBatchLogger(os.path.join(args.logs_dir, 'test.csv'), train_data.n_groups)
+    
+    if 'teacher' in models:
+        test_loss_computer = LossComputer(dataset=data['test_data'], args=args)
+        avg_acc, ub_acc, wg_acc = run_epoch(
+            epoch=0, models={'student':models['teacher']}, optimizer=None,
+            loader=data['test_loader'],
+            loss_computer=test_loss_computer,
+            logger=None, csv_logger=None, args=args,
+            is_training=False)
+        logger.write("Teacher model evaluation: ")
+        logger.write(f"Average accuracy:{100*avg_acc:.2f}\t"\
+            f"unbiased accuracy:{100*ub_acc:.2f}\t"\
+            f"Worst group accuracy:{100*wg_acc:.2f}\n\n")
     
     train(models, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args)
     

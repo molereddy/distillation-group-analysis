@@ -203,7 +203,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
             csv_logger.flush()
             
         if not is_training:
-            return loss_computer.log_stats(logger, is_training, target_group_idx=-1)
+            return loss_computer.log_stats(logger, is_training, target_group_idx=-1) # log acc stats and get accs
         
         elif loss_computer.batch_count > 0:
             loss_computer.log_stats(logger, is_training)

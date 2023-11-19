@@ -1,7 +1,7 @@
-import os, csv, pickle
+import os, csv, pickle, time
 import argparse
 import pandas as pd
-import torch, time
+import torch
 import torch.nn as nn
 import torchvision
 
@@ -312,9 +312,9 @@ def main():
     # default way is for there to be a ckpt with method name in the teacher model_type directory
     # if not we go to the nearest ERM and get the best_ckpt
     if args.method in ['SimKD', 'KD', 'DeTT', 'dedier']:
-        if teacher_extension == '.pth': # group DRO models might be stored like this
+        if teacher_extension == '.pt': # DRO/DeTT teachers stored as full models
             teacher = torch.load(teacher_path)
-        else:
+        else: # teachers generated in our expts, stored as ckpts
             teacher = get_model(args.teacher_type, n_classes=n_classes)
             teacher_ckpt = torch.load(teacher_path)
             teacher.load_state_dict(teacher_ckpt['model'])

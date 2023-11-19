@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, Subset
-from models import FeatResNet, Projector
+from local_models import FeatResNet, Projector
 import numpy as np
 import pandas as pd
 from tqdm import tqdm

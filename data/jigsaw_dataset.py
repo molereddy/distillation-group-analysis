@@ -2,7 +2,7 @@ import os
 import torch
 import pandas as pd
 import numpy as np
-from models import model_attributes
+from local_models import model_attributes
 from torch.utils.data import Dataset
 from data.confounder_dataset import ConfounderDataset
 

@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torchvision
 
-from models import model_attributes, FeatResNet, SimKD, SemiResNet, Projector
+from local_models import model_attributes, FeatResNet, SimKD, SemiResNet, Projector
 from data.data import dataset_attributes, shift_types, prepare_data, log_data
 from data.dro_dataset import get_loader
 from utils import set_seed, Logger, CSVBatchLogger, log_args, get_model

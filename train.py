@@ -41,7 +41,7 @@ def train_aux(models, loader, logger, args, num_aux_epochs=1):
     
     logger.write(f"Train accuracy of aux layer:{100 * corr/total:.2f}\n")
 
-def reweigh_aux(models, loader, logger, args):
+def reweigh_aux(models, loader, logger, args, alpha, beta, wrong=True):
     projector, aux_net = models['projector'], models['aux_net']
     projector.eval()
     aux_net.eval()
@@ -62,9 +62,11 @@ def reweigh_aux(models, loader, logger, args):
     targets = np.concatenate(targets, axis=0)
     indices = np.concatenate(indices, axis=0)
     margins = np.concatenate(margins, axis=0)
-
-    new_weights = np.exp(args.beta * margins[outputs != targets]**args.alpha)
-    edited_indices = indices[outputs != targets]
+    
+    condition = outputs != targets if wrong else outputs == targets
+    
+    new_weights = np.exp(beta * margins[condition]**alpha)
+    edited_indices = indices[condition]
     logger.write("re-weighting {:.2f}% of the dataset\n".format(100 * len(new_weights)/len(targets)))
     return edited_indices, new_weights
 
@@ -72,8 +74,7 @@ def reweigh_aux(models, loader, logger, args):
 def run_epoch(epoch, models, optimizer, loader, loss_computer, \
               logger, csv_logger, args,
               is_training, show_progress=False, log_every=10, \
-              scheduler=None, target_group_idx=None,
-              train_dataset=None):
+              scheduler=None, target_group_idx=None):
     
     if is_training:
         models['student'].train()
@@ -117,7 +118,7 @@ def run_epoch(epoch, models, optimizer, loader, loss_computer, \
                 
                 loss_main = loss_computer.loss_erm(outputs, y, g, is_training, wt = None if args.method == 'ERM' else batch[4].to(device=args.device))
                     
-            elif args.method in ['KD', 'dedier']:
+            elif args.method in ['KD', 'dedier', 'dededier']:
                 if args.model_type.startswith("bert"):
                     input_ids = x[:, :, 0]
                     input_masks = x[:, :, 1]
@@ -274,13 +275,18 @@ def train(models, dataset,
             is_training=True,
             show_progress=args.show_progress,
             log_every=args.log_every,
-            scheduler=scheduler,
-            train_dataset=dataset['train_data'] if args.method == 'dedier' else None)
+            scheduler=scheduler)
 
-        if args.method == 'dedier' and epoch % args.reweigh_at == 0:
+        if 'dedier' in args.method and epoch % args.reweigh_at == 0:
             train_aux(models, dataset['train_loader'], logger, args)
-            indxs, wts = reweigh_aux(models, dataset['train_loader'], logger, args)
+            indxs, wts = reweigh_aux(models, dataset['train_loader'], logger,
+                                     args.alpha_1, args.beta_1, args, wrong=True)
             dataset['train_data'].update_weights(indxs, wts)
+            if args.method == 'dededier':
+                ct_idxs, ct_wts = reweigh_aux(models, dataset['train_loader'], logger,
+                                     args.alpha_2, args.beta_2, args, wrong=False)
+                dataset['train_data'].update_weights(ct_idxs, ct_wts)
+                
         
         logger.write(f'\nValidation:\n')
         val_loss_computer = LossComputer(dataset=dataset['val_data'], args=args)

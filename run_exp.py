@@ -70,10 +70,10 @@ def main():
     parser.add_argument('--upweight', type=float, help='upweight factor for DeTT/JTT')
     
     parser.add_argument('--reweigh_at', type=int, default=1, help='when to reweight samples using aux')
-    parser.add_argument('--alpha_1', type=int, help='')
-    parser.add_argument('--alpha_2', type=int, help='')
-    parser.add_argument('--beta_1', type=int, help='')
-    parser.add_argument('--beta_2', type=int, help='')
+    parser.add_argument('--alpha_1', type=float, help='')
+    parser.add_argument('--alpha_2', type=float, help='')
+    parser.add_argument('--beta_1', type=float, help='')
+    parser.add_argument('--beta_2', type=float, help='')
     args = parser.parse_args()
     
     if args.device in [0, 1, 2, 3]:
@@ -242,7 +242,7 @@ def main():
     check_args(args)
     
     # set directory for storing results
-    if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
+    if args.method in ['KD', 'SimKD', 'DeTT', 'dedier', 'dededier']:
         if args.teacher_fname is None:
             teacher_name = args.teacher_type
             teacher_extension = '.pth.tar'
@@ -262,7 +262,7 @@ def main():
         if args.method == 'dedier':
             hyperparam_details += "_" + '_'.join([str(args.alpha_1), str(args.beta_1)]) 
         elif args.method == 'dededier':
-            hyperparam_details += "_" + '_'.join([str(args.alpha_1), str(args.beta_1), ''
+            hyperparam_details += "_" + '_'.join([str(args.alpha_1), str(args.beta_1), '',
                                                   str(args.alpha_2), str(args.beta_2)])
         args.logs_dir = os.path.join(args.logs_dir, hyperparam_details)
         

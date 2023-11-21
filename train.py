@@ -41,7 +41,7 @@ def train_aux(models, loader, logger, args, num_aux_epochs=1):
     
     logger.write(f"Train accuracy of aux layer:{100 * corr/total:.2f}\n")
 
-def reweigh_aux(models, loader, logger, args, alpha, beta, wrong=True):
+def reweigh_aux(models, loader, logger, alpha, beta, args, wrong=True):
     projector, aux_net = models['projector'], models['aux_net']
     projector.eval()
     aux_net.eval()

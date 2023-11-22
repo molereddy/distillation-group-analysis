@@ -54,9 +54,9 @@ def main():
     # Optimization
     parser.add_argument('--n_epochs', type=int)
     parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
+    parser.add_argument('--lr', type=float) # 1e-3 for waterbirds and 1e-4 for celebA
     parser.add_argument('--scheduler', action='store_true', default=False)
-    parser.add_argument('--weight_decay', type=float, default=5e-4)
+    parser.add_argument('--weight_decay', type=float)
     parser.add_argument('--minimum_variational_weight', type=float, default=0)
     # Misc
     parser.add_argument('--seed', type=int, default=0)
@@ -397,8 +397,8 @@ def main():
             is_training=False)
         logger.write("Teacher model evaluation: ")
         logger.write(f"Average accuracy:{100*avg_acc:.2f}\t"\
-            f"unbiased accuracy:{100*ub_acc:.2f}\t"\
-            f"Worst group accuracy:{100*wg_acc:.2f}\n\n")
+            f"Worst group accuracy:{100*wg_acc:.2f}\t"\
+            f"unbiased accuracy:{100*ub_acc:.2f}\n\n")
     
     train(models, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args)
     

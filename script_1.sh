@@ -25,8 +25,3 @@ run_experiment "$model" CUB ERM 1e-4 1e-1 "$gpu_index"
 run_experiment "$model" CUB ERM 1e-5 1 "$gpu_index"
 
 echo $(date)
-
-
-python3 run_exp.py --method dedier -d CelebA --model_type resnet18 --device 1 \
---teacher_type resnet50 --teacher_fname resnet50_CelebA_GDRO.pt --batch_size 64;
-TZ=America/New_York date;

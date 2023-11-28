@@ -46,16 +46,17 @@ def main():
                         "distilbert", "distilbert-base-uncased"], default='resnet18', help="model type name")
     parser.add_argument('--teacher_type', type=str, choices=['resnet50',  "bert", "bert-base-uncased"], help="teacher type name")
     parser.add_argument('--teacher_fname', default=None)
-    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 'DeTT', 'dedier'], default='ERM')
+    parser.add_argument('--method', type=str, choices=['KD', 'SimKD', 'ERM', 'JTT', 
+                                                       'DeTT', 'dedier', 'dededier'], default='ERM')
     parser.add_argument('--kd_alpha', type=float, default=1)
     parser.add_argument('--feature_level', type=int)
 
     # Optimization
     parser.add_argument('--n_epochs', type=int)
     parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--lr', type=float, default=0.0001) # 1e-3 for waterbirds and 1e-4 for celebA
+    parser.add_argument('--lr', type=float) # 1e-3 for waterbirds and 1e-4 for celebA
     parser.add_argument('--scheduler', action='store_true', default=False)
-    parser.add_argument('--weight_decay', type=float, default=5e-4)
+    parser.add_argument('--weight_decay', type=float)
     parser.add_argument('--minimum_variational_weight', type=float, default=0)
     # Misc
     parser.add_argument('--seed', type=int, default=0)
@@ -69,8 +70,10 @@ def main():
     parser.add_argument('--upweight', type=float, help='upweight factor for DeTT/JTT')
     
     parser.add_argument('--reweigh_at', type=int, default=1, help='when to reweight samples using aux')
-    parser.add_argument('--alpha', type=int, help='')
-    parser.add_argument('--beta', type=int, help='')
+    parser.add_argument('--alpha_1', type=float, help='')
+    parser.add_argument('--alpha_2', type=float, help='')
+    parser.add_argument('--beta_1', type=float, help='')
+    parser.add_argument('--beta_2', type=float, help='')
     args = parser.parse_args()
     
     if args.device in [0, 1, 2, 3]:
@@ -105,9 +108,9 @@ def main():
         elif args.method == 'dedier':
             if args.lr is None: args.lr = 5e-4
             if args.weight_decay is None: args.weight_decay = 1e-1
-            if args.alpha is None:
-                args.alpha = 0.05
-                args.beta = 4
+            if args.alpha_1 is None:
+                args.alpha_1 = 0.05
+                args.beta_1 = 4
                 args.feature_level = 1
         else: 
             raise NotImplementedError
@@ -141,9 +144,18 @@ def main():
         elif args.method == 'dedier':
             if args.lr is None: args.lr = 5e-4
             if args.weight_decay is None: args.weight_decay = 1e-2
-            if args.alpha is None:
-                args.alpha = 0.1
-                args.beta = 3.5
+            if args.alpha_1 is None:
+                args.alpha_1 = 0.1
+                args.beta_1 = 3.5
+                args.feature_level = 1
+        elif args.method == 'dededier':
+            if args.lr is None: args.lr = 5e-4
+            if args.weight_decay is None: args.weight_decay = 1e-2
+            if args.alpha_1 is None:
+                args.alpha_1 = 0.1
+                args.alpha_2 = 0.05
+                args.beta_1 = 3.5
+                args.beta_2 = 2
                 args.feature_level = 1
         else: 
             raise NotImplementedError
@@ -171,9 +183,9 @@ def main():
         elif args.method == 'dedier':
             if args.lr is None: args.lr = 2e-5
             if args.weight_decay is None: args.weight_decay = 1e-2
-            if args.alpha is None:
-                args.alpha = 0.2
-                args.beta = 3
+            if args.alpha_1 is None:
+                args.alpha_1 = 0.2
+                args.beta_1 = 3
                 args.feature_level = 2
         else: 
             raise NotImplementedError
@@ -202,9 +214,9 @@ def main():
         elif args.method == 'dedier':
             if args.lr is None: args.lr = 2e-5
             if args.weight_decay is None: args.weight_decay = 1e-2
-            if args.alpha is None:
-                args.alpha = 0.05
-                args.beta = 3
+            if args.alpha_1 is None:
+                args.alpha_1 = 0.05
+                args.beta_1 = 3
                 args.feature_level = 1
         else: 
             raise NotImplementedError
@@ -223,14 +235,14 @@ def main():
         else: 
             print("\n"*5, f"WARNING, Using {args.model_type} without using BERT HYPER-PARAMS", "\n"*5)
 
-    # if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
+    # if args.teacher_type is not None:
         # args.batch_size = 64
     if args.save_step is None:
         args.save_step = args.n_epochs//10
     check_args(args)
     
     # set directory for storing results
-    if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
+    if args.method in ['KD', 'SimKD', 'DeTT', 'dedier', 'dededier']:
         if args.teacher_fname is None:
             teacher_name = args.teacher_type
             teacher_extension = '.pth.tar'
@@ -248,7 +260,10 @@ def main():
     if args.hyperparams:
         hyperparam_details = f"{args.lr}-{args.weight_decay}"
         if args.method == 'dedier':
-            hyperparam_details += "_" + '_'.join([str(args.alpha), str(args.beta)])
+            hyperparam_details += "_" + '_'.join([str(args.alpha_1), str(args.beta_1)]) 
+        elif args.method == 'dededier':
+            hyperparam_details += "_" + '_'.join([str(args.alpha_1), str(args.beta_1), '',
+                                                  str(args.alpha_2), str(args.beta_2)])
         args.logs_dir = os.path.join(args.logs_dir, hyperparam_details)
         
     
@@ -319,7 +334,7 @@ def main():
     # load teacher
     # default way is for there to be a ckpt with method name in the teacher model_type directory
     # if not we go to the nearest ERM and get the best_ckpt
-    if args.method in ['SimKD', 'KD', 'DeTT', 'dedier']:
+    if args.method in ['SimKD', 'KD', 'DeTT', 'dedier', 'dededier']:
         if teacher_extension == '.pt': # DRO/DeTT teachers stored as full models
             teacher = torch.load(teacher_path)
         else: # teachers generated in our expts, stored as ckpts
@@ -354,7 +369,7 @@ def main():
         wrong_idxs = saved_preds_df.loc[saved_preds_df['wrong_pred'] == 1, 'index'].values
         logger.write("upweighting {:.2f}% of the dataset from epoch-{}".format(100 * len(wrong_idxs)/len(train_data), args.id_ckpt))
         train_data.update_weights(wrong_idxs, args.upweight)
-    elif args.method == 'dedier':
+    elif args.method in ['dedier', 'dededier']:
         aux_net = SemiResNet(models['student'])
         sample_inputs = next(iter(data['train_loader']))[0].to(device=args.device)
         converter = BasicBlock(32 * 2**args.feature_level, 64 * 2**args.feature_level, stride=1).to(device=args.device)
@@ -382,8 +397,8 @@ def main():
             is_training=False)
         logger.write("Teacher model evaluation: ")
         logger.write(f"Average accuracy:{100*avg_acc:.2f}\t"\
-            f"unbiased accuracy:{100*ub_acc:.2f}\t"\
-            f"Worst group accuracy:{100*wg_acc:.2f}\n\n")
+            f"Worst group accuracy:{100*wg_acc:.2f}\t"\
+            f"unbiased accuracy:{100*ub_acc:.2f}\n\n")
     
     train(models, data, logger, train_csv_logger, val_csv_logger, test_csv_logger, args)
     
@@ -402,7 +417,7 @@ def check_args(args):
     elif args.shift_type.startswith('label_shift'):
         assert args.minority_fraction
         assert args.imbalance_ratio
-    if args.method in ['KD', 'SimKD', 'DeTT', 'dedier']:
+    if args.method in ['KD', 'SimKD', 'DeTT', 'dedier', 'dededier']:
         assert args.teacher_type is not None
     if args.method in ['JTT', 'DeTT']:
         assert args.upweight is not None

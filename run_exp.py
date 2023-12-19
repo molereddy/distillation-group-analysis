@@ -151,15 +151,16 @@ def main():
         elif args.method == 'dededier':
             if args.lr is None: args.lr = 5e-4
             if args.weight_decay is None: args.weight_decay = 1e-2
+            args.feature_level = 1
             if args.alpha_1 is None:
                 args.alpha_1 = 0.1
-                args.alpha_2 = 0.05
                 args.beta_1 = 3.5
+            if args.alpha_2 is None:
+                args.alpha_2 = 0.05
                 args.beta_2 = 2
-                args.feature_level = 1
         else: 
             raise NotImplementedError
-        args.log_every = (int(90 * 128 / args.batch_size)+1) * 10
+        args.log_every = (int(50 * 128 / args.batch_size)+1) * 10
         args.widx = 3
 
 
@@ -267,6 +268,8 @@ def main():
         args.logs_dir = os.path.join(args.logs_dir, hyperparam_details)
         
     
+    print(args.logs_dir)
+
     if not os.path.exists(args.logs_dir):
         os.makedirs(args.logs_dir, exist_ok=True)
     

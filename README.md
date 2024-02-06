@@ -1,4 +1,4 @@
-Implementation for [Using Early Readouts to Mediate Featural Bias in Distillation](https://arxiv.org/abs/2310.18590), due to appear in WACV 2024.
+Implementation for [Using Early Readouts to Mediate Featural Bias in Distillation](https://arxiv.org/abs/2310.18590), WACV 2024.
 Code forked from https://github.com/kohpangwei/group_DRO (refer group_DRO for instructions on downloading datasets and setup).
 
 Store datasets in a root directory ../../data/ (see data/data.py) for details.

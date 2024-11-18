@@ -12,9 +12,8 @@ class LossComputer:
         self.normalize_loss = normalize_loss
         self.alpha = 1
         
-        if args is not None:
-            self.device = args.device
-            self.alpha = args.kd_alpha
+        self.device = args.device
+        self.alpha = args.kd_alpha
         
         self.n_groups = dataset.n_groups
         self.group_counts = dataset.group_counts().to(device=self.device)
